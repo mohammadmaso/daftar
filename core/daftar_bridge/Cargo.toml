@@ -1,0 +1,18 @@
+[package]
+name = "daftar_bridge"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+daftar_core.workspace = true
+flutter_rust_bridge = "=2.13.0"
+anyhow.workspace = true
+jiff.workspace = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }

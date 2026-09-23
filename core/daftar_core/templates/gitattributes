@@ -1,0 +1,5 @@
+# Managed by Daftar. Log files are append-only and merged by union so devices never conflict.
+log/*.md merge=union
+*.md text eol=lf
+*.json text eol=lf
+raw/assets/** binary

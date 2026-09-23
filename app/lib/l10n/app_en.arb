@@ -1,0 +1,151 @@
+{
+  "@@locale": "en",
+  "settingsTitle": "Settings",
+  "appearance": "Appearance",
+  "language": "Language",
+  "languageSystem": "System",
+  "languageEnglish": "English",
+  "languagePersian": "فارسی",
+  "theme": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "textSize": "Text size",
+  "textSizeFooter": "Applies on top of your system text size.",
+  "about": "About",
+  "version": "Version",
+  "coreVersion": "Core",
+  "coreVersionValue": "{version} · {target}",
+  "@coreVersionValue": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "repoFormat": "Repository format",
+  "repoFormatValue": "v{n}",
+  "@repoFormatValue": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyNote": "No telemetry. {app} talks only to your Git remote, your AI providers and your MCP servers.",
+  "@privacyNote": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "designSystem": "Design system",
+  "back": "Back",
+  "galleryButtons": "Buttons",
+  "galleryControls": "Controls",
+  "galleryStatus": "Claim status",
+  "galleryType": "Type",
+  "galleryIcons": "Icons",
+  "sampleSave": "Save",
+  "sampleCancel": "Cancel",
+  "sampleRetry": "Retry",
+  "sampleSearch": "Search your wiki",
+  "statusConfirmed": "confirmed",
+  "statusProposed": "proposed",
+  "statusSuperseded": "superseded",
+  "sampleNotify": "Notify me in the evening",
+  "sampleHeading": "Filed to Life and Health",
+  "sampleBody": "Slept badly, headache by noon. Sara called about the trip to Isfahan.",
+  "sampleMixed": "جلسه با Sara درباره‌ی project جدید خوب بود.",
+  "welcomeLine": "A notebook that files itself.",
+  "welcomeBody": "Talk, type or snap a photo. Everything stays in a private Git repository you own.",
+  "connectRepo": "Connect a private repository",
+  "startLocal": "Start on this device for now",
+  "connectTitle": "Your repository",
+  "connectHttps": "HTTPS + token",
+  "connectSsh": "SSH key",
+  "repoUrl": "Repository address",
+  "repoUrlHintHttps": "https://github.com/you/notes.git",
+  "repoUrlHintSsh": "git@github.com:you/notes.git",
+  "accessToken": "Access token",
+  "tokenHelp": "A fine-grained token with read and write access to this one repository is enough.",
+  "branch": "Branch",
+  "generateKey": "Create a key for this device",
+  "publicKey": "Public key",
+  "copy": "Copy",
+  "copied": "Copied",
+  "sshHelp": "Add this key with write access: GitHub → repository Settings → Deploy keys. GitLab → Settings → Repository → Deploy keys. Gitea → Settings → Deploy Keys.",
+  "continueAction": "Continue",
+  "deviceTitle": "Name this device",
+  "deviceHelp": "Shown in history, so you know where each note came from.",
+  "deviceName": "Device name",
+  "connecting": "Connecting…",
+  "preparing": "Preparing your notebook…",
+  "tryAgain": "Try again",
+  "todayTitle": "Today",
+  "emptyToday": "Nothing captured yet today.",
+  "emptyTodayHint": "Hold the button and talk, or tap it to type.",
+  "stageSaved": "Saved",
+  "stageWorking": "Filing…",
+  "stageFailed": "Couldn't file",
+  "stageFiled": "Filed",
+  "stageExcluded": "Excluded",
+  "voiceNote": "Voice note",
+  "voicePending": "Voice note · transcribed when a speech provider is set up",
+  "photoPending": "Photo · described when a vision provider is set up",
+  "captureRecordLabel": "Hold to record, tap to type",
+  "captureCamera": "Take a photo",
+  "pinVault": "Choose where the next capture goes",
+  "vaultAuto": "Auto",
+  "slideToCancel": "Slide to cancel",
+  "slideUpToLock": "Slide up to lock",
+  "recordingCancelled": "Recording discarded",
+  "micDenied": "Microphone access is off. Turn it on in system settings to record.",
+  "recordingFailed": "Couldn't record on this device.",
+  "stop": "Save",
+  "cancel": "Cancel",
+  "typeSomething": "What's on your mind?",
+  "save": "Save",
+  "savedTo": "Saved · {vault}",
+  "@savedTo": {
+    "placeholders": {
+      "vault": {
+        "type": "String"
+      }
+    }
+  },
+  "saved": "Saved",
+  "syncSynced": "Synced",
+  "syncLocal": "{n, plural, =1{1 change to sync} other{{n} changes to sync}}",
+  "@syncLocal": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "syncSyncing": "Syncing…",
+  "syncOffline": "Offline",
+  "syncAttention": "Needs attention",
+  "syncNoRemote": "On this device only",
+  "repository": "Repository",
+  "remote": "Remote",
+  "notConnected": "Not connected",
+  "connect": "Connect…",
+  "device": "This device",
+  "folder": "Folder",
+  "syncNow": "Sync now",
+  "lastSynced": "Last synced {time}",
+  "@lastSynced": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "obsidianNote": "This folder is a plain Markdown vault; open it in Obsidian any time."
+}

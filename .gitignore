@@ -1,0 +1,5 @@
+core/target/
+.DS_Store
+*.swp
+.env
+.env.*

@@ -1,0 +1,31 @@
+[package]
+name = "daftar_core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+ulid.workspace = true
+jiff.workspace = true
+git2.workspace = true
+rusqlite.workspace = true
+image.workspace = true
+ssh-key.workspace = true
+rand_core.workspace = true
+serde-saphyr.workspace = true
+tracing.workspace = true
+tempfile.workspace = true
+tokio.workspace = true
+reqwest.workspace = true
+rustls.workspace = true
+webpki-root-certs.workspace = true
+futures.workspace = true
+sha2.workspace = true
+base64.workspace = true
+async-trait.workspace = true
+unicode-normalization.workspace = true
+
