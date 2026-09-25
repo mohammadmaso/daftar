@@ -296,7 +296,7 @@
   "deny": "اجازه نده",
   "readOnlyTool": "فقط می‌خواند",
   "reflectSection": "بازتاب",
-  "reflectFooter": "بازتاب‌ها از یادداشت‌های خودت نوشته می‌شوند و در دفتر روزانه ثبت می‌شوند. اعلان هیچ‌وقت نمی‌گوید یک روز سخت درباره‌ی چه بود.",
+  "reflectFooter": "بازتاب‌ها از یادداشت‌های خودتان نوشته می‌شوند و در دفتر روزانه ثبت می‌شوند. اعلان هیچ‌وقت نمی‌گوید یک روز سخت درباره‌ی چه بود.",
   "dailyReflection": "بازتاب روزانه",
   "reflectTime": "ساعت",
   "weeklyReview": "مرور هفتگی",
@@ -317,5 +317,16 @@
   "lintNewCards": "{n, plural, other{{n} مورد تازه در مرور}}",
   "reflectChannel": "بازتاب‌ها",
   "open": "باز کن",
-  "close": "بستن"
+  "close": "بستن",
+  "recordVoiceNote": "ضبط یادداشت صوتی",
+  "commandPalette": "فرمان‌ها",
+  "paletteHint": "جست‌وجو، باز کردن، ثبت یا پرسش",
+  "paletteNewNote": "یادداشت تازه",
+  "paletteTakePhoto": "گرفتن عکس",
+  "paletteSaveNote": "ذخیره به‌عنوان یادداشت: {text}",
+  "paletteAsk": "بپرس: {text}",
+  "paletteGoTo": "برو به {place}",
+  "paletteNoMatch": "چیزی پیدا نشد.",
+  "paletteShortcutHint": "Ctrl+K این را از هر جا باز می‌کند",
+  "paletteShortcutHintMac": "⌘K این را از هر جا باز می‌کند"
 }

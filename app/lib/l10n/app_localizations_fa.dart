@@ -1064,7 +1064,7 @@ class L10nFa extends L10n {
 
   @override
   String get reflectFooter =>
-      'بازتاب‌ها از یادداشت‌های خودت نوشته می‌شوند و در دفتر روزانه ثبت می‌شوند. اعلان هیچ‌وقت نمی‌گوید یک روز سخت درباره‌ی چه بود.';
+      'بازتاب‌ها از یادداشت‌های خودتان نوشته می‌شوند و در دفتر روزانه ثبت می‌شوند. اعلان هیچ‌وقت نمی‌گوید یک روز سخت درباره‌ی چه بود.';
 
   @override
   String get dailyReflection => 'بازتاب روزانه';
@@ -1154,4 +1154,43 @@ class L10nFa extends L10n {
 
   @override
   String get close => 'بستن';
+
+  @override
+  String get recordVoiceNote => 'ضبط یادداشت صوتی';
+
+  @override
+  String get commandPalette => 'فرمان‌ها';
+
+  @override
+  String get paletteHint => 'جست‌وجو، باز کردن، ثبت یا پرسش';
+
+  @override
+  String get paletteNewNote => 'یادداشت تازه';
+
+  @override
+  String get paletteTakePhoto => 'گرفتن عکس';
+
+  @override
+  String paletteSaveNote(String text) {
+    return 'ذخیره به‌عنوان یادداشت: $text';
+  }
+
+  @override
+  String paletteAsk(String text) {
+    return 'بپرس: $text';
+  }
+
+  @override
+  String paletteGoTo(String place) {
+    return 'برو به $place';
+  }
+
+  @override
+  String get paletteNoMatch => 'چیزی پیدا نشد.';
+
+  @override
+  String get paletteShortcutHint => 'Ctrl+K این را از هر جا باز می‌کند';
+
+  @override
+  String get paletteShortcutHintMac => '⌘K این را از هر جا باز می‌کند';
 }

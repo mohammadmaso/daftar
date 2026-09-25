@@ -2004,6 +2004,72 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'Close'**
   String get close;
+
+  /// No description provided for @recordVoiceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Record a voice note'**
+  String get recordVoiceNote;
+
+  /// No description provided for @commandPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Commands'**
+  String get commandPalette;
+
+  /// No description provided for @paletteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search, open, capture or ask'**
+  String get paletteHint;
+
+  /// No description provided for @paletteNewNote.
+  ///
+  /// In en, this message translates to:
+  /// **'New note'**
+  String get paletteNewNote;
+
+  /// No description provided for @paletteTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get paletteTakePhoto;
+
+  /// No description provided for @paletteSaveNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as a note: {text}'**
+  String paletteSaveNote(String text);
+
+  /// No description provided for @paletteAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask: {text}'**
+  String paletteAsk(String text);
+
+  /// No description provided for @paletteGoTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to {place}'**
+  String paletteGoTo(String place);
+
+  /// No description provided for @paletteNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches.'**
+  String get paletteNoMatch;
+
+  /// No description provided for @paletteShortcutHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ctrl+K opens this anywhere'**
+  String get paletteShortcutHint;
+
+  /// No description provided for @paletteShortcutHintMac.
+  ///
+  /// In en, this message translates to:
+  /// **'⌘K opens this anywhere'**
+  String get paletteShortcutHintMac;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

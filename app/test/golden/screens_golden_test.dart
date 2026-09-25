@@ -1,5 +1,6 @@
 import 'package:daftar/app/app.dart';
 import 'package:daftar/core/library_api.dart';
+import 'package:daftar/features/palette/command_palette.dart';
 import 'package:daftar/features/settings/reflect_settings.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -120,6 +121,37 @@ void main() {
         await expectLater(
           find.byType(DaftarApp),
           matchesGoldenFile('goldens/today_help_${tag}_phone.png'),
+        );
+      });
+
+      testWidgets('palette · $tag · desktop', (tester) async {
+        final lib = FakeLibrary(captures: _day())
+          ..addPage(
+            'vaults/life/people/sara.md',
+            'Sara',
+            'سارا',
+            'Cousin.',
+            kind: 'person',
+          );
+        await pumpApp(
+          tester,
+          prefs: prefs,
+          size: desktop,
+          setup: FakeSetup(library: lib),
+        );
+        await tester.tap(find.text(lang == 'fa' ? 'فرمان‌ها' : 'Commands'));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.descendant(
+            of: find.byType(CommandPalette),
+            matching: find.byType(EditableText),
+          ),
+          lang == 'fa' ? 'سارا' : 'Sara',
+        );
+        await tester.pumpAndSettle();
+        await expectLater(
+          find.byType(DaftarApp),
+          matchesGoldenFile('goldens/palette_${tag}_desktop.png'),
         );
       });
 

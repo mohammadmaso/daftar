@@ -1162,4 +1162,43 @@ class L10nEn extends L10n {
 
   @override
   String get close => 'Close';
+
+  @override
+  String get recordVoiceNote => 'Record a voice note';
+
+  @override
+  String get commandPalette => 'Commands';
+
+  @override
+  String get paletteHint => 'Search, open, capture or ask';
+
+  @override
+  String get paletteNewNote => 'New note';
+
+  @override
+  String get paletteTakePhoto => 'Take a photo';
+
+  @override
+  String paletteSaveNote(String text) {
+    return 'Save as a note: $text';
+  }
+
+  @override
+  String paletteAsk(String text) {
+    return 'Ask: $text';
+  }
+
+  @override
+  String paletteGoTo(String place) {
+    return 'Go to $place';
+  }
+
+  @override
+  String get paletteNoMatch => 'Nothing matches.';
+
+  @override
+  String get paletteShortcutHint => 'Ctrl+K opens this anywhere';
+
+  @override
+  String get paletteShortcutHintMac => '⌘K opens this anywhere';
 }

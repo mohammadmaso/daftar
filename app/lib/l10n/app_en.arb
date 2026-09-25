@@ -554,5 +554,37 @@
   },
   "reflectChannel": "Reflections",
   "open": "Open",
-  "close": "Close"
+  "close": "Close",
+  "recordVoiceNote": "Record a voice note",
+  "commandPalette": "Commands",
+  "paletteHint": "Search, open, capture or ask",
+  "paletteNewNote": "New note",
+  "paletteTakePhoto": "Take a photo",
+  "paletteSaveNote": "Save as a note: {text}",
+  "@paletteSaveNote": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "paletteAsk": "Ask: {text}",
+  "@paletteAsk": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "paletteGoTo": "Go to {place}",
+  "@paletteGoTo": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "paletteNoMatch": "Nothing matches.",
+  "paletteShortcutHint": "Ctrl+K opens this anywhere",
+  "paletteShortcutHintMac": "⌘K opens this anywhere"
 }

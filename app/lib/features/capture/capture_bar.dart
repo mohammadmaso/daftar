@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +13,7 @@ import '../../core/library_state.dart';
 import '../../core/recorder.dart';
 import '../../design/design.dart';
 import '../../l10n/app_localizations.dart';
+import 'capture_request.dart';
 
 /// Vault pinned for the next capture only (ADR-0012). `null` = automatic routing.
 final pinnedVaultProvider = NotifierProvider<PinnedVault, String?>(
@@ -53,6 +55,35 @@ class _CaptureBarState extends ConsumerState<CaptureBar> {
   bool _starting = false;
 
   VoiceRecorder get _recorder => ref.read(voiceRecorderProvider);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _takeRequest());
+  }
+
+  /// Runs a capture asked for from the palette, a shortcut, a quick action or a widget.
+  void _takeRequest() {
+    if (!mounted || _rec != _RecState.idle) return;
+    switch (ref.read(captureRequestProvider.notifier).take()) {
+      case CaptureRequest.note:
+        _typeText();
+      case CaptureRequest.record:
+        _recordHandsFree();
+      case CaptureRequest.photo:
+        _takePhoto();
+      case null:
+    }
+  }
+
+  /// Starts recording already locked, so no finger has to stay on the button: for "Record" from
+  /// outside the bar, and for screen-reader users who can't hold and slide.
+  Future<void> _recordHandsFree() async {
+    await _startRecording();
+    if (mounted && _rec == _RecState.recording) {
+      setState(() => _rec = _RecState.locked);
+    }
+  }
 
   @override
   void dispose() {
@@ -206,6 +237,9 @@ class _CaptureBarState extends ConsumerState<CaptureBar> {
     final p = context.palette;
     final recording = _rec != _RecState.idle;
     final pinned = ref.watch(pinnedVaultProvider);
+    ref.listen(captureRequestProvider, (_, next) {
+      if (next != null) _takeRequest();
+    });
     final vaults = ref.watch(vaultsProvider).value ?? const [];
     final lang = Localizations.localeOf(context).languageCode;
     final pinnedLabel = pinned == null
@@ -257,6 +291,12 @@ class _CaptureBarState extends ConsumerState<CaptureBar> {
               Semantics(
                 label: l.captureRecordLabel,
                 button: true,
+                customSemanticsActions: recording
+                    ? null
+                    : {
+                        CustomSemanticsAction(label: l.recordVoiceNote):
+                            _recordHandsFree,
+                      },
                 child: GestureDetector(
                   onTap: recording ? null : _typeText,
                   onLongPressStart: (_) => _startRecording(),

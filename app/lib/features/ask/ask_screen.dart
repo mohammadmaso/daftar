@@ -32,7 +32,10 @@ final storiesProvider = FutureProvider<List<String>>((ref) async {
 /// Ask (§8.1): a thread with streamed, cited answers; scope chips; photo input; Save to wiki; story
 /// co-writer mode. The assistant has no name or persona; it simply answers.
 class AskScreen extends ConsumerStatefulWidget {
-  const AskScreen({super.key, this.reading, this.panel = false});
+  const AskScreen({super.key, this.reading, this.panel = false, this.question});
+
+  /// Asked straight away, e.g. "Ask: …" from the command palette.
+  final String? question;
 
   /// Page open beside the panel on desktop (§8.2).
   final String? reading;
@@ -48,6 +51,25 @@ class _AskScreenState extends ConsumerState<AskScreen> {
   final _input = TextEditingController();
   final _scroll = ScrollController();
   Uint8List? _image;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _askGiven());
+  }
+
+  @override
+  void didUpdateWidget(AskScreen old) {
+    super.didUpdateWidget(old);
+    if (widget.question != old.question) _askGiven();
+  }
+
+  void _askGiven() {
+    final q = widget.question?.trim() ?? '';
+    if (!mounted || q.isEmpty) return;
+    _input.text = q;
+    _send();
+  }
 
   @override
   void dispose() {

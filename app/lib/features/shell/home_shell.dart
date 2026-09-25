@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' show Material;
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,8 @@ import '../../core/job_runner.dart';
 import '../../core/library_state.dart';
 import '../../design/design.dart';
 import '../../l10n/app_localizations.dart';
+import '../capture/capture_request.dart';
+import '../palette/command_palette.dart';
 
 /// Wide screens get a quiet navigation rail; phones get the destination full-screen.
 const double kWideLayout = 900;
@@ -69,8 +72,31 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     super.dispose();
   }
 
+  void _capture(CaptureRequest r) {
+    context.go('/');
+    ref.read(captureRequestProvider.notifier).request(r);
+  }
+
+  /// Keyboard shortcuts (§8.2): ⌘ on Apple platforms, Ctrl elsewhere.
+  Map<ShortcutActivator, VoidCallback> get _shortcuts {
+    final mac = usesCommandKey;
+    SingleActivator key(LogicalKeyboardKey k, {bool shift = false}) =>
+        SingleActivator(k, meta: mac, control: !mac, shift: shift);
+    return {
+      key(LogicalKeyboardKey.keyK): () => showCommandPalette(context),
+      key(LogicalKeyboardKey.keyN): () => _capture(CaptureRequest.note),
+      key(LogicalKeyboardKey.keyN, shift: true): () =>
+          _capture(CaptureRequest.record),
+    };
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => CallbackShortcuts(
+    bindings: _shortcuts,
+    child: Focus(autofocus: true, child: _layout(context)),
+  );
+
+  Widget _layout(BuildContext context) {
     final wide = MediaQuery.sizeOf(context).width >= kWideLayout;
     final l = L10n.of(context);
     final p = context.palette;
@@ -142,6 +168,14 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                         selected: isAt(path),
                         onTap: () => context.go(path),
                       ),
+                    const Spacer(),
+                    _RailItem(
+                      icon: DIcons.search,
+                      label: l.commandPalette,
+                      hint: usesCommandKey ? '⌘K' : 'Ctrl+K',
+                      selected: false,
+                      onTap: () => showCommandPalette(context),
+                    ),
                   ],
                 ),
               ),
@@ -217,11 +251,15 @@ class _RailItem extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.hint,
   });
   final DIcons icon;
   final String label;
   final bool selected;
   final VoidCallback onTap;
+
+  /// A keyboard shortcut shown at the end of the row.
+  final String? hint;
 
   @override
   Widget build(BuildContext context) {
@@ -243,12 +281,20 @@ class _RailItem extends StatelessWidget {
           children: [
             DIcon(icon, size: 20, color: selected ? p.accent : p.inkMuted),
             const SizedBox(width: Space.x3),
-            Text(
-              label,
-              style: context.type.label.copyWith(
-                color: selected ? p.accent : p.ink,
+            Expanded(
+              child: Text(
+                label,
+                style: context.type.label.copyWith(
+                  color: selected ? p.accent : p.ink,
+                ),
               ),
             ),
+            if (hint != null)
+              Text(
+                hint!,
+                textDirection: TextDirection.ltr,
+                style: context.type.caption.copyWith(color: p.inkMuted),
+              ),
           ],
         ),
       ),

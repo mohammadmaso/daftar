@@ -72,7 +72,11 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          GoRoute(path: '/ask', builder: (_, _) => const AskScreen()),
+          GoRoute(
+            path: '/ask',
+            builder: (_, state) =>
+                AskScreen(question: state.uri.queryParameters['q']),
+          ),
           GoRoute(
             path: '/review',
             builder: (context, _) => ReviewScreen(
