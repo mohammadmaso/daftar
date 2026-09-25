@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import '../src/rust/api/ai.dart' as ai;
 import '../src/rust/api/library.dart' as rs;
+import '../src/rust/api/wiki.dart' as wk;
 
 export '../src/rust/api/ai.dart'
     show
@@ -31,6 +32,17 @@ export '../src/rust/api/library.dart'
         SyncResult,
         SyncState,
         Vault;
+export '../src/rust/api/wiki.dart'
+    show
+        FolderEntry,
+        GraphEdge,
+        GraphNode,
+        Listing,
+        LocalGraph,
+        PageSummary,
+        SaveResult,
+        SearchHit,
+        WikiPage;
 
 /// The app's view of one open library. Implemented over the Rust core; faked in widget tests.
 abstract class LibraryApi {
@@ -53,6 +65,24 @@ abstract class LibraryApi {
   Future<ai.ProbeOutcome> testRole(ai.ModelRole role, List<ai.ApiKey> keys);
   Future<ai.RunSummary> runJobs(List<ai.ApiKey> keys);
   Future<void> retryCapture(String id);
+
+  // Wiki (§8.1, §8.3).
+  Future<List<wk.SearchHit>> search(
+    String query, {
+    List<String> vaults,
+    int limit,
+  });
+  Future<List<wk.PageSummary>> recentPages({String? vault, int limit});
+  Future<wk.Listing> listDir(String dir);
+  Future<wk.LocalGraph> localGraph(String path, {int depth});
+  Future<wk.WikiPage> page(String path);
+  Future<String?> resolveLink(String target);
+  Future<wk.SaveResult> savePage(String path, String baseHash, String text);
+  Future<int> refreshIndex();
+  Future<int> rebuildIndex();
+
+  /// The library folder (for images under `raw/assets/`).
+  Future<String> root();
 }
 
 /// Provider calls that need no open library.
@@ -199,4 +229,41 @@ class RustLibraryApi implements LibraryApi {
 
   @override
   Future<void> retryCapture(String id) => _h.retryCapture(rawId: id);
+
+  @override
+  Future<List<wk.SearchHit>> search(
+    String query, {
+    List<String> vaults = const [],
+    int limit = 30,
+  }) => _h.search(query: query, vaults: vaults, limit: limit);
+
+  @override
+  Future<List<wk.PageSummary>> recentPages({String? vault, int limit = 30}) =>
+      _h.recentPages(vault: vault, limit: limit);
+
+  @override
+  Future<wk.Listing> listDir(String dir) => _h.listDir(dir: dir);
+
+  @override
+  Future<wk.LocalGraph> localGraph(String path, {int depth = 1}) =>
+      _h.localGraph(path: path, depth: depth);
+
+  @override
+  Future<wk.WikiPage> page(String path) => _h.page(path: path);
+
+  @override
+  Future<String?> resolveLink(String target) => _h.resolveLink(target: target);
+
+  @override
+  Future<wk.SaveResult> savePage(String path, String baseHash, String text) =>
+      _h.savePage(path: path, baseHash: baseHash, text: text);
+
+  @override
+  Future<int> refreshIndex() => _h.refreshIndex();
+
+  @override
+  Future<int> rebuildIndex() => _h.rebuildIndex();
+
+  @override
+  Future<String> root() async => (await _h.status()).root;
 }

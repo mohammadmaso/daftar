@@ -138,9 +138,7 @@ class ProviderSheet extends ConsumerStatefulWidget {
 
 class _ProviderSheetState extends ConsumerState<ProviderSheet> {
   late final _name = TextEditingController(text: widget.existing?.name ?? '');
-  late final _url = TextEditingController(
-    text: widget.existing?.baseUrl ?? '',
-  );
+  late final _url = TextEditingController(text: widget.existing?.baseUrl ?? '');
   final _key = TextEditingController();
   late ProviderKindDto _kind =
       widget.existing?.kind ?? ProviderKindDto.openaiCompatible;
@@ -202,7 +200,9 @@ class _ProviderSheetState extends ConsumerState<ProviderSheet> {
       final lib = await ref.read(libraryProvider.future);
       final id = await lib!.saveProvider(_draft());
       if (_key.text.trim().isNotEmpty) {
-        await ref.read(credentialStoreProvider).saveApiKey(id, _key.text.trim());
+        await ref
+            .read(credentialStoreProvider)
+            .saveApiKey(id, _key.text.trim());
       }
       await _changed(ref);
       if (mounted) Navigator.of(context).pop();
@@ -570,7 +570,9 @@ class _RoleSheetState extends ConsumerState<RoleSheet> {
                     child: Text(
                       r.ok
                           ? l.testWorks(
-                              NumberFormat.decimalPattern(lang).format(r.latencyMs),
+                              NumberFormat.decimalPattern(
+                                lang,
+                              ).format(r.latencyMs),
                               r.detail,
                             )
                           : r.detail,

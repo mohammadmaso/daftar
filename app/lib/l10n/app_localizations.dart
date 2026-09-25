@@ -1020,6 +1020,168 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'Retry'**
   String get retry;
+
+  /// No description provided for @wikiTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wiki'**
+  String get wikiTitle;
+
+  /// No description provided for @searchWiki.
+  ///
+  /// In en, this message translates to:
+  /// **'Search the wiki'**
+  String get searchWiki;
+
+  /// No description provided for @recentPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently updated'**
+  String get recentPages;
+
+  /// No description provided for @pinnedPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get pinnedPages;
+
+  /// No description provided for @allVaults.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get allVaults;
+
+  /// No description provided for @noResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches “{q}”.'**
+  String noResults(String q);
+
+  /// No description provided for @emptyWiki.
+  ///
+  /// In en, this message translates to:
+  /// **'Your wiki fills up as notes are filed.'**
+  String get emptyWiki;
+
+  /// No description provided for @backlinks.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked from'**
+  String get backlinks;
+
+  /// No description provided for @noBacklinks.
+  ///
+  /// In en, this message translates to:
+  /// **'No other page links here yet.'**
+  String get noBacklinks;
+
+  /// No description provided for @localGraph.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby pages'**
+  String get localGraph;
+
+  /// No description provided for @editPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editPage;
+
+  /// No description provided for @sourcesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 source} other{{n} sources}}'**
+  String sourcesCount(int n);
+
+  /// No description provided for @pagesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 page} other{{n} pages}}'**
+  String pagesCount(int n);
+
+  /// No description provided for @updatedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {date}'**
+  String updatedOn(String date);
+
+  /// No description provided for @pageMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'This page does not exist yet.'**
+  String get pageMissing;
+
+  /// No description provided for @pages.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get pages;
+
+  /// No description provided for @fieldConfidence.
+  ///
+  /// In en, this message translates to:
+  /// **'confidence'**
+  String get fieldConfidence;
+
+  /// No description provided for @fieldSupersededBy.
+  ///
+  /// In en, this message translates to:
+  /// **'replaced by'**
+  String get fieldSupersededBy;
+
+  /// No description provided for @calloutConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'Edited on two devices'**
+  String get calloutConflict;
+
+  /// No description provided for @calloutWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning'**
+  String get calloutWarning;
+
+  /// No description provided for @calloutNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get calloutNote;
+
+  /// No description provided for @rebuildIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Rebuild search index'**
+  String get rebuildIndex;
+
+  /// No description provided for @indexRebuilt.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 page indexed} other{{n} pages indexed}}'**
+  String indexRebuilt(int n);
+
+  /// No description provided for @unsavedChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'You have unsaved changes.'**
+  String get unsavedChanges;
+
+  /// No description provided for @keepEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get keepEditing;
+
+  /// No description provided for @discard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get discard;
+
+  /// No description provided for @openPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get openPage;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

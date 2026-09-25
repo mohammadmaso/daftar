@@ -154,6 +154,16 @@ class _RepositorySection extends ConsumerWidget {
         ),
         DListRow(title: l.branch, trailing: _Value(status.branch)),
         DListRow(
+          title: l.rebuildIndex,
+          chevron: true,
+          onTap: () async {
+            final lib = await ref.read(libraryProvider.future);
+            final n = await lib?.rebuildIndex() ?? 0;
+            ref.read(revisionProvider.notifier).bump();
+            if (context.mounted) showNote(context, l.indexRebuilt(n));
+          },
+        ),
+        DListRow(
           title: l.folder,
           subtitle: status.root,
           trailing: DIconButton(

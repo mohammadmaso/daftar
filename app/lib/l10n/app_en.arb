@@ -254,5 +254,70 @@
       }
     }
   },
-  "retry": "Retry"
+  "retry": "Retry",
+  "wikiTitle": "Wiki",
+  "searchWiki": "Search the wiki",
+  "recentPages": "Recently updated",
+  "pinnedPages": "Pinned",
+  "allVaults": "All",
+  "noResults": "Nothing matches “{q}”.",
+  "@noResults": {
+    "placeholders": {
+      "q": {
+        "type": "String"
+      }
+    }
+  },
+  "emptyWiki": "Your wiki fills up as notes are filed.",
+  "backlinks": "Linked from",
+  "noBacklinks": "No other page links here yet.",
+  "localGraph": "Nearby pages",
+  "editPage": "Edit",
+  "sourcesCount": "{n, plural, =1{1 source} other{{n} sources}}",
+  "@sourcesCount": {
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "pagesCount": "{n, plural, =1{1 page} other{{n} pages}}",
+  "@pagesCount": {
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "updatedOn": "Updated {date}",
+  "@updatedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "pageMissing": "This page does not exist yet.",
+  "pages": "Pages",
+  "fieldConfidence": "confidence",
+  "fieldSupersededBy": "replaced by",
+  "calloutConflict": "Edited on two devices",
+  "calloutWarning": "Warning",
+  "calloutNote": "Note",
+  "rebuildIndex": "Rebuild search index",
+  "indexRebuilt": "{n, plural, =1{1 page indexed} other{{n} pages indexed}}",
+  "@indexRebuilt": {
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "unsavedChanges": "You have unsaved changes.",
+  "keepEditing": "Keep editing",
+  "discard": "Discard",
+  "openPage": "Open"
 }

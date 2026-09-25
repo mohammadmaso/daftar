@@ -21,7 +21,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(setup.deviceName, 'Test phone');
-    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('Today'), findsWidgets);
     expect(find.text('On this device only'), findsOneWidget);
   });
 
@@ -48,7 +48,7 @@ void main() {
     expect(setup.clonedUrl, 'https://github.com/me/notes.git');
     expect(setup.clonedAuth!.kind, AuthKind.token);
     expect(setup.clonedAuth!.secret, 'github_pat_x');
-    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('Today'), findsWidgets);
   });
 
   testWidgets('SSH mode generates a key and shows the public half', (

@@ -12,6 +12,9 @@ import '../features/onboarding/onboarding_screen.dart';
 import '../features/settings/gallery_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/shell/home_shell.dart';
+import '../features/wiki/editor_screen.dart';
+import '../features/wiki/page_screen.dart';
+import '../features/wiki/wiki_screen.dart';
 import '../l10n/app_localizations.dart';
 import 'appearance.dart';
 import 'features.dart';
@@ -45,6 +48,23 @@ final routerProvider = Provider<GoRouter>((ref) {
               showSettingsButton:
                   MediaQuery.sizeOf(context).width < kWideLayout,
             ),
+          ),
+          GoRoute(
+            path: '/wiki',
+            builder: (context, state) =>
+                WikiScreen(selected: state.uri.queryParameters['path']),
+            routes: [
+              GoRoute(
+                path: 'page',
+                builder: (context, state) =>
+                    PageScreen(path: state.uri.queryParameters['path'] ?? ''),
+              ),
+              GoRoute(
+                path: 'edit',
+                builder: (context, state) =>
+                    EditorScreen(path: state.uri.queryParameters['path'] ?? ''),
+              ),
+            ],
           ),
           GoRoute(
             path: '/settings',

@@ -35,6 +35,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     _jobs = ref.read(jobRunnerProvider.notifier);
     _life = AppLifecycleListener(
       onResume: () {
+        _refreshIndex();
         _sync.syncNow();
         _sync.startPeriodic();
         _jobs.resume();
@@ -51,6 +52,15 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     });
   }
 
+  /// Files may have changed outside the app (Obsidian, another editor) while it was away.
+  Future<void> _refreshIndex() async {
+    final lib = await ref.read(libraryProvider.future);
+    if (lib == null) return;
+    if (await lib.refreshIndex() > 0 && mounted) {
+      ref.read(revisionProvider.notifier).bump();
+    }
+  }
+
   @override
   void dispose() {
     _sync.stopPeriodic();
@@ -62,12 +72,35 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   @override
   Widget build(BuildContext context) {
     final wide = MediaQuery.sizeOf(context).width >= kWideLayout;
-    if (!wide) return widget.child;
     final l = L10n.of(context);
     final p = context.palette;
     final locale = Localizations.localeOf(context);
-    final items = [
+    final destinations = [
       (DIcons.today, l.todayTitle, '/'),
+      (DIcons.wiki, l.wikiTitle, '/wiki'),
+    ];
+    bool isAt(String path) =>
+        path == '/' ? widget.location == '/' : widget.location.startsWith(path);
+    if (!wide) {
+      final showBar =
+          widget.location == '/' ||
+          widget.location == '/wiki' ||
+          widget.location == '/wiki/page';
+      if (!showBar) return widget.child;
+      return Column(
+        children: [
+          Expanded(child: widget.child),
+          _BottomBar(
+            items: [
+              for (final (icon, label, path) in destinations)
+                (icon, label, isAt(path), () => context.go(path)),
+            ],
+          ),
+        ],
+      );
+    }
+    final items = [
+      ...destinations,
       (DIcons.device, l.settingsTitle, '/settings'),
     ];
     return Material(
@@ -102,9 +135,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                       _RailItem(
                         icon: icon,
                         label: label,
-                        selected: path == '/'
-                            ? widget.location == '/'
-                            : widget.location.startsWith(path),
+                        selected: isAt(path),
                         onTap: () => context.go(path),
                       ),
                   ],
@@ -114,6 +145,63 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           ),
           Expanded(child: widget.child),
         ],
+      ),
+    );
+  }
+}
+
+/// Mobile destinations (§8.1): quiet labels, one accent for the current one.
+class _BottomBar extends StatelessWidget {
+  const _BottomBar({required this.items});
+  final List<(DIcons, String, bool, VoidCallback)> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Material(
+      color: p.raised,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(color: p.hairline, width: Stroke.hairline),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Row(
+            children: [
+              for (final (icon, label, selected, onTap) in items)
+                Expanded(
+                  child: Pressable(
+                    onPressed: onTap,
+                    selected: selected,
+                    semanticLabel: label,
+                    radius: 0,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: Space.x2),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          DIcon(
+                            icon,
+                            size: 22,
+                            color: selected ? p.accent : p.inkMuted,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            label,
+                            style: context.type.caption.copyWith(
+                              color: selected ? p.accent : p.inkMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

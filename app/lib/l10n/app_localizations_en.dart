@@ -549,4 +549,128 @@ class L10nEn extends L10n {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String get wikiTitle => 'Wiki';
+
+  @override
+  String get searchWiki => 'Search the wiki';
+
+  @override
+  String get recentPages => 'Recently updated';
+
+  @override
+  String get pinnedPages => 'Pinned';
+
+  @override
+  String get allVaults => 'All';
+
+  @override
+  String noResults(String q) {
+    return 'Nothing matches “$q”.';
+  }
+
+  @override
+  String get emptyWiki => 'Your wiki fills up as notes are filed.';
+
+  @override
+  String get backlinks => 'Linked from';
+
+  @override
+  String get noBacklinks => 'No other page links here yet.';
+
+  @override
+  String get localGraph => 'Nearby pages';
+
+  @override
+  String get editPage => 'Edit';
+
+  @override
+  String sourcesCount(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString sources',
+      one: '1 source',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pagesCount(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString pages',
+      one: '1 page',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String updatedOn(String date) {
+    return 'Updated $date';
+  }
+
+  @override
+  String get pageMissing => 'This page does not exist yet.';
+
+  @override
+  String get pages => 'Pages';
+
+  @override
+  String get fieldConfidence => 'confidence';
+
+  @override
+  String get fieldSupersededBy => 'replaced by';
+
+  @override
+  String get calloutConflict => 'Edited on two devices';
+
+  @override
+  String get calloutWarning => 'Warning';
+
+  @override
+  String get calloutNote => 'Note';
+
+  @override
+  String get rebuildIndex => 'Rebuild search index';
+
+  @override
+  String indexRebuilt(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString pages indexed',
+      one: '1 page indexed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get unsavedChanges => 'You have unsaved changes.';
+
+  @override
+  String get keepEditing => 'Keep editing';
+
+  @override
+  String get discard => 'Discard';
+
+  @override
+  String get openPage => 'Open';
 }

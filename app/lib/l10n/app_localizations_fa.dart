@@ -548,4 +548,125 @@ class L10nFa extends L10n {
 
   @override
   String get retry => 'تلاش دوباره';
+
+  @override
+  String get wikiTitle => 'ویکی';
+
+  @override
+  String get searchWiki => 'جستجو در ویکی';
+
+  @override
+  String get recentPages => 'تازه‌ها';
+
+  @override
+  String get pinnedPages => 'سنجاق‌شده';
+
+  @override
+  String get allVaults => 'همه';
+
+  @override
+  String noResults(String q) {
+    return 'چیزی با «$q» پیدا نشد.';
+  }
+
+  @override
+  String get emptyWiki => 'ویکی با بایگانی یادداشت‌ها پر می‌شود.';
+
+  @override
+  String get backlinks => 'پیوند از';
+
+  @override
+  String get noBacklinks => 'هنوز صفحه‌ی دیگری به اینجا پیوند نداده.';
+
+  @override
+  String get localGraph => 'صفحه‌های نزدیک';
+
+  @override
+  String get editPage => 'ویرایش';
+
+  @override
+  String sourcesCount(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString منبع',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pagesCount(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString صفحه',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String updatedOn(String date) {
+    return 'به‌روزرسانی $date';
+  }
+
+  @override
+  String get pageMissing => 'این صفحه هنوز وجود ندارد.';
+
+  @override
+  String get pages => 'صفحه‌ها';
+
+  @override
+  String get fieldConfidence => 'اطمینان';
+
+  @override
+  String get fieldSupersededBy => 'جایگزین با';
+
+  @override
+  String get calloutConflict => 'ویرایش در دو دستگاه';
+
+  @override
+  String get calloutWarning => 'هشدار';
+
+  @override
+  String get calloutNote => 'یادداشت';
+
+  @override
+  String get rebuildIndex => 'بازسازی فهرست جستجو';
+
+  @override
+  String indexRebuilt(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString صفحه فهرست شد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get unsavedChanges => 'تغییرهای ذخیره‌نشده دارید.';
+
+  @override
+  String get keepEditing => 'ادامه‌ی ویرایش';
+
+  @override
+  String get discard => 'دور بریز';
+
+  @override
+  String get openPage => 'باز کن';
 }

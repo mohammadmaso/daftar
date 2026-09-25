@@ -21,7 +21,16 @@ enum DIcons {
   sun(_sun),
   moon(_moon),
   device(_device),
-  copy(_copy);
+  copy(_copy),
+  edit(_edit),
+  graph(_graph),
+  review(_review),
+  activity(_activity),
+  undo(_undo, directional: true),
+  speaker(_speaker),
+  stop(_stop),
+  image(_image),
+  send(_send, directional: true);
 
   const DIcons(this._paint, {this.directional = false});
 
@@ -270,4 +279,123 @@ void _copy(Canvas c, Paint p) {
       ..lineTo(8.5, 15.5),
     p,
   );
+}
+
+// A pen nib drawing a line.
+void _edit(Canvas c, Paint p) {
+  c.drawPath(
+    Path()
+      ..moveTo(15, 4.5)
+      ..lineTo(19.5, 9)
+      ..lineTo(9, 19.5)
+      ..lineTo(4.5, 19.5)
+      ..lineTo(4.5, 15)
+      ..close(),
+    p,
+  );
+  c.drawLine(const Offset(12.5, 7), const Offset(17, 11.5), p);
+}
+
+// Three linked nodes.
+void _graph(Canvas c, Paint p) {
+  c.drawCircle(const Offset(6.5, 7), 2.3, p);
+  c.drawCircle(const Offset(17.5, 6), 2.3, p);
+  c.drawCircle(const Offset(12, 17.5), 2.3, p);
+  c.drawLine(const Offset(8.7, 7), const Offset(15.2, 6.2), p);
+  c.drawLine(const Offset(7.6, 9), const Offset(10.9, 15.4), p);
+  c.drawLine(const Offset(16.4, 8.1), const Offset(13.1, 15.4), p);
+}
+
+// A small stack of cards.
+void _review(Canvas c, Paint p) {
+  c.drawRRect(_rr(4.5, 7.5, 17.5, 19.5, 2), p);
+  c.drawLine(const Offset(7, 4.5), const Offset(18.5, 4.5), p);
+  c.drawLine(const Offset(19.5, 5.5), const Offset(19.5, 16.5), p);
+  c.drawPath(
+    Path()
+      ..moveTo(8, 13.5)
+      ..lineTo(10.2, 15.7)
+      ..lineTo(14.2, 11.2),
+    p,
+  );
+}
+
+// A timeline: dots on a line.
+void _activity(Canvas c, Paint p) {
+  c.drawLine(const Offset(7, 4), const Offset(7, 20), p);
+  for (final y in [7.0, 12.0, 17.0]) {
+    c.drawCircle(Offset(7, y), 1.4, p..style = PaintingStyle.fill);
+    p.style = PaintingStyle.stroke;
+    c.drawLine(Offset(10.5, y), Offset(y == 12 ? 16 : 19, y), p);
+  }
+}
+
+// An arrow turning back.
+void _undo(Canvas c, Paint p) {
+  c.drawPath(
+    Path()
+      ..moveTo(9, 5.5)
+      ..lineTo(4.5, 10)
+      ..lineTo(9, 14.5),
+    p,
+  );
+  c.drawPath(
+    Path()
+      ..moveTo(4.5, 10)
+      ..lineTo(14, 10)
+      ..cubicTo(17.5, 10, 19.5, 12.5, 19.5, 15)
+      ..cubicTo(19.5, 17.5, 17.5, 19.5, 14.5, 19.5)
+      ..lineTo(11, 19.5),
+    p,
+  );
+}
+
+// Sound coming out.
+void _speaker(Canvas c, Paint p) {
+  c.drawPath(
+    Path()
+      ..moveTo(4.5, 9.5)
+      ..lineTo(8, 9.5)
+      ..lineTo(12.5, 5.5)
+      ..lineTo(12.5, 18.5)
+      ..lineTo(8, 14.5)
+      ..lineTo(4.5, 14.5)
+      ..close(),
+    p,
+  );
+  c.drawArc(const Rect.fromLTRB(11, 8, 17, 16), -0.9, 1.8, false, p);
+  c.drawArc(const Rect.fromLTRB(11, 5, 20.5, 19), -0.9, 1.8, false, p);
+}
+
+void _stop(Canvas c, Paint p) {
+  c.drawRRect(_rr(6.5, 6.5, 17.5, 17.5, 2.5), p);
+}
+
+// A framed picture with a hill.
+void _image(Canvas c, Paint p) {
+  c.drawRRect(_rr(3.5, 5, 20.5, 19, 2), p);
+  c.drawCircle(const Offset(9, 10), 1.6, p);
+  c.drawPath(
+    Path()
+      ..moveTo(4, 17)
+      ..lineTo(10, 12.5)
+      ..lineTo(14, 15.5)
+      ..lineTo(16.5, 13.5)
+      ..lineTo(20, 16.5),
+    p,
+  );
+}
+
+// A paper plane stroke.
+void _send(Canvas c, Paint p) {
+  c.drawPath(
+    Path()
+      ..moveTo(4, 11.5)
+      ..lineTo(20, 4.5)
+      ..lineTo(14.5, 19.5)
+      ..lineTo(11.5, 13)
+      ..close(),
+    p,
+  );
+  c.drawLine(const Offset(11.5, 13), const Offset(20, 4.5), p);
 }

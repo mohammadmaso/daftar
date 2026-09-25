@@ -172,6 +172,118 @@ class FakeLibrary implements LibraryApi {
   @override
   Future<void> retryCapture(String id) async => retried.add(id);
 
+  // ── Wiki: pages keyed by path ──
+  final wiki = <String, WikiPage>{};
+  final saved = <(String, String)>[];
+
+  void addPage(String path, String titleEn, String titleFa, String body,
+      {String kind = 'topic', List<String> backlinks = const []}) {
+    final vault = path.split('/')[1];
+    wiki[path] = WikiPage(
+      path: path,
+      text: '---\ntype: $kind\n---\n\n$body\n',
+      body: body,
+      hash: 'h${body.hashCode}',
+      kind: kind,
+      vault: vault,
+      titleEn: titleEn,
+      titleFa: titleFa,
+      aliases: const [],
+      summary: '$titleEn summary',
+      updated: '2026-09-23',
+      status: 'active',
+      sourceCount: 2,
+      backlinks: [for (final b in backlinks) _summary(wiki[b]!)],
+    );
+  }
+
+  PageSummary _summary(WikiPage p) => PageSummary(
+        path: p.path,
+        vault: p.vault,
+        kind: p.kind,
+        titleEn: p.titleEn,
+        titleFa: p.titleFa,
+        summary: p.summary,
+        updated: p.updated,
+      );
+
+  @override
+  Future<List<SearchHit>> search(String query, {List<String> vaults = const [], int limit = 30}) async => [
+        for (final p in wiki.values)
+          if ((vaults.isEmpty || vaults.contains(p.vault)) &&
+              (p.body.toLowerCase().contains(query.toLowerCase()) ||
+                  p.titleEn.toLowerCase().contains(query.toLowerCase()) ||
+                  p.titleFa.contains(query)))
+            SearchHit(page: _summary(p), snippet: p.body.split('\n').first),
+      ];
+
+  @override
+  Future<List<PageSummary>> recentPages({String? vault, int limit = 30}) async =>
+      [for (final p in wiki.values) if (vault == null || p.vault == vault) _summary(p)];
+
+  @override
+  Future<Listing> listDir(String dir) async {
+    final prefix = '$dir/';
+    final folders = <String, int>{};
+    final pages = <PageSummary>[];
+    for (final p in wiki.values.where((p) => p.path.startsWith(prefix))) {
+      final rest = p.path.substring(prefix.length);
+      final i = rest.indexOf('/');
+      if (i < 0) {
+        pages.add(_summary(p));
+      } else {
+        folders['$prefix${rest.substring(0, i)}'] = (folders['$prefix${rest.substring(0, i)}'] ?? 0) + 1;
+      }
+    }
+    return Listing(
+      folders: [for (final e in folders.entries) FolderEntry(path: e.key, pages: e.value)],
+      pages: pages,
+    );
+  }
+
+  @override
+  Future<LocalGraph> localGraph(String path, {int depth = 1}) async {
+    final p = wiki[path]!;
+    return LocalGraph(
+      nodes: [
+        GraphNode(page: _summary(p), depth: 0),
+        for (final b in p.backlinks) GraphNode(page: b, depth: 1),
+      ],
+      edges: [for (final b in p.backlinks) GraphEdge(from: b.path, to: path)],
+    );
+  }
+
+  @override
+  Future<WikiPage> page(String path) async => wiki[path] ?? (throw StateError('no page $path'));
+
+  @override
+  Future<String?> resolveLink(String target) async {
+    final t = target.split('#').first;
+    for (final p in wiki.keys) {
+      if (p == '$t.md' || p.endsWith('/$t.md')) return p;
+    }
+    return null;
+  }
+
+  @override
+  Future<SaveResult> savePage(String path, String baseHash, String text) async {
+    final p = wiki[path]!;
+    if (baseHash != p.hash) throw StateError('This page changed while you were editing.');
+    saved.add((path, text));
+    final body = text.contains('\n---\n') ? text.split('\n---\n').last.trim() : text;
+    addPage(path, p.titleEn, p.titleFa, body, kind: p.kind);
+    return SaveResult(hash: wiki[path]!.hash, committed: true);
+  }
+
+  @override
+  Future<int> refreshIndex() async => 0;
+
+  @override
+  Future<int> rebuildIndex() async => wiki.length;
+
+  @override
+  Future<String> root() async => '/data/daftar/libraries/default';
+
   @override
   Future<List<Vault>> vaults() async => const [
     Vault(id: 'life', titleEn: 'Life', titleFa: 'زندگی', fiction: false),
