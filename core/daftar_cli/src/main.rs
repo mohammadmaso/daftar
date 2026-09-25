@@ -178,6 +178,16 @@ enum Command {
         #[arg(long)]
         judge: bool,
     },
+    /// Run the prompt regression cases (§15) against real providers.
+    /// CONFIG is an AI config JSON ({providers, roles, prices}); keys from DAFTAR_API_KEY_<ID>.
+    Eval {
+        config: PathBuf,
+        #[arg(long, default_value = "fixtures/eval")]
+        cases: PathBuf,
+        /// Run only cases whose name contains this.
+        #[arg(long)]
+        only: Option<String>,
+    },
     /// Generate an ed25519 key pair; prints the public key, writes the private key to FILE.
     Keygen {
         file: PathBuf,
@@ -909,6 +919,58 @@ fn main() -> anyhow::Result<()> {
                         .collect::<Vec<_>>()
                         .join("\n")
                 })?;
+            }
+        }
+        Command::Eval {
+            config,
+            cases,
+            only,
+        } => {
+            let ai: daftar_core::providers::AiConfig =
+                serde_json::from_slice(&std::fs::read(&config)?)
+                    .context("reading the AI config")?;
+            let keys: HashMap<String, String> = ai
+                .providers
+                .iter()
+                .filter_map(|p| {
+                    let var = format!("DAFTAR_API_KEY_{}", p.id.to_uppercase().replace('-', "_"));
+                    std::env::var(var).ok().map(|k| (p.id.clone(), k))
+                })
+                .collect();
+            let rt = daftar_core::runtime::AiRuntime::new(ai, keys);
+            let all = daftar_core::eval::load_cases(&cases)?;
+            let tokio = runtime()?;
+            let mut results = Vec::new();
+            for case in all
+                .iter()
+                .filter(|c| only.as_deref().is_none_or(|o| c.name.contains(o)))
+            {
+                let dir = tempfile::tempdir()?;
+                let started = std::time::Instant::now();
+                let r = tokio.block_on(daftar_core::eval::run_case(case, &rt, dir.path()));
+                let r = r.unwrap_or_else(|e| daftar_core::eval::CaseResult {
+                    name: case.name.clone(),
+                    passed: false,
+                    failures: vec![e.to_string()],
+                    notes: vec![],
+                });
+                if !json {
+                    println!(
+                        "{} {:<32} {:>6.1}s {}",
+                        if r.passed { "PASS" } else { "FAIL" },
+                        r.name,
+                        started.elapsed().as_secs_f32(),
+                        r.failures.join("; ")
+                    );
+                }
+                results.push(r);
+            }
+            if json {
+                println!("{}", serde_json::to_string_pretty(&results)?);
+            }
+            let failed = results.iter().filter(|r| !r.passed).count();
+            if failed > 0 {
+                bail!("{failed} of {} eval cases failed", results.len());
             }
         }
         Command::Keygen { file, comment } => {

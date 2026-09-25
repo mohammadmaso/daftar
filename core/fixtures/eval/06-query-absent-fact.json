@@ -1,0 +1,28 @@
+{
+  "name": "query-absent-fact",
+  "op": "query",
+  "pages": [
+    {
+      "path": "vaults/health/labs/vitamin-d.md",
+      "content": "---\nid: 01EVAL04389533300557947753\ntype: lab\nvault: health\ntitle: { en: \"Vitamin D\", fa: \"ویتامین D\" }\naliases: [\"vitamin d\", \"ویتامین دی\"]\nsummary: \"Low vitamin D in March, treated weekly.\"\nsources: []\ncreated: 2026-09-01\nupdated: 2026-09-01\nstatus: active\n---\n\n# Vitamin D\n\n- Vitamin D was 14 ng/mL in March; the doctor prescribed 50,000 IU weekly for eight weeks (status:: confirmed) (src:: [[raw/2026/03/03/20260303T101500-pixel-8-01JAB0000000000000000000A|voice · 3 Mar]]) ^c-01JAB0000000000000000000B\n"
+    },
+    {
+      "path": "vaults/health/profile.md",
+      "content": "---\nid: 01EVAL07180691893522178408\ntype: profile\nvault: health\ntitle: { en: \"Health profile\", fa: \"پروفایل سلامت\" }\naliases: []\nsummary: \"Conditions, medications and labs.\"\nsources: []\ncreated: 2026-09-01\nupdated: 2026-09-01\nstatus: active\n---\n\n# Health profile\n\n## Medications\n- Takes vitamin D 50,000 IU weekly (status:: confirmed) (src:: [[raw/2026/03/03/20260303T101500-pixel-8-01JAB0000000000000000000A|voice · 3 Mar]]) ^c-01JAB0000000000000000000C\n"
+    },
+    {
+      "path": "vaults/life/people/sara.md",
+      "content": "---\nid: 01EVAL00312618602283644031\ntype: person\nvault: life\ntitle: { en: \"Sara\", fa: \"سارا\" }\naliases: [\"sara\", \"سارا\"]\nsummary: \"Cousin.\"\nsources: []\ncreated: 2026-09-01\nupdated: 2026-09-01\nstatus: active\n---\n\n# Sara\n\nMy cousin. Lives in Tehran.\n"
+    }
+  ],
+  "question": "When does my passport expire?",
+  "expect": {
+    "admits_unknown": true,
+    "never_says": [
+      "2027",
+      "2028",
+      "2029",
+      "2030"
+    ]
+  }
+}

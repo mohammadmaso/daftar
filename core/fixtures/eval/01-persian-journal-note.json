@@ -1,0 +1,31 @@
+{
+  "name": "persian-journal-note",
+  "op": "ingest",
+  "pages": [
+    {
+      "path": "vaults/life/people/sara.md",
+      "content": "---\nid: 01EVAL00312618602283644031\ntype: person\nvault: life\ntitle: { en: \"Sara\", fa: \"سارا\" }\naliases: [\"sara\", \"سارا\"]\nsummary: \"Cousin.\"\nsources: []\ncreated: 2026-09-01\nupdated: 2026-09-01\nstatus: active\n---\n\n# Sara\n\nMy cousin. Lives in Tehran.\n"
+    }
+  ],
+  "captures": [
+    {
+      "text": "امروز صبح با سارا حرف زدم، گفت سفر اصفهان پنج‌شنبه است. از دیشب بد خوابیدم و از صبح سرم درد می‌کند، فکر کنم به‌خاطر قهوه‌ی دیروقت بود.",
+      "at": "2026-09-23T09:30:00+03:30[Asia/Tehran]"
+    }
+  ],
+  "expect": {
+    "vaults": [
+      "life",
+      "health"
+    ],
+    "never_write": [
+      "vaults/stories/"
+    ],
+    "pages_touched_min": 2,
+    "claims_proposed_min": 1,
+    "links_to": [
+      "vaults/life/people/sara"
+    ],
+    "journal_section": true
+  }
+}

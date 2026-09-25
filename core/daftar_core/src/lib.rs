@@ -9,6 +9,7 @@ pub mod changeset;
 pub mod config;
 pub mod edit;
 mod error;
+pub mod eval;
 pub mod frontmatter;
 pub mod fsutil;
 pub mod ids;
