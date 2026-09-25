@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart'
-    show Material, TextField, InputDecoration;
+    show InputBorder, InputDecoration, Material, TextField;
 import 'package:flutter/widgets.dart';
 
 import '../icons.dart';
@@ -201,27 +201,31 @@ class DTextField extends StatelessWidget {
             const SizedBox(width: Space.x2),
           ],
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: Space.x3 - 2),
-              child: TextField(
-                controller: controller,
-                onChanged: onChanged,
-                onSubmitted: onSubmitted,
-                autofocus: autofocus,
-                obscureText: obscure,
-                autocorrect: !forceLtr && !obscure,
-                enableSuggestions: !forceLtr && !obscure,
-                keyboardType: keyboardType,
-                maxLines: obscure ? 1 : maxLines,
-                minLines: minLines,
-                textDirection: forceLtr ? TextDirection.ltr : null,
-                style: (mono ? TypeScale.mono : context.type.body).copyWith(
-                  color: p.ink,
+            // The padding lives inside the field so the whole box takes the tap (≥ 44 pt).
+            child: TextField(
+              controller: controller,
+              onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              autofocus: autofocus,
+              obscureText: obscure,
+              autocorrect: !forceLtr && !obscure,
+              enableSuggestions: !forceLtr && !obscure,
+              keyboardType: keyboardType,
+              maxLines: obscure ? 1 : maxLines,
+              minLines: minLines,
+              textDirection: forceLtr ? TextDirection.ltr : null,
+              style: (mono ? TypeScale.mono : context.type.body).copyWith(
+                color: p.ink,
+              ),
+              decoration: InputDecoration(
+                isCollapsed: true,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: Space.x3 - 2,
                 ),
-                decoration: InputDecoration.collapsed(
-                  hintText: hint,
-                  hintStyle: (mono ? TypeScale.mono : context.type.body)
-                      .copyWith(color: p.inkMuted),
+                hintText: hint,
+                hintStyle: (mono ? TypeScale.mono : context.type.body).copyWith(
+                  color: p.inkMuted,
                 ),
               ),
             ),

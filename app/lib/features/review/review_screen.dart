@@ -176,7 +176,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
             Text(
               l.swipeHint,
               textAlign: TextAlign.center,
-              style: context.type.caption.copyWith(color: p.inkFaint),
+              style: context.type.caption.copyWith(color: p.inkMuted),
             ),
         ],
       ],
