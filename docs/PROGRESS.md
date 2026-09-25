@@ -61,3 +61,33 @@ audio locally and keeps the capture unsealed.
 * The "n changes to sync" counter can briefly include voice captures that are waiting for
   transcription; it corrects itself after the next sync attempt.
 * Android logs SELinux `link` denials from libgit2; harmless (libgit2 falls back to rename).
+
+## M2 — Providers + Transcribe + Ingest (in progress, 2026-09-25)
+
+**Works (core, CLI-testable)**
+* Provider adapters: `openai_compatible` (chat + tools + streaming + vision, transcription, models),
+  `anthropic` (Messages, streaming, prompt caching), `gemini` (generateContent, function calls), and a
+  mock provider that replays scripted responses. HTTP errors become one human sentence.
+* Roles → provider + model (`AiRuntime`), token usage and cost per op.
+* Jobs: `transcribe` (STT, seals the raw file), `describe` (vision + OCR), `ingest`
+  (router → agent loop → validator → one commit + one ledger entry + log line + regenerated indexes).
+* Agent loop with repair rounds (max 2), step budget, cancellation, and context trimming that drops
+  stale page reads.
+* Tools §6.2: index_read, search, page_read, page_create, page_edit (line-based, hash-checked),
+  claim_propose, claim_supersede, raw_read, asset_view, link_suggest, review_add. Human-written
+  lines are protected via git blame.
+* Changeset validator §6.4, vault isolation for fiction, duplicate slug/alias guard, op replay after
+  sync conflicts, double-ingest guard re-checked under the commit lock.
+* Persian-aware normalisation and FTS search.
+* Prompts: router, ingest, vision_describe; drafted for later milestones: query, voice,
+  story_cowriter, compensate, lint, reflect_daily, reflect_weekly.
+* Tests: scenarios 1, 2, 6, 9, plus a Persian journal voice note; provider wire tests.
+
+**Not yet**
+* App side: provider/role settings with Test buttons, secure storage for keys, job runner in the
+  app, filing status in the timeline.
+* The new prompts are not called by any op yet (Ask, voice, lint, reflect, compensate come in M4–M8).
+
+**Known issues**
+* `cargo fmt --all --check` reports formatting drift in existing files; run `cargo fmt --all` before
+  the next CI run.
