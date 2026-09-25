@@ -42,28 +42,33 @@ pub const PAGE_TYPES: &[&str] = &[
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PageMeta {
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_empty")]
     pub id: String,
-    #[serde(rename = "type", default)]
+    #[serde(rename = "type", default, deserialize_with = "null_as_empty")]
     pub kind: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_empty")]
     pub vault: String,
     #[serde(default = "empty_title")]
     pub title: Bilingual,
     #[serde(default)]
     pub aliases: Vec<String>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_empty")]
     pub summary: String,
     #[serde(default)]
     pub sources: Vec<String>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_empty")]
     pub created: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_empty")]
     pub updated: String,
     #[serde(default = "active")]
     pub status: String,
     #[serde(flatten)]
     pub extra: BTreeMap<String, Value>,
+}
+
+/// Hand-written frontmatter often has `id:` with no value (YAML null); read it as empty.
+fn null_as_empty<'de, D: serde::Deserializer<'de>>(d: D) -> std::result::Result<String, D::Error> {
+    Ok(Option::<String>::deserialize(d)?.unwrap_or_default())
 }
 
 fn empty_title() -> Bilingual {
@@ -187,9 +192,16 @@ fn list(v: &[String]) -> String {
 
 pub fn render(m: &PageMeta, body: &str) -> String {
     let mut out = String::from("---\n");
-    out.push_str(&format!("id: {}\n", m.id));
-    out.push_str(&format!("type: {}\n", m.kind));
-    out.push_str(&format!("vault: {}\n", m.vault));
+    let plain = |v: &str| {
+        if v.is_empty() {
+            "\"\"".to_owned()
+        } else {
+            v.to_owned()
+        }
+    };
+    out.push_str(&format!("id: {}\n", plain(&m.id)));
+    out.push_str(&format!("type: {}\n", plain(&m.kind)));
+    out.push_str(&format!("vault: {}\n", plain(&m.vault)));
     out.push_str(&format!(
         "title: {{ en: {}, fa: {} }}\n",
         quote(&m.title.en),
@@ -198,9 +210,9 @@ pub fn render(m: &PageMeta, body: &str) -> String {
     out.push_str(&format!("aliases: {}\n", list(&m.aliases)));
     out.push_str(&format!("summary: {}\n", quote(&m.summary)));
     out.push_str(&format!("sources: {}\n", list(&m.sources)));
-    out.push_str(&format!("created: {}\n", m.created));
-    out.push_str(&format!("updated: {}\n", m.updated));
-    out.push_str(&format!("status: {}\n", m.status));
+    out.push_str(&format!("created: {}\n", plain(&m.created)));
+    out.push_str(&format!("updated: {}\n", plain(&m.updated)));
+    out.push_str(&format!("status: {}\n", plain(&m.status)));
     for (k, v) in &m.extra {
         out.push_str(&format!("{k}: {}\n", yaml_scalar(v)));
     }
@@ -439,6 +451,18 @@ pub fn claim_line(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn empty_frontmatter_values_round_trip() {
+        let p = parse(
+            "vaults/life/people/sara.md",
+            "---\nid:\ntype: person\nvault:\ntitle: { en: \"Sara\", fa: \"سارا\" }\n---\n\nx\n",
+        )
+        .unwrap();
+        assert!(p.meta.id.is_empty() && p.meta.vault.is_empty());
+        let again = parse(&p.path, &p.render()).unwrap();
+        assert_eq!(again.meta, p.meta);
+    }
 
     const DOC: &str = "---\nid: 01JAB\ntype: person\nvault: life\ntitle: { en: \"Sara\", fa: \"سارا\" }\naliases: [\"sara\", \"سارا\"]\nsummary: \"My cousin.\"\nsources: [\"01JABC\"]\ncreated: 2026-09-23\nupdated: 2026-09-23\nstatus: active\ncssclasses: [wide]\n---\n\n# Sara\n\n## Who\nMy cousin, lives in [[shiraz|Shiraz]].\n\n## Timeline\n- 23 Sep: called about [[isfahan-trip]] ([[raw/2026/09/23/x|voice · 23 Sep]])\n";
 

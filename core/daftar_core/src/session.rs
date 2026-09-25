@@ -472,6 +472,70 @@ impl Session {
         Ok(reports)
     }
 
+    // ─────────────── ask (§4.3) ───────────────
+
+    #[allow(clippy::too_many_arguments)]
+    pub async fn ask(
+        &self,
+        rt: &AiRuntime,
+        history: &[crate::ask::Turn],
+        question: &str,
+        image: Option<(String, Vec<u8>)>,
+        scope: &crate::ask::AskScope,
+        cancel: &Cancel,
+        on_delta: crate::providers::OnDelta<'_>,
+    ) -> std::result::Result<crate::ask::Answer, OpError> {
+        // Answers read the search cache; make sure it has what was filed or synced last.
+        let _ = self.with_index(|_| Ok(()));
+        crate::ask::ask(
+            &self.lib,
+            &self.device,
+            rt,
+            history,
+            question,
+            image,
+            scope,
+            &jiff::Zoned::now(),
+            cancel,
+            on_delta,
+        )
+        .await
+    }
+
+    /// "Save to wiki": the answer becomes a capture and is filed like any other.
+    pub fn save_answer(
+        &self,
+        question: &str,
+        answer: &str,
+        scope: &crate::ask::AskScope,
+    ) -> Result<RawItem> {
+        let item = crate::ask::answer_capture(
+            &self.lib,
+            &self.device,
+            &jiff::Zoned::now(),
+            question,
+            answer,
+            scope,
+        )?;
+        self.queue()
+            .enqueue(JobKind::Ingest, Some(item.id()), json!({}), true)?;
+        Ok(item)
+    }
+
+    pub fn save_draft(&self, story: &str, title: &str, text: &str) -> Result<String> {
+        let _g = self.sync_lock.lock().unwrap_or_else(|p| p.into_inner());
+        let p = crate::ask::save_draft(
+            &self.lib,
+            &self.device,
+            &jiff::Zoned::now(),
+            story,
+            title,
+            text,
+        )?;
+        self.invalidate_index();
+        Ok(p)
+    }
+
     // ─────────────── audit and review (§7, §8.5) ───────────────
 
     pub fn activity(&self, limit: usize, before: Option<&str>) -> Result<Vec<OpSummary>> {

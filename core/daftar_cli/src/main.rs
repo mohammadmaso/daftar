@@ -148,6 +148,21 @@ enum Command {
         #[arg(long)]
         text: Option<String>,
     },
+    /// Ask the wiki a question; the answer streams to stdout with checked citations.
+    Ask {
+        path: PathBuf,
+        question: String,
+        #[arg(long)]
+        vault: Option<String>,
+        /// Story co-writer mode for this story slug.
+        #[arg(long)]
+        story: Option<String>,
+        #[arg(long)]
+        image: Option<PathBuf>,
+        /// File the answer into the wiki afterwards.
+        #[arg(long)]
+        save: bool,
+    },
     /// Generate an ed25519 key pair; prints the public key, writes the private key to FILE.
     Keygen {
         file: PathBuf,
@@ -626,6 +641,69 @@ fn main() -> anyhow::Result<()> {
                     print(json, &op, |o| o.clone())?;
                 }
                 (Some(_), None) => bail!("give an action: confirm, reject or dismiss"),
+            }
+        }
+        Command::Ask {
+            path,
+            question,
+            vault,
+            story,
+            image,
+            save,
+        } => {
+            use daftar_core::ask::AskScope;
+            use std::io::Write;
+            let s = Session::open(path)?;
+            let scope = match (story, vault) {
+                (Some(st), _) => AskScope::Story(st),
+                (None, Some(v)) => AskScope::Vault(v),
+                _ => AskScope::All,
+            };
+            let image = match image {
+                Some(p) => {
+                    let bytes = std::fs::read(&p)?;
+                    let mime = match p.extension().and_then(|e| e.to_str()) {
+                        Some("png") => "image/png",
+                        Some("webp") => "image/webp",
+                        _ => "image/jpeg",
+                    };
+                    Some((mime.to_owned(), bytes))
+                }
+                None => None,
+            };
+            let rt = s.runtime(keys_from_env(&s)?)?;
+            let stream = |t: &str| {
+                if !json {
+                    print!("{t}");
+                    let _ = std::io::stdout().flush();
+                }
+            };
+            let a = runtime()?.block_on(s.ask(
+                &rt,
+                &[],
+                &question,
+                image,
+                &scope,
+                &Cancel::default(),
+                Some(&stream),
+            ))?;
+            if json {
+                println!("{}", serde_json::to_string_pretty(&a)?);
+            } else {
+                println!("\n");
+                for c in &a.citations {
+                    match &c.path {
+                        Some(p) => println!("  cited: {p}"),
+                        None => println!("  dropped (does not exist): {}", c.target),
+                    }
+                }
+                if a.needs_help {
+                    println!("  [talk to someone card]");
+                }
+            }
+            if save {
+                let item = s.save_answer(&question, &a.text, &scope)?;
+                eprintln!("saved as {}; run `jobs` to file it", item.path);
             }
         }
         Command::Keygen { file, comment } => {

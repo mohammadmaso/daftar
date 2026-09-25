@@ -2,6 +2,7 @@
 //! The Flutter app and `daftar_cli` are thin shells over this crate.
 
 pub mod agent;
+pub mod ask;
 pub mod assets;
 pub mod audit;
 pub mod changeset;
@@ -35,6 +36,7 @@ pub mod time;
 pub mod tls;
 pub mod tools;
 pub mod validate;
+pub mod wellbeing;
 pub mod wiki;
 
 pub use error::{Error, Result};

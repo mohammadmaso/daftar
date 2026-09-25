@@ -65,6 +65,9 @@ pub struct OpContext<'a> {
     pub citable: BTreeMap<String, RawItem>,
     /// Undoing an op (§7): edits drop the source from `sources` instead of adding it.
     pub compensating: bool,
+    /// Ask scopes (§4.3): only pages under this prefix may be read (`vaults/life/`,
+    /// `vaults/stories/<story>/`). Raw captures are closed in story scope.
+    pub read_prefix: Option<String>,
     search: Option<SearchIndex>,
     human_lines: HashMap<String, BTreeSet<usize>>,
 }
@@ -97,6 +100,7 @@ impl<'a> OpContext<'a> {
             source,
             citable,
             compensating: false,
+            read_prefix: None,
             search,
             human_lines: HashMap::new(),
         })
@@ -168,7 +172,34 @@ impl<'a> OpContext<'a> {
 
     // ─────────────────────────── dispatch ───────────────────────────
 
+    fn readable(&self, path: &str) -> Result<(), String> {
+        match &self.read_prefix {
+            Some(prefix) if path.starts_with("raw/") && prefix.starts_with("vaults/stories/") => {
+                Err("Raw captures are outside this story's workspace.".into())
+            }
+            Some(prefix) if !path.starts_with("raw/") && !path.starts_with(prefix.as_str()) => {
+                Err(format!("This conversation is limited to {prefix}."))
+            }
+            _ => Ok(()),
+        }
+    }
+
     pub fn call(&mut self, name: &str, args: &Value) -> ToolOutput {
+        if self.read_prefix.is_some() {
+            let target = match name {
+                "page_read" => args["path"].as_str().map(|p| self.norm_path(p)),
+                "raw_read" | "asset_view" => Some("raw/".to_owned()),
+                "index_read" => args["vault"]
+                    .as_str()
+                    .map(|v| format!("vaults/{v}/index.md")),
+                _ => None,
+            };
+            if let Some(t) = target
+                && let Err(e) = self.readable(&t)
+            {
+                return ToolOutput::err(e);
+            }
+        }
         let r = match name {
             "index_read" => self.index_read(args),
             "search" => self.search(args),
@@ -190,15 +221,33 @@ impl<'a> OpContext<'a> {
     }
 
     fn index_read(&self, a: &Value) -> Result<String, String> {
-        let vaults: Vec<String> = match a["vault"].as_str() {
-            Some(v) => vec![v.to_owned()],
-            None => self.config.active_vaults().map(|v| v.id.clone()).collect(),
+        let scoped = self
+            .read_prefix
+            .as_deref()
+            .and_then(pages::vault_of)
+            .map(str::to_owned);
+        let vaults: Vec<String> = match (a["vault"].as_str(), scoped) {
+            (Some(v), _) => vec![v.to_owned()],
+            (None, Some(v)) => vec![v],
+            (None, None) => self.config.active_vaults().map(|v| v.id.clone()).collect(),
         };
         let mut out = String::new();
         for v in vaults {
             let text = std::fs::read_to_string(self.lib.path(&layout::vault_index(&v)))
                 .map_err(|_| format!("No index for vault '{v}'."))?;
-            out.push_str(&text);
+            match &self.read_prefix {
+                // A story sees only its own pages in the stories index.
+                Some(prefix) => {
+                    let needle = format!("[[{}", prefix.trim_end_matches('/'));
+                    for l in text.lines() {
+                        if !l.starts_with("- [[") || l.contains(&needle) {
+                            out.push_str(l);
+                            out.push('\n');
+                        }
+                    }
+                }
+                None => out.push_str(&text),
+            }
             out.push('\n');
         }
         Ok(out)
@@ -245,6 +294,9 @@ impl<'a> OpContext<'a> {
                     },
                 );
             }
+        }
+        if let Some(prefix) = &self.read_prefix {
+            hits.retain(|h| h.path.starts_with(prefix.as_str()));
         }
         if hits.is_empty() {
             return Ok(format!("No pages match '{q}'."));
@@ -537,6 +589,16 @@ impl<'a> OpContext<'a> {
         let mut page = wiki::parse(&path, &body_text)
             .map_err(|e| format!("The edit broke the frontmatter: {e}"))?;
         page.meta.updated = self.today();
+        // Pages written by hand may lack the fields code is responsible for (§6.2).
+        if page.meta.id.is_empty() {
+            page.meta.id = crate::ids::new_id().to_string();
+        }
+        if page.meta.vault.is_empty() {
+            page.meta.vault = pages::vault_of(&path).unwrap_or_default().to_owned();
+        }
+        if page.meta.created.is_empty() {
+            page.meta.created = self.today();
+        }
         if self.compensating {
             let gone = self.source_ids();
             page.meta.sources.retain(|s| !gone.contains(s));
