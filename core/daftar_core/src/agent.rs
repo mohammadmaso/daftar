@@ -53,7 +53,7 @@ pub struct AgentOutcome {
 }
 
 /// Validation hook: returns error messages (empty = accept).
-pub type Validator<'v> = &'v dyn Fn(&OpContext<'_>) -> Vec<String>;
+pub type Validator<'v> = &'v (dyn Fn(&OpContext<'_>) -> Vec<String> + Sync);
 
 #[allow(clippy::too_many_arguments)]
 pub async fn run(

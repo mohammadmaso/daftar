@@ -103,11 +103,12 @@ pub async fn ask(
     question: &str,
     image: Option<(String, Vec<u8>)>,
     scope: &AskScope,
+    voice: bool,
     now: &Zoned,
     cancel: &Cancel,
     on_delta: OnDelta<'_>,
 ) -> std::result::Result<Answer, OpError> {
-    let (provider, rc) = rt.for_role(Role::Chat)?;
+    let (provider, rc) = rt.for_role(if voice { Role::Voice } else { Role::Chat })?;
     let config = lib.config()?;
     let schema = std::fs::read_to_string(lib.path(crate::layout::SCHEMA_FILE)).unwrap_or_default();
     let today = now.strftime("%Y-%m-%d").to_string();
@@ -117,7 +118,27 @@ pub async fn ask(
         .unwrap_or("local time")
         .to_owned();
     let languages = "Persian (fa) and English (en)";
+    let vault_list = config
+        .active_vaults()
+        .map(|v| {
+            format!(
+                "- `{}` ({} · {}): {}",
+                v.id, v.title.en, v.title.fa, v.purpose
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
     let system = match scope {
+        _ if voice => prompts::render(
+            prompts::VOICE,
+            &[
+                ("today", &today),
+                ("timezone", &tz),
+                ("languages", languages),
+                ("vaults", &vault_list),
+                ("schema", &schema),
+            ],
+        ),
         AskScope::Story(story) => prompts::render(
             prompts::STORY_COWRITER,
             &[
@@ -187,12 +208,12 @@ pub async fn ask(
             .into_iter()
             .filter(|t| t.name != "review_add")
             .collect(),
-        max_steps: 16,
+        max_steps: if voice { 8 } else { 16 },
         max_tokens: rc
             .params
             .get("max_tokens")
             .and_then(|v| v.as_u64())
-            .unwrap_or(2048) as u32,
+            .unwrap_or(if voice { 600 } else { 2048 }) as u32,
         temperature: Some(0.3),
         context_chars: 300_000,
         params: rc

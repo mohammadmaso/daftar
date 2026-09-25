@@ -167,6 +167,24 @@ impl Session {
         Ok(item)
     }
 
+    /// A finished voice conversation's transcript (§8.4), filed like any capture.
+    pub fn capture_conversation(&self, text: &str, now: &Zoned) -> Result<RawItem> {
+        let item = raw::create(
+            &self.lib,
+            &self.device,
+            now,
+            RawKind::VoiceConversation,
+            NewCapture {
+                text: text.to_owned(),
+                vault_hint: None,
+                assets: vec![],
+            },
+        )?;
+        self.queue()
+            .enqueue(JobKind::Ingest, Some(item.id()), json!({}), true)?;
+        Ok(item)
+    }
+
     /// Normalises the image, stores it as an asset and queues the vision description.
     pub fn capture_photo(
         &self,
@@ -495,6 +513,7 @@ impl Session {
             question,
             image,
             scope,
+            false,
             &jiff::Zoned::now(),
             cancel,
             on_delta,
