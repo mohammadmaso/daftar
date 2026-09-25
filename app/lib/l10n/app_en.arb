@@ -319,5 +319,98 @@
   "unsavedChanges": "You have unsaved changes.",
   "keepEditing": "Keep editing",
   "discard": "Discard",
-  "openPage": "Open"
+  "openPage": "Open",
+  "activityTitle": "Activity",
+  "reviewTitle": "Review",
+  "toReview": "{n, plural, =1{1 to review} other{{n} to review}}",
+  "@toReview": {
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "opUndo": "Undid a filing",
+  "opCompensate": "Removed an undone note",
+  "opReview": "Reviewed a card",
+  "opSaveAnswer": "Saved to the wiki",
+  "opLint": "Checked the wiki",
+  "opReflect": "Reflection",
+  "opNothingFiled": "Read a note; nothing needed filing",
+  "undoneTag": "undone",
+  "whyHere": "Why here",
+  "confidencePct": "{pct} sure",
+  "@confidencePct": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "changes": "Changes",
+  "rawDiff": "Raw diff",
+  "usageTokens": "{tokens} tokens",
+  "@usageTokens": {
+    "placeholders": {
+      "tokens": {
+        "type": "String"
+      }
+    }
+  },
+  "costApprox": "about {cost}",
+  "@costApprox": {
+    "placeholders": {
+      "cost": {
+        "type": "String"
+      }
+    }
+  },
+  "undoAction": "Undo",
+  "undoUndo": "Undo this undo",
+  "moveToVault": "Move to vault…",
+  "rerunWithNote": "Re-run with a note…",
+  "rerunHint": "e.g. Sara is my cousin, not my colleague",
+  "excludeSource": "Exclude this note",
+  "undoneNote": "Undone.",
+  "undoQueued": "Later changes overlap; it will be undone carefully when online.",
+  "refiling": "Filing it again.",
+  "noActivity": "Nothing has been filed yet.",
+  "reviewEmpty": "Nothing to review.",
+  "confirm": "Confirm",
+  "reject": "Reject",
+  "dismiss": "Dismiss",
+  "keepFiling": "Right",
+  "routingQuestion": "Filed to {vaults} — right?",
+  "@routingQuestion": {
+    "placeholders": {
+      "vaults": {
+        "type": "String"
+      }
+    }
+  },
+  "claimQuestion": "Is this right?",
+  "replacesClaim": "Replaces: {text}",
+  "@replacesClaim": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictCard": "Edited on two devices",
+  "conflictHint": "Both versions are kept in the page. Edit it, then mark it resolved.",
+  "resolved": "Resolved",
+  "lintCard": "Wiki check",
+  "questionCard": "A question for you",
+  "schemaCard": "Suggested rule change",
+  "swipeHint": "Swipe right to confirm, left to reject.",
+  "fixSuggestion": "Suggested fix: {fix}",
+  "@fixSuggestion": {
+    "placeholders": {
+      "fix": {
+        "type": "String"
+      }
+    }
+  }
 }

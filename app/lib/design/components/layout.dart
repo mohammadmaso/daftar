@@ -311,9 +311,13 @@ class _Measure extends StatelessWidget {
     alignment: Alignment.topCenter,
     child: ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: Space.measure),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: Space.gutter),
-        child: child,
+      // Fill the measure so narrow children line up with the start edge, not the centre.
+      child: SizedBox(
+        width: double.infinity,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Space.gutter),
+          child: Align(alignment: AlignmentDirectional.topStart, child: child),
+        ),
       ),
     ),
   );

@@ -3,6 +3,8 @@ import 'package:flutter/widgets.dart';
 
 import '../theme.dart';
 import '../tokens.dart';
+import 'buttons.dart';
+import 'layout.dart';
 
 /// Paper sheet rising from the bottom, with a hairline top edge and a grab handle.
 Future<T?> showDSheet<T>(
@@ -117,4 +119,74 @@ class _NoteState extends State<_Note> with SingleTickerProviderStateMixin {
       ),
     );
   }
+}
+
+/// Asks for a line or two of text in a sheet; returns it trimmed, or `null` when dismissed.
+/// The sheet owns its controller, so nothing is disposed while it is still animating away.
+Future<String?> showTextPrompt(
+  BuildContext context, {
+  required String title,
+  required String action,
+  String? hint,
+  String initial = '',
+}) => showDSheet<String>(
+  context,
+  builder: (_) =>
+      _TextPrompt(title: title, action: action, hint: hint, initial: initial),
+);
+
+class _TextPrompt extends StatefulWidget {
+  const _TextPrompt({
+    required this.title,
+    required this.action,
+    this.hint,
+    this.initial = '',
+  });
+  final String title;
+  final String action;
+  final String? hint;
+  final String initial;
+
+  @override
+  State<_TextPrompt> createState() => _TextPromptState();
+}
+
+class _TextPromptState extends State<_TextPrompt> {
+  late final _c = TextEditingController(text: widget.initial);
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(Space.x4),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(widget.title, style: context.type.title),
+        const SizedBox(height: Space.x4),
+        DTextField(
+          controller: _c,
+          hint: widget.hint,
+          autofocus: true,
+          maxLines: 4,
+          minLines: 2,
+        ),
+        const SizedBox(height: Space.x4),
+        ListenableBuilder(
+          listenable: _c,
+          builder: (context, _) => DButton(
+            label: widget.action,
+            onPressed: _c.text.trim().isEmpty
+                ? null
+                : () => Navigator.of(context).pop(_c.text.trim()),
+          ),
+        ),
+      ],
+    ),
+  );
 }

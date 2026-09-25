@@ -669,4 +669,159 @@ class L10nFa extends L10n {
 
   @override
   String get openPage => 'باز کن';
+
+  @override
+  String get activityTitle => 'فعالیت';
+
+  @override
+  String get reviewTitle => 'بازبینی';
+
+  @override
+  String toReview(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString مورد برای بازبینی',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get opUndo => 'یک بایگانی برگردانده شد';
+
+  @override
+  String get opCompensate => 'محتوای یک یادداشت برگردانده شد';
+
+  @override
+  String get opReview => 'یک مورد بازبینی شد';
+
+  @override
+  String get opSaveAnswer => 'در ویکی ذخیره شد';
+
+  @override
+  String get opLint => 'ویکی بررسی شد';
+
+  @override
+  String get opReflect => 'بازتاب';
+
+  @override
+  String get opNothingFiled => 'یادداشت خوانده شد؛ چیزی برای بایگانی نبود';
+
+  @override
+  String get undoneTag => 'برگردانده‌شده';
+
+  @override
+  String get whyHere => 'چرا اینجا';
+
+  @override
+  String confidencePct(String pct) {
+    return '$pct اطمینان';
+  }
+
+  @override
+  String get changes => 'تغییرها';
+
+  @override
+  String get rawDiff => 'تفاوت خام';
+
+  @override
+  String usageTokens(String tokens) {
+    return '$tokens توکن';
+  }
+
+  @override
+  String costApprox(String cost) {
+    return 'حدود $cost';
+  }
+
+  @override
+  String get undoAction => 'برگرداندن';
+
+  @override
+  String get undoUndo => 'لغو برگرداندن';
+
+  @override
+  String get moveToVault => 'انتقال به دفتر…';
+
+  @override
+  String get rerunWithNote => 'اجرای دوباره با یادداشت…';
+
+  @override
+  String get rerunHint => 'مثلاً سارا دخترخاله‌ام است، نه همکارم';
+
+  @override
+  String get excludeSource => 'کنار گذاشتن این یادداشت';
+
+  @override
+  String get undoneNote => 'برگردانده شد.';
+
+  @override
+  String get undoQueued =>
+      'تغییرهای بعدی هم‌پوشانی دارند؛ با اتصال به اینترنت با دقت برگردانده می‌شود.';
+
+  @override
+  String get refiling => 'دوباره بایگانی می‌شود.';
+
+  @override
+  String get noActivity => 'هنوز چیزی بایگانی نشده.';
+
+  @override
+  String get reviewEmpty => 'چیزی برای بازبینی نیست.';
+
+  @override
+  String get confirm => 'تأیید';
+
+  @override
+  String get reject => 'رد';
+
+  @override
+  String get dismiss => 'بستن';
+
+  @override
+  String get keepFiling => 'درست است';
+
+  @override
+  String routingQuestion(String vaults) {
+    return 'در $vaults بایگانی شد — درست است؟';
+  }
+
+  @override
+  String get claimQuestion => 'درست است؟';
+
+  @override
+  String replacesClaim(String text) {
+    return 'به‌جای: $text';
+  }
+
+  @override
+  String get conflictCard => 'ویرایش در دو دستگاه';
+
+  @override
+  String get conflictHint =>
+      'هر دو نسخه در صفحه نگه داشته شده‌اند. ویرایشش کنید و بعد حل‌شده علامت بزنید.';
+
+  @override
+  String get resolved => 'حل شد';
+
+  @override
+  String get lintCard => 'بررسی ویکی';
+
+  @override
+  String get questionCard => 'یک پرسش';
+
+  @override
+  String get schemaCard => 'پیشنهاد تغییر قاعده';
+
+  @override
+  String get swipeHint => 'برای تأیید به راست و برای رد به چپ بکشید.';
+
+  @override
+  String fixSuggestion(String fix) {
+    return 'پیشنهاد: $fix';
+  }
 }

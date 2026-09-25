@@ -673,4 +673,160 @@ class L10nEn extends L10n {
 
   @override
   String get openPage => 'Open';
+
+  @override
+  String get activityTitle => 'Activity';
+
+  @override
+  String get reviewTitle => 'Review';
+
+  @override
+  String toReview(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString to review',
+      one: '1 to review',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get opUndo => 'Undid a filing';
+
+  @override
+  String get opCompensate => 'Removed an undone note';
+
+  @override
+  String get opReview => 'Reviewed a card';
+
+  @override
+  String get opSaveAnswer => 'Saved to the wiki';
+
+  @override
+  String get opLint => 'Checked the wiki';
+
+  @override
+  String get opReflect => 'Reflection';
+
+  @override
+  String get opNothingFiled => 'Read a note; nothing needed filing';
+
+  @override
+  String get undoneTag => 'undone';
+
+  @override
+  String get whyHere => 'Why here';
+
+  @override
+  String confidencePct(String pct) {
+    return '$pct sure';
+  }
+
+  @override
+  String get changes => 'Changes';
+
+  @override
+  String get rawDiff => 'Raw diff';
+
+  @override
+  String usageTokens(String tokens) {
+    return '$tokens tokens';
+  }
+
+  @override
+  String costApprox(String cost) {
+    return 'about $cost';
+  }
+
+  @override
+  String get undoAction => 'Undo';
+
+  @override
+  String get undoUndo => 'Undo this undo';
+
+  @override
+  String get moveToVault => 'Move to vault…';
+
+  @override
+  String get rerunWithNote => 'Re-run with a note…';
+
+  @override
+  String get rerunHint => 'e.g. Sara is my cousin, not my colleague';
+
+  @override
+  String get excludeSource => 'Exclude this note';
+
+  @override
+  String get undoneNote => 'Undone.';
+
+  @override
+  String get undoQueued =>
+      'Later changes overlap; it will be undone carefully when online.';
+
+  @override
+  String get refiling => 'Filing it again.';
+
+  @override
+  String get noActivity => 'Nothing has been filed yet.';
+
+  @override
+  String get reviewEmpty => 'Nothing to review.';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get reject => 'Reject';
+
+  @override
+  String get dismiss => 'Dismiss';
+
+  @override
+  String get keepFiling => 'Right';
+
+  @override
+  String routingQuestion(String vaults) {
+    return 'Filed to $vaults — right?';
+  }
+
+  @override
+  String get claimQuestion => 'Is this right?';
+
+  @override
+  String replacesClaim(String text) {
+    return 'Replaces: $text';
+  }
+
+  @override
+  String get conflictCard => 'Edited on two devices';
+
+  @override
+  String get conflictHint =>
+      'Both versions are kept in the page. Edit it, then mark it resolved.';
+
+  @override
+  String get resolved => 'Resolved';
+
+  @override
+  String get lintCard => 'Wiki check';
+
+  @override
+  String get questionCard => 'A question for you';
+
+  @override
+  String get schemaCard => 'Suggested rule change';
+
+  @override
+  String get swipeHint => 'Swipe right to confirm, left to reject.';
+
+  @override
+  String fixSuggestion(String fix) {
+    return 'Suggested fix: $fix';
+  }
 }

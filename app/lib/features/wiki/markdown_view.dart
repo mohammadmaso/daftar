@@ -474,24 +474,28 @@ class _Renderer {
       'language-',
       '',
     );
-    return Container(
-      decoration: BoxDecoration(
-        color: p.sunken,
-        borderRadius: BorderRadius.circular(Radii.small),
-        border: Border.all(color: p.hairline, width: Stroke.hairline),
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.all(Space.x3),
-        child: Directionality(
-          // Code is always left-to-right, even inside a Persian page.
-          textDirection: TextDirection.ltr,
-          child: Text.rich(
-            TextSpan(children: highlight(source, lang, p)),
-            style: TypeScale.mono.copyWith(
-              color: p.ink,
-              fontSize: 13.5,
-              height: 1.5,
+    // Code is always left-to-right (and scrolls from its start), even inside a Persian page.
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Container(
+        decoration: BoxDecoration(
+          color: p.sunken,
+          borderRadius: BorderRadius.circular(Radii.small),
+          border: Border.all(color: p.hairline, width: Stroke.hairline),
+        ),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.all(Space.x3),
+          child: Directionality(
+            // Code is always left-to-right, even inside a Persian page.
+            textDirection: TextDirection.ltr,
+            child: Text.rich(
+              TextSpan(children: highlight(source, lang, p)),
+              style: TypeScale.mono.copyWith(
+                color: p.ink,
+                fontSize: 13.5,
+                height: 1.5,
+              ),
             ),
           ),
         ),

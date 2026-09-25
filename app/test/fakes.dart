@@ -176,8 +176,14 @@ class FakeLibrary implements LibraryApi {
   final wiki = <String, WikiPage>{};
   final saved = <(String, String)>[];
 
-  void addPage(String path, String titleEn, String titleFa, String body,
-      {String kind = 'topic', List<String> backlinks = const []}) {
+  void addPage(
+    String path,
+    String titleEn,
+    String titleFa,
+    String body, {
+    String kind = 'topic',
+    List<String> backlinks = const [],
+  }) {
     final vault = path.split('/')[1];
     wiki[path] = WikiPage(
       path: path,
@@ -198,28 +204,37 @@ class FakeLibrary implements LibraryApi {
   }
 
   PageSummary _summary(WikiPage p) => PageSummary(
-        path: p.path,
-        vault: p.vault,
-        kind: p.kind,
-        titleEn: p.titleEn,
-        titleFa: p.titleFa,
-        summary: p.summary,
-        updated: p.updated,
-      );
+    path: p.path,
+    vault: p.vault,
+    kind: p.kind,
+    titleEn: p.titleEn,
+    titleFa: p.titleFa,
+    summary: p.summary,
+    updated: p.updated,
+  );
 
   @override
-  Future<List<SearchHit>> search(String query, {List<String> vaults = const [], int limit = 30}) async => [
-        for (final p in wiki.values)
-          if ((vaults.isEmpty || vaults.contains(p.vault)) &&
-              (p.body.toLowerCase().contains(query.toLowerCase()) ||
-                  p.titleEn.toLowerCase().contains(query.toLowerCase()) ||
-                  p.titleFa.contains(query)))
-            SearchHit(page: _summary(p), snippet: p.body.split('\n').first),
-      ];
+  Future<List<SearchHit>> search(
+    String query, {
+    List<String> vaults = const [],
+    int limit = 30,
+  }) async => [
+    for (final p in wiki.values)
+      if ((vaults.isEmpty || vaults.contains(p.vault)) &&
+          (p.body.toLowerCase().contains(query.toLowerCase()) ||
+              p.titleEn.toLowerCase().contains(query.toLowerCase()) ||
+              p.titleFa.contains(query)))
+        SearchHit(page: _summary(p), snippet: p.body.split('\n').first),
+  ];
 
   @override
-  Future<List<PageSummary>> recentPages({String? vault, int limit = 30}) async =>
-      [for (final p in wiki.values) if (vault == null || p.vault == vault) _summary(p)];
+  Future<List<PageSummary>> recentPages({
+    String? vault,
+    int limit = 30,
+  }) async => [
+    for (final p in wiki.values)
+      if (vault == null || p.vault == vault) _summary(p),
+  ];
 
   @override
   Future<Listing> listDir(String dir) async {
@@ -232,11 +247,15 @@ class FakeLibrary implements LibraryApi {
       if (i < 0) {
         pages.add(_summary(p));
       } else {
-        folders['$prefix${rest.substring(0, i)}'] = (folders['$prefix${rest.substring(0, i)}'] ?? 0) + 1;
+        folders['$prefix${rest.substring(0, i)}'] =
+            (folders['$prefix${rest.substring(0, i)}'] ?? 0) + 1;
       }
     }
     return Listing(
-      folders: [for (final e in folders.entries) FolderEntry(path: e.key, pages: e.value)],
+      folders: [
+        for (final e in folders.entries)
+          FolderEntry(path: e.key, pages: e.value),
+      ],
       pages: pages,
     );
   }
@@ -254,7 +273,8 @@ class FakeLibrary implements LibraryApi {
   }
 
   @override
-  Future<WikiPage> page(String path) async => wiki[path] ?? (throw StateError('no page $path'));
+  Future<WikiPage> page(String path) async =>
+      wiki[path] ?? (throw StateError('no page $path'));
 
   @override
   Future<String?> resolveLink(String target) async {
@@ -268,9 +288,13 @@ class FakeLibrary implements LibraryApi {
   @override
   Future<SaveResult> savePage(String path, String baseHash, String text) async {
     final p = wiki[path]!;
-    if (baseHash != p.hash) throw StateError('This page changed while you were editing.');
+    if (baseHash != p.hash) {
+      throw StateError('This page changed while you were editing.');
+    }
     saved.add((path, text));
-    final body = text.contains('\n---\n') ? text.split('\n---\n').last.trim() : text;
+    final body = text.contains('\n---\n')
+        ? text.split('\n---\n').last.trim()
+        : text;
     addPage(path, p.titleEn, p.titleFa, body, kind: p.kind);
     return SaveResult(hash: wiki[path]!.hash, committed: true);
   }
@@ -283,6 +307,62 @@ class FakeLibrary implements LibraryApi {
 
   @override
   Future<String> root() async => '/data/daftar/libraries/default';
+
+  // ── Activity and Review ──
+  final ops = <Operation>[];
+  final diffs = <String, List<PageDiff>>{};
+  final cards = <ReviewCardDto>[];
+  final undone = <String>[];
+  final moved = <(String, String)>[];
+  final reruns = <(String, String)>[];
+  final resolved = <(String, ReviewAction, String?)>[];
+  UndoResult nextUndo = UndoResult.done;
+
+  @override
+  Future<List<Operation>> activity({int limit = 50, String? before}) async =>
+      List.of(ops);
+
+  @override
+  Future<Operation> operation(String opId) async =>
+      ops.firstWhere((o) => o.opId == opId);
+
+  @override
+  Future<List<PageDiff>> operationDiff(String opId) async =>
+      diffs[opId] ?? const [];
+
+  @override
+  Future<UndoResult> undo(String opId) async {
+    undone.add(opId);
+    return nextUndo;
+  }
+
+  @override
+  Future<UndoResult> moveToVault(String opId, String vault) async {
+    moved.add((opId, vault));
+    return nextUndo;
+  }
+
+  @override
+  Future<UndoResult> rerunWithNote(String opId, String note) async {
+    reruns.add((opId, note));
+    return nextUndo;
+  }
+
+  @override
+  Future<void> includeCapture(String rawId) async {}
+
+  @override
+  Future<List<ReviewCardDto>> reviewCards() async => List.of(cards);
+
+  @override
+  Future<void> resolveReview(
+    String cardId,
+    ReviewAction action, {
+    String? editedText,
+  }) async {
+    resolved.add((cardId, action, editedText));
+    cards.removeWhere((c) => c.id == cardId);
+  }
 
   @override
   Future<List<Vault>> vaults() async => const [

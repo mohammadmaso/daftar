@@ -101,6 +101,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     }
     final items = [
       ...destinations,
+      (DIcons.review, l.reviewTitle, '/review'),
+      (DIcons.activity, l.activityTitle, '/activity'),
       (DIcons.device, l.settingsTitle, '/settings'),
     ];
     return Material(

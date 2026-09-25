@@ -1182,6 +1182,264 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'Open'**
   String get openPage;
+
+  /// No description provided for @activityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get activityTitle;
+
+  /// No description provided for @reviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get reviewTitle;
+
+  /// No description provided for @toReview.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 to review} other{{n} to review}}'**
+  String toReview(int n);
+
+  /// No description provided for @opUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undid a filing'**
+  String get opUndo;
+
+  /// No description provided for @opCompensate.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed an undone note'**
+  String get opCompensate;
+
+  /// No description provided for @opReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed a card'**
+  String get opReview;
+
+  /// No description provided for @opSaveAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to the wiki'**
+  String get opSaveAnswer;
+
+  /// No description provided for @opLint.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked the wiki'**
+  String get opLint;
+
+  /// No description provided for @opReflect.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflection'**
+  String get opReflect;
+
+  /// No description provided for @opNothingFiled.
+  ///
+  /// In en, this message translates to:
+  /// **'Read a note; nothing needed filing'**
+  String get opNothingFiled;
+
+  /// No description provided for @undoneTag.
+  ///
+  /// In en, this message translates to:
+  /// **'undone'**
+  String get undoneTag;
+
+  /// No description provided for @whyHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Why here'**
+  String get whyHere;
+
+  /// No description provided for @confidencePct.
+  ///
+  /// In en, this message translates to:
+  /// **'{pct} sure'**
+  String confidencePct(String pct);
+
+  /// No description provided for @changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes'**
+  String get changes;
+
+  /// No description provided for @rawDiff.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw diff'**
+  String get rawDiff;
+
+  /// No description provided for @usageTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'{tokens} tokens'**
+  String usageTokens(String tokens);
+
+  /// No description provided for @costApprox.
+  ///
+  /// In en, this message translates to:
+  /// **'about {cost}'**
+  String costApprox(String cost);
+
+  /// No description provided for @undoAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undoAction;
+
+  /// No description provided for @undoUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo this undo'**
+  String get undoUndo;
+
+  /// No description provided for @moveToVault.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to vault…'**
+  String get moveToVault;
+
+  /// No description provided for @rerunWithNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-run with a note…'**
+  String get rerunWithNote;
+
+  /// No description provided for @rerunHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Sara is my cousin, not my colleague'**
+  String get rerunHint;
+
+  /// No description provided for @excludeSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Exclude this note'**
+  String get excludeSource;
+
+  /// No description provided for @undoneNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Undone.'**
+  String get undoneNote;
+
+  /// No description provided for @undoQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Later changes overlap; it will be undone carefully when online.'**
+  String get undoQueued;
+
+  /// No description provided for @refiling.
+  ///
+  /// In en, this message translates to:
+  /// **'Filing it again.'**
+  String get refiling;
+
+  /// No description provided for @noActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing has been filed yet.'**
+  String get noActivity;
+
+  /// No description provided for @reviewEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to review.'**
+  String get reviewEmpty;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @reject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get reject;
+
+  /// No description provided for @dismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get dismiss;
+
+  /// No description provided for @keepFiling.
+  ///
+  /// In en, this message translates to:
+  /// **'Right'**
+  String get keepFiling;
+
+  /// No description provided for @routingQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Filed to {vaults} — right?'**
+  String routingQuestion(String vaults);
+
+  /// No description provided for @claimQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Is this right?'**
+  String get claimQuestion;
+
+  /// No description provided for @replacesClaim.
+  ///
+  /// In en, this message translates to:
+  /// **'Replaces: {text}'**
+  String replacesClaim(String text);
+
+  /// No description provided for @conflictCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Edited on two devices'**
+  String get conflictCard;
+
+  /// No description provided for @conflictHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Both versions are kept in the page. Edit it, then mark it resolved.'**
+  String get conflictHint;
+
+  /// No description provided for @resolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get resolved;
+
+  /// No description provided for @lintCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Wiki check'**
+  String get lintCard;
+
+  /// No description provided for @questionCard.
+  ///
+  /// In en, this message translates to:
+  /// **'A question for you'**
+  String get questionCard;
+
+  /// No description provided for @schemaCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested rule change'**
+  String get schemaCard;
+
+  /// No description provided for @swipeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe right to confirm, left to reject.'**
+  String get swipeHint;
+
+  /// No description provided for @fixSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested fix: {fix}'**
+  String fixSuggestion(String fix);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

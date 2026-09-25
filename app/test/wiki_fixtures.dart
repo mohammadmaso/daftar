@@ -24,7 +24,7 @@ FakeLibrary wikiLibrary() {
   lib.addPage(
     'vaults/life/journal/2026/2026-09-23.md',
     'Journal · 23 Sep',
-    'روزنوشت · ۱ مهر',
+    'روزنوشت ۱ مهر',
     '# ۱ مهر ۱۴۰۵\n\n'
         '## یادداشت‌ها\n'
         'امروز با [[vaults/life/people/sara|سارا]] درباره‌ی سفر اصفهان حرف زدیم؛ قرار شد Thursday راه بیفتیم.\n\n'

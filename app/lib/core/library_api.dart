@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import '../src/rust/api/ai.dart' as ai;
+import '../src/rust/api/audit.dart' as au;
 import '../src/rust/api/library.dart' as rs;
 import '../src/rust/api/wiki.dart' as wk;
 
@@ -19,6 +20,20 @@ export '../src/rust/api/ai.dart'
         ProviderKindDto,
         RoleSetting,
         RunSummary;
+export '../src/rust/api/audit.dart'
+    show
+        CardKind,
+        ClaimInfo,
+        DiffLine,
+        DiffLineKind,
+        OpKind,
+        Operation,
+        PageChange,
+        PageDiff,
+        ReviewAction,
+        ReviewCardDto,
+        RouteTarget,
+        UndoResult;
 export '../src/rust/api/library.dart'
     show
         Auth,
@@ -83,6 +98,21 @@ abstract class LibraryApi {
 
   /// The library folder (for images under `raw/assets/`).
   Future<String> root();
+
+  // Activity and Review (§7, §8.5).
+  Future<List<au.Operation>> activity({int limit, String? before});
+  Future<au.Operation> operation(String opId);
+  Future<List<au.PageDiff>> operationDiff(String opId);
+  Future<au.UndoResult> undo(String opId);
+  Future<au.UndoResult> moveToVault(String opId, String vault);
+  Future<au.UndoResult> rerunWithNote(String opId, String note);
+  Future<void> includeCapture(String rawId);
+  Future<List<au.ReviewCardDto>> reviewCards();
+  Future<void> resolveReview(
+    String cardId,
+    au.ReviewAction action, {
+    String? editedText,
+  });
 }
 
 /// Provider calls that need no open library.
@@ -266,4 +296,40 @@ class RustLibraryApi implements LibraryApi {
 
   @override
   Future<String> root() async => (await _h.status()).root;
+
+  @override
+  Future<List<au.Operation>> activity({int limit = 50, String? before}) =>
+      _h.activity(limit: limit, before: before);
+
+  @override
+  Future<au.Operation> operation(String opId) => _h.operation(opId: opId);
+
+  @override
+  Future<List<au.PageDiff>> operationDiff(String opId) =>
+      _h.operationDiff(opId: opId);
+
+  @override
+  Future<au.UndoResult> undo(String opId) => _h.undo(opId: opId);
+
+  @override
+  Future<au.UndoResult> moveToVault(String opId, String vault) =>
+      _h.moveToVault(opId: opId, vault: vault);
+
+  @override
+  Future<au.UndoResult> rerunWithNote(String opId, String note) =>
+      _h.rerunWithNote(opId: opId, note: note);
+
+  @override
+  Future<void> includeCapture(String rawId) => _h.includeCapture(rawId: rawId);
+
+  @override
+  Future<List<au.ReviewCardDto>> reviewCards() => _h.reviewCards();
+
+  @override
+  Future<void> resolveReview(
+    String cardId,
+    au.ReviewAction action, {
+    String? editedText,
+  }) =>
+      _h.resolveReview(cardId: cardId, action: action, editedText: editedText);
 }

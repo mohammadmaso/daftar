@@ -7,8 +7,10 @@ import 'package:go_router/go_router.dart';
 import '../core/library_state.dart';
 import '../design/theme.dart';
 import '../design/tokens.dart';
+import '../features/activity/activity_screen.dart';
 import '../features/capture/today_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
+import '../features/review/review_screen.dart';
 import '../features/settings/gallery_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/shell/home_shell.dart';
@@ -63,6 +65,26 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: 'edit',
                 builder: (context, state) =>
                     EditorScreen(path: state.uri.queryParameters['path'] ?? ''),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/review',
+            builder: (context, _) => ReviewScreen(
+              embedded: MediaQuery.sizeOf(context).width >= kWideLayout,
+            ),
+          ),
+          GoRoute(
+            path: '/activity',
+            builder: (context, _) => ActivityScreen(
+              embedded: MediaQuery.sizeOf(context).width >= kWideLayout,
+            ),
+            routes: [
+              GoRoute(
+                path: 'op',
+                builder: (context, state) => OperationScreen(
+                  opId: state.uri.queryParameters['id'] ?? '',
+                ),
               ),
             ],
           ),
