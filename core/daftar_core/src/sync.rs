@@ -94,6 +94,8 @@ pub struct SyncOutcome {
     pub duplicates_dropped: Vec<String>,
     /// Paths changed by the integration (for incremental re-indexing).
     pub changed_paths: Vec<String>,
+    /// Local files not committed because they look like they contain a key or token (§12).
+    pub held_back: Vec<String>,
 }
 
 impl SyncOutcome {
@@ -106,6 +108,7 @@ impl SyncOutcome {
             pushed: 0,
             conflicts: vec![],
             replays: vec![],
+            held_back: vec![],
             duplicates_dropped: vec![],
             changed_paths: vec![],
         }
@@ -239,6 +242,30 @@ pub(crate) fn commit_paths(
 /// Commits everything in the worktree that is ready: sealed captures (plus their assets and
 /// status changes) as one `capture:` commit, and any other change — typically edits made outside
 /// the app — as one `edit:` commit. Returns the number of commits created.
+fn has_secret(lib: &Library, rel: &str) -> bool {
+    (rel.ends_with(".md") || rel.ends_with(".json") || rel.ends_with(".txt"))
+        && std::fs::read_to_string(lib.path(rel))
+            .is_ok_and(|t| !crate::secrets::scan(&t).is_empty())
+}
+
+/// Uncommitted text files that the secret guard is holding back.
+pub fn held_back(lib: &Library) -> Result<Vec<String>> {
+    let repo = Repository::open(lib.root())?;
+    let mut opts = StatusOptions::new();
+    opts.include_untracked(true)
+        .recurse_untracked_dirs(true)
+        .include_ignored(false);
+    let mut out = Vec::new();
+    for s in repo.statuses(Some(&mut opts))?.iter() {
+        if let Ok(p) = s.path()
+            && has_secret(lib, p)
+        {
+            out.push(p.to_owned());
+        }
+    }
+    Ok(out)
+}
+
 pub fn commit_local(lib: &Library, queue: &Queue, dev: &LocalDevice) -> Result<usize> {
     let repo = Repository::open(lib.root())?;
     let mut opts = StatusOptions::new();
@@ -290,6 +317,11 @@ pub fn commit_local(lib: &Library, queue: &Queue, dev: &LocalDevice) -> Result<u
         }
     }
     raw_other.retain(|p| !unsealed_assets.contains(p));
+    // §12: anything that looks like a key or token stays out of history until the user redacts it.
+    let clean = |p: &String| !has_secret(lib, p);
+    captures.retain(clean);
+    edits.retain(clean);
+    settings.retain(clean);
 
     let sig = signature(dev)?;
     let mut n = 0;
@@ -582,17 +614,20 @@ pub fn sync(
 ) -> Result<SyncOutcome> {
     crate::tls::configure_git(&lib.local_dir())?;
     let committed = commit_local(lib, queue, dev)?;
+    let held = held_back(lib)?;
     let repo = Repository::open(lib.root())?;
     let branch = current_branch(&repo)?;
     if repo.find_remote(REMOTE).is_err() {
         let mut o = SyncOutcome::new(SyncState::LocalChanges);
         o.committed = committed;
+        o.held_back = held;
         o.message = Some("no remote configured".into());
         return Ok(o);
     }
 
     let mut outcome = SyncOutcome::new(SyncState::Synced);
     outcome.committed = committed;
+    outcome.held_back = held;
     for attempt in 1..=MAX_PUSH_ATTEMPTS {
         let upstream = match fetch(&repo, &branch, auth) {
             Ok(u) => u,

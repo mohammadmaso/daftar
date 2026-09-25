@@ -382,3 +382,34 @@ fn concurrent_settings_changes_merge() {
             .any(|s| s == "settings: shared settings changed")
     );
 }
+
+/// §12: a capture that contains an API key is not committed; after redaction it syncs.
+#[test]
+fn captured_secrets_are_held_back_until_redacted() {
+    let remote = Remote::new();
+    let a = Device::clone_from(&remote, "laptop");
+    let key = "sk-proj-abcDEF1234567890abcDEF1234567890xyz";
+    let item = a.capture(
+        &format!("New OpenRouter key for the app: {key}"),
+        "2026-09-23T10:00:00+03:30[Asia/Tehran]",
+    );
+    let o = a.sync();
+    assert_eq!(o.held_back, vec![item.path.clone()]);
+    let laptop2 = Device::clone_from(&remote, "desk");
+    assert!(
+        laptop2.raw_files().is_empty(),
+        "the key never reached the remote"
+    );
+
+    let s = daftar_core::session::Session::open(a.root()).unwrap();
+    assert!(s.redact(&item.path).unwrap());
+    let o = a.sync();
+    assert!(o.held_back.is_empty());
+    let b = Device::clone_from(&remote, "desk2");
+    assert_eq!(b.raw_files().len(), 1);
+    let body = b.read(&item.path);
+    assert!(
+        !body.contains(key) && body.contains("[redacted OpenAI key]"),
+        "{body}"
+    );
+}

@@ -933,6 +933,32 @@ impl Session {
         Ok(())
     }
 
+    /// Replaces anything that looks like a key or token in a local, not yet committed file (§12).
+    pub fn redact(&self, rel: &str) -> Result<bool> {
+        if rel.contains("..") {
+            return Err(crate::Error::invalid("bad path"));
+        }
+        let repo = git2::Repository::open(self.lib.root())?;
+        if repo.status_file(Path::new(rel)).is_ok_and(|s| s.is_empty()) {
+            return Err(crate::Error::invalid(
+                "This file is already in the history; remove the key from the remote and rotate it.",
+            ));
+        }
+        let text = std::fs::read_to_string(self.lib.path(rel))?;
+        let clean = crate::secrets::redact(&text);
+        if clean == text {
+            return Ok(false);
+        }
+        crate::fsutil::atomic_write(&self.lib.path(rel), clean.as_bytes())?;
+        self.invalidate_index();
+        Ok(true)
+    }
+
+    /// Local files the secret guard is keeping out of the repository.
+    pub fn held_back(&self) -> Result<Vec<String>> {
+        sync::held_back(&self.lib)
+    }
+
     /// Whether any AI job is waiting to run.
     pub fn has_pending_jobs(&self) -> Result<bool> {
         self.queue().has_pending()

@@ -135,6 +135,12 @@ pub fn validate(
             _ => {}
         }
         let Some(new) = content else { continue };
+        for h in crate::secrets::scan(new) {
+            r.errors.push(format!(
+                "{path}: contains what looks like a {} — never copy keys, tokens or passwords into the wiki; leave it out.",
+                h.kind
+            ));
+        }
         if !path.starts_with("vaults/") || !path.ends_with(".md") {
             r.errors.push(format!(
                 "{path}: only Markdown pages under vaults/ may be written."

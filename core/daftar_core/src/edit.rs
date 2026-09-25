@@ -48,6 +48,12 @@ pub fn save_page(
             committed: false,
         });
     }
+    if let Some(h) = crate::secrets::scan(&text).first() {
+        return Err(Error::invalid(format!(
+            "This page contains what looks like a {}. Keys and tokens never go into the repository; redact it first.",
+            h.kind
+        )));
+    }
     if text.starts_with("---") && wiki::parse(path, &text).is_err() {
         return Err(Error::invalid(
             "The properties at the top of the page can't be read; check the lines between ---.",

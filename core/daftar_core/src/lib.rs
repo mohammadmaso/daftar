@@ -33,6 +33,7 @@ pub mod review;
 pub mod review_ops;
 pub mod runtime;
 pub mod search;
+pub mod secrets;
 pub mod session;
 pub mod sync;
 pub mod testutil;

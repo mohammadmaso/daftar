@@ -204,6 +204,13 @@ pub fn commit(
         })
         .cloned()
         .collect();
+    if let Some(p) = untracked.iter().find(|p| {
+        std::fs::read_to_string(lib.path(p)).is_ok_and(|t| !crate::secrets::scan(&t).is_empty())
+    }) {
+        return Err(crate::Error::invalid(format!(
+            "{p} looks like it contains a key or token; redact it before it is filed."
+        )));
+    }
     if !untracked.is_empty() {
         let mut with_assets = untracked.clone();
         for p in &untracked {
