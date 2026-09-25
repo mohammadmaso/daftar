@@ -12,6 +12,11 @@ import io.flutter.plugin.common.MethodChannel
  * wait here until the Dart side takes them, so a share that cold-starts the app is not lost.
  */
 class MainActivity : FlutterActivity() {
+    companion object {
+        /** Sent by the home-screen widget: start recording as soon as Today is up. */
+        const val ACTION_RECORD = "dev.daftar.daftar.RECORD"
+    }
+
     private val pending = mutableListOf<Map<String, Any>>()
     private var channel: MethodChannel? = null
 
@@ -37,7 +42,7 @@ class MainActivity : FlutterActivity() {
         if (collect(intent)) channel?.invokeMethod("arrived", null)
     }
 
-    /** Queues the intent's text and images; returns whether anything was shared. */
+    /** Queues the intent's text, images or record request; returns whether anything arrived. */
     private fun collect(intent: Intent?): Boolean {
         if (intent == null) return false
         val before = pending.size
@@ -51,6 +56,7 @@ class MainActivity : FlutterActivity() {
                 stream(intent)?.let { image(it) }
             }
             Intent.ACTION_SEND_MULTIPLE -> streams(intent).forEach { image(it) }
+            ACTION_RECORD -> pending.add(mapOf("record" to true))
         }
         // Handled once: a configuration change must not file the same share again.
         if (pending.size > before) intent.action = Intent.ACTION_MAIN

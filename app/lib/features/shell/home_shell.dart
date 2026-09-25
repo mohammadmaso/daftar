@@ -66,7 +66,9 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   /// Whatever was shared into the app becomes raw captures, filed like any other (§8.1).
   Future<void> _fileShares() async {
-    final items = await ref.read(incomingSharesProvider).take();
+    final all = await ref.read(incomingSharesProvider).take();
+    if (all.any((i) => i.record) && mounted) _capture(CaptureRequest.record);
+    final items = all.where((i) => !i.record).toList();
     if (items.isEmpty) return;
     final lib = await ref.read(libraryProvider.future);
     if (lib == null) return;

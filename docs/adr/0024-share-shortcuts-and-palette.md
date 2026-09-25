@@ -24,6 +24,14 @@ deliver there anyway, because iOS needs a Share Extension target.
 shared with the app. That can't be done or verified without Xcode, so it is documented in
 `docs/packaging.md` and listed as not yet done in PROGRESS.md.
 
+**Home-screen widget, Android:** a native `AppWidgetProvider` with one "Record" button, built from
+RemoteViews and the app's own accent colours and stroke microphone. It sends
+`dev.daftar.daftar.RECORD` to `MainActivity`, which reaches Dart over the same `daftar/share`
+channel. A single static button needs no plugin, so `home_widget` 0.10.0 isn't used. Its label is a
+native string resource (`values/`, `values-fa/`), because the launcher renders it without Flutter.
+The iOS widget needs a WidgetKit extension target in Xcode; it is documented like the Share
+Extension.
+
 **Keyboard:** Ctrl/Cmd+K opens the palette, Ctrl/Cmd+N opens a new note, and Ctrl/Cmd+Shift+N
 records. These work while the app has focus.
 

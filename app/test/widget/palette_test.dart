@@ -31,6 +31,7 @@ Finder get paletteField => find.descendant(
 void main() {
   quickActionTests();
   shareTests();
+  widgetTests();
 
   testWidgets('Ctrl+K finds a page and opens it', (tester) async {
     final lib = FakeLibrary()
@@ -172,5 +173,17 @@ void shareTests() {
     expect(find.text('Saved what you shared'), findsWidgets);
     await tester.pump(const Duration(seconds: 4));
     await tester.pumpAndSettle();
+  });
+}
+
+void widgetTests() {
+  testWidgets('the home-screen Record widget opens straight into recording', (
+    tester,
+  ) async {
+    final recorder = FakeRecorder();
+    final shares = FakeShares()..pending.add(const SharedItem.record());
+    await pumpApp(tester, recorder: recorder, shares: shares);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(recorder.recording, isTrue);
   });
 }
