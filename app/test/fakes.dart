@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:daftar/core/library_api.dart';
 import 'package:daftar/core/recorder.dart';
+import 'package:daftar/core/voice_io.dart';
 
 class FakeLibrary implements LibraryApi {
   FakeLibrary({List<Capture>? captures, this.hasRemote = true})
@@ -364,6 +365,74 @@ class FakeLibrary implements LibraryApi {
     cards.removeWhere((c) => c.id == cardId);
   }
 
+  // ── Ask ──
+  final questions = <(String, AskScopeDto, List<AskTurn>, bool)>[];
+  List<String> nextDeltas = const [
+    'Sara is your ',
+    'cousin ([[vaults/life/people/sara|Sara]]).',
+  ];
+  AskAnswer nextAnswer = AskAnswer(
+    text: 'Sara is your cousin ([[vaults/life/people/sara|Sara]]).',
+    citations: const [
+      AnswerCitation(
+        target: 'vaults/life/people/sara',
+        label: 'Sara',
+        path: 'vaults/life/people/sara.md',
+      ),
+    ],
+    needsHelp: false,
+    model: 'p1/claude-sonnet-5',
+    inputTokens: BigInt.zero,
+    outputTokens: BigInt.zero,
+  );
+  String? nextFailure;
+  final savedAnswers = <(String, String)>[];
+  final drafts = <(String, String, String)>[];
+
+  @override
+  Stream<AskEvent> ask(
+    List<AskTurn> history,
+    String question,
+    AskScopeDto scope,
+    List<ApiKey> keys, {
+    AskImage? image,
+  }) async* {
+    questions.add((question, scope, history, image != null));
+    for (final d in nextDeltas) {
+      yield AskEvent(kind: AskEventKind.delta, text: d);
+    }
+    if (nextFailure != null) {
+      yield AskEvent(kind: AskEventKind.failed, text: nextFailure);
+    } else {
+      yield AskEvent(kind: AskEventKind.done, answer: nextAnswer);
+    }
+  }
+
+  @override
+  Future<String> saveAnswer(
+    String question,
+    String answer,
+    AskScopeDto scope,
+  ) async {
+    savedAnswers.add((question, answer));
+    return '01ANSWER';
+  }
+
+  @override
+  Future<String> saveDraft(String story, String title, String text) async {
+    drafts.add((story, title, text));
+    return 'vaults/stories/$story/drafts/x.md';
+  }
+
+  // ── Voice ──
+  FakeVoice? voice;
+
+  @override
+  Future<VoiceConversation> startVoice(
+    VoiceOptions options,
+    List<ApiKey> keys,
+  ) async => voice = FakeVoice();
+
   @override
   Future<List<Vault>> vaults() async => const [
     Vault(id: 'life', titleEn: 'Life', titleFa: 'زندگی', fiction: false),
@@ -475,8 +544,112 @@ class FakeProviderApi implements ProviderApi {
   };
 
   @override
+  List<Helpline> helplines(String country) => [
+    if (country == 'IR')
+      const Helpline(
+        nameEn: 'Social emergency',
+        nameFa: 'اورژانس اجتماعی',
+        phone: '123',
+        url: '',
+      ),
+    const Helpline(
+      nameEn: 'Find a helpline in your country',
+      nameFa: 'یافتن خط کمک',
+      phone: '',
+      url: 'https://findahelpline.com',
+    ),
+  ];
+
+  @override
   CapabilityWarning? capabilityWarning(ModelRole role, String model) =>
       role == ModelRole.vision && model.contains('whisper')
       ? CapabilityWarning.noVision
       : null;
+}
+
+class FakeVoice implements VoiceConversation {
+  final _events = StreamController<VoiceEventDto>.broadcast();
+  final fed = <int>[];
+  bool muted = false;
+  bool ended = false;
+  int playbackDone = 0;
+
+  void emit(
+    VoiceEventKind kind, {
+    VoiceStateDto? state,
+    String? text,
+    Uint8List? bytes,
+  }) => _events.add(
+    VoiceEventDto(
+      kind: kind,
+      state: state,
+      text: text,
+      seq: BigInt.zero,
+      lang: 'en',
+      bytes: bytes,
+    ),
+  );
+
+  @override
+  Stream<VoiceEventDto> get events => _events.stream;
+
+  @override
+  Future<void> feed(Int16List pcm) async => fed.add(pcm.length);
+
+  @override
+  Future<void> playbackFinished() async => playbackDone++;
+
+  @override
+  Future<void> setMuted(bool m) async => muted = m;
+
+  @override
+  Future<String?> end() async {
+    ended = true;
+    await _events.close();
+    return '01TRANSCRIPT';
+  }
+}
+
+class FakeMic implements VoiceMic {
+  final controller = StreamController<Uint8List>.broadcast();
+  bool permission = true;
+  bool running = false;
+
+  @override
+  Future<bool> hasPermission() async => permission;
+
+  @override
+  Future<Stream<Uint8List>> start({int sampleRate = 16000}) async {
+    running = true;
+    return controller.stream;
+  }
+
+  @override
+  Future<void> stop() async => running = false;
+}
+
+class FakePlayer implements VoicePlayer {
+  final played = <Uint8List>[];
+  int stops = 0;
+  final _idle = StreamController<void>.broadcast();
+
+  void finish() => _idle.add(null);
+
+  @override
+  void enqueue(Uint8List bytes) => played.add(bytes);
+
+  @override
+  Future<void> stop() async => stops++;
+
+  @override
+  Stream<void> get idle => _idle.stream;
+
+  @override
+  Future<void> dispose() => _idle.close();
+}
+
+class FakeAwake implements ScreenAwake {
+  bool on = false;
+  @override
+  Future<void> set(bool v) async => on = v;
 }

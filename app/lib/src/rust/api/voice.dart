@@ -13,6 +13,9 @@ abstract class VoiceHandle implements RustOpaqueInterface {
   /// Ends the conversation; returns the id of the saved transcript capture, if any.
   Future<String?> end();
 
+  /// The conversation's events, until it ends. Can be listened to once.
+  Stream<VoiceEventDto> events();
+
   /// Microphone PCM, mono 16-bit at the session's sample rate.
   Future<void> feed({required List<int> pcm});
 

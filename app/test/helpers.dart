@@ -5,6 +5,7 @@ import 'package:daftar/core/credentials.dart';
 import 'package:daftar/core/job_runner.dart';
 import 'package:daftar/core/library_state.dart';
 import 'package:daftar/core/recorder.dart';
+import 'package:daftar/core/voice_io.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -35,6 +36,9 @@ Future<ProviderContainer> pumpApp(
   FakeRecorder? recorder,
   FakeProviderApi? providerApi,
   MemoryCredentialStore? credentials,
+  FakeMic? mic,
+  FakePlayer? player,
+  FakeAwake? awake,
   String? location,
 }) async {
   SharedPreferences.setMockInitialValues(prefs);
@@ -58,6 +62,9 @@ Future<ProviderContainer> pumpApp(
         credentials ?? MemoryCredentialStore(),
       ),
       providerApiProvider.overrideWithValue(providerApi ?? FakeProviderApi()),
+      voiceMicProvider.overrideWithValue(mic ?? FakeMic()),
+      voicePlayerProvider.overrideWithValue(player ?? FakePlayer()),
+      screenAwakeProvider.overrideWithValue(awake ?? FakeAwake()),
       voiceRecorderProvider.overrideWithValue(recorder ?? FakeRecorder()),
       clockProvider.overrideWithValue(() => fixedNow),
     ],

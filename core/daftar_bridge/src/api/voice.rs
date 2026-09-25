@@ -65,6 +65,7 @@ pub struct VoiceOptions {
 #[frb(opaque)]
 pub struct VoiceHandle {
     inner: Arc<Mutex<Option<VoiceSession>>>,
+    events: Mutex<Option<tokio::sync::mpsc::UnboundedReceiver<VoiceEvent>>>,
 }
 
 fn dto(e: VoiceEvent) -> VoiceEventDto {
@@ -99,12 +100,11 @@ fn dto(e: VoiceEvent) -> VoiceEventDto {
 }
 
 impl LibraryHandle {
-    /// Starts a voice conversation; events arrive on `sink` until `VoiceHandle::end`.
+    /// Starts a voice conversation; listen with `VoiceHandle::events`.
     pub async fn start_voice(
         &self,
         options: VoiceOptions,
         api_keys: Vec<ApiKey>,
-        sink: StreamSink<VoiceEventDto>,
     ) -> anyhow::Result<VoiceHandle> {
         let session = self.session_arc();
         let keys = api_keys
@@ -127,21 +127,29 @@ impl LibraryHandle {
             },
             save_transcript: options.save_transcript,
         };
-        let (voice, mut rx) = VoiceSession::start(session, rt, cfg);
-        tokio::spawn(async move {
-            while let Some(e) = rx.recv().await {
-                if sink.add(dto(e)).is_err() {
-                    break;
-                }
-            }
-        });
+        let (voice, rx) = VoiceSession::start(session, rt, cfg);
         Ok(VoiceHandle {
             inner: Arc::new(Mutex::new(Some(voice))),
+            events: Mutex::new(Some(rx)),
         })
     }
 }
 
 impl VoiceHandle {
+    /// The conversation's events, until it ends. Can be listened to once.
+    pub async fn events(&self, sink: StreamSink<VoiceEventDto>) -> anyhow::Result<()> {
+        let rx = self.events.lock().unwrap_or_else(|p| p.into_inner()).take();
+        let Some(mut rx) = rx else {
+            return Err(anyhow::anyhow!("Already listening to this conversation."));
+        };
+        while let Some(e) = rx.recv().await {
+            if sink.add(dto(e)).is_err() {
+                break;
+            }
+        }
+        Ok(())
+    }
+
     /// Microphone PCM, mono 16-bit at the session's sample rate.
     pub fn feed(&self, pcm: Vec<i16>) {
         if let Some(v) = self

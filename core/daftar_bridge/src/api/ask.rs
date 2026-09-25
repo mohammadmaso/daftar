@@ -169,3 +169,24 @@ impl LibraryHandle {
             .map_err(|e| anyhow::anyhow!(e.to_string()))
     }
 }
+
+pub struct Helpline {
+    pub name_en: String,
+    pub name_fa: String,
+    pub phone: String,
+    pub url: String,
+}
+
+/// Help to show on the "Talk to someone" card (§4.7), for an ISO country code ("" = international).
+#[flutter_rust_bridge::frb(sync)]
+pub fn helplines(country: String) -> Vec<Helpline> {
+    daftar_core::wellbeing::helplines(&country)
+        .into_iter()
+        .map(|h| Helpline {
+            name_en: h.name_en,
+            name_fa: h.name_fa,
+            phone: h.phone,
+            url: h.url,
+        })
+        .collect()
+}

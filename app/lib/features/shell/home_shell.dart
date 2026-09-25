@@ -78,6 +78,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final destinations = [
       (DIcons.today, l.todayTitle, '/'),
       (DIcons.wiki, l.wikiTitle, '/wiki'),
+      (DIcons.ask, l.askTitle, '/ask'),
     ];
     bool isAt(String path) =>
         path == '/' ? widget.location == '/' : widget.location.startsWith(path);
@@ -85,6 +86,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       final showBar =
           widget.location == '/' ||
           widget.location == '/wiki' ||
+          widget.location == '/ask' ||
           widget.location == '/wiki/page';
       if (!showBar) return widget.child;
       return Column(

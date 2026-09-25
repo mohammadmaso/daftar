@@ -202,6 +202,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   GraphNode dco_decode_graph_node(dynamic raw);
 
   @protected
+  Helpline dco_decode_helpline(dynamic raw);
+
+  @protected
   HttpHeader dco_decode_http_header(dynamic raw);
 
   @protected
@@ -248,6 +251,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<GraphNode> dco_decode_list_graph_node(dynamic raw);
+
+  @protected
+  List<Helpline> dco_decode_list_helpline(dynamic raw);
 
   @protected
   List<HttpHeader> dco_decode_list_http_header(dynamic raw);
@@ -604,6 +610,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   GraphNode sse_decode_graph_node(SseDeserializer deserializer);
 
   @protected
+  Helpline sse_decode_helpline(SseDeserializer deserializer);
+
+  @protected
   HttpHeader sse_decode_http_header(SseDeserializer deserializer);
 
   @protected
@@ -652,6 +661,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<GraphNode> sse_decode_list_graph_node(SseDeserializer deserializer);
+
+  @protected
+  List<Helpline> sse_decode_list_helpline(SseDeserializer deserializer);
 
   @protected
   List<HttpHeader> sse_decode_list_http_header(SseDeserializer deserializer);
@@ -1056,6 +1068,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_graph_node(GraphNode self, SseSerializer serializer);
 
   @protected
+  void sse_encode_helpline(Helpline self, SseSerializer serializer);
+
+  @protected
   void sse_encode_http_header(HttpHeader self, SseSerializer serializer);
 
   @protected
@@ -1117,6 +1132,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     List<GraphNode> self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_list_helpline(List<Helpline> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_http_header(

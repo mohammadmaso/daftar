@@ -13,13 +13,29 @@ void main() {
       final prefs = prefsFor(language: lang, theme: theme);
 
       testWidgets('operation · $tag · phone', (tester) async {
-        await pumpApp(tester, prefs: prefs, setup: FakeSetup(library: activityLibrary()), location: '/activity/op?id=01OPB');
-        await expectLater(find.byType(DaftarApp), matchesGoldenFile('goldens/operation_${tag}_phone.png'));
+        await pumpApp(
+          tester,
+          prefs: prefs,
+          setup: FakeSetup(library: activityLibrary()),
+          location: '/activity/op?id=01OPB',
+        );
+        await expectLater(
+          find.byType(DaftarApp),
+          matchesGoldenFile('goldens/operation_${tag}_phone.png'),
+        );
       });
 
       testWidgets('review · $tag · phone', (tester) async {
-        await pumpApp(tester, prefs: prefs, setup: FakeSetup(library: activityLibrary()), location: '/review');
-        await expectLater(find.byType(DaftarApp), matchesGoldenFile('goldens/review_${tag}_phone.png'));
+        await pumpApp(
+          tester,
+          prefs: prefs,
+          setup: FakeSetup(library: activityLibrary()),
+          location: '/review',
+        );
+        await expectLater(
+          find.byType(DaftarApp),
+          matchesGoldenFile('goldens/review_${tag}_phone.png'),
+        );
       });
     }
   }

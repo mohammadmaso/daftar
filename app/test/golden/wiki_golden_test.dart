@@ -23,7 +23,10 @@ void main() {
           location: '/wiki/page?path=${Uri.encodeQueryComponent(journal)}',
           size: const Size(390, 1500),
         );
-        await expectLater(find.byType(DaftarApp), matchesGoldenFile('goldens/page_bidi_${tag}_phone.png'));
+        await expectLater(
+          find.byType(DaftarApp),
+          matchesGoldenFile('goldens/page_bidi_${tag}_phone.png'),
+        );
       });
 
       testWidgets('page · claims · $tag · phone', (tester) async {
@@ -31,14 +34,26 @@ void main() {
           tester,
           prefs: prefs,
           setup: FakeSetup(library: wikiLibrary()),
-          location: '/wiki/page?path=${Uri.encodeQueryComponent('vaults/health/profile.md')}',
+          location:
+              '/wiki/page?path=${Uri.encodeQueryComponent('vaults/health/profile.md')}',
         );
-        await expectLater(find.byType(DaftarApp), matchesGoldenFile('goldens/page_claims_${tag}_phone.png'));
+        await expectLater(
+          find.byType(DaftarApp),
+          matchesGoldenFile('goldens/page_claims_${tag}_phone.png'),
+        );
       });
 
       testWidgets('wiki · $tag · phone', (tester) async {
-        await pumpApp(tester, prefs: prefs, setup: FakeSetup(library: wikiLibrary()), location: '/wiki');
-        await expectLater(find.byType(DaftarApp), matchesGoldenFile('goldens/wiki_${tag}_phone.png'));
+        await pumpApp(
+          tester,
+          prefs: prefs,
+          setup: FakeSetup(library: wikiLibrary()),
+          location: '/wiki',
+        );
+        await expectLater(
+          find.byType(DaftarApp),
+          matchesGoldenFile('goldens/wiki_${tag}_phone.png'),
+        );
       });
 
       testWidgets('wiki · $tag · desktop', (tester) async {
@@ -49,7 +64,10 @@ void main() {
           setup: FakeSetup(library: wikiLibrary()),
           location: '/wiki?path=${Uri.encodeQueryComponent(journal)}',
         );
-        await expectLater(find.byType(DaftarApp), matchesGoldenFile('goldens/wiki_${tag}_desktop.png'));
+        await expectLater(
+          find.byType(DaftarApp),
+          matchesGoldenFile('goldens/wiki_${tag}_desktop.png'),
+        );
       });
     }
   }

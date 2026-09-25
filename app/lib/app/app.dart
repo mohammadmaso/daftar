@@ -8,12 +8,14 @@ import '../core/library_state.dart';
 import '../design/theme.dart';
 import '../design/tokens.dart';
 import '../features/activity/activity_screen.dart';
+import '../features/ask/ask_screen.dart';
 import '../features/capture/today_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/review/review_screen.dart';
 import '../features/settings/gallery_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/shell/home_shell.dart';
+import '../features/voice/voice_screen.dart';
 import '../features/wiki/editor_screen.dart';
 import '../features/wiki/page_screen.dart';
 import '../features/wiki/wiki_screen.dart';
@@ -40,6 +42,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/start', builder: (_, _) => const _Start()),
       GoRoute(path: '/setup', builder: (_, _) => const OnboardingScreen()),
+      // Voice mode is full-screen (§8.4), outside the tab shell.
+      GoRoute(path: '/voice', builder: (_, _) => const VoiceScreen()),
       ShellRoute(
         builder: (context, state, child) =>
             HomeShell(location: state.matchedLocation, child: child),
@@ -68,6 +72,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          GoRoute(path: '/ask', builder: (_, _) => const AskScreen()),
           GoRoute(
             path: '/review',
             builder: (context, _) => ReviewScreen(

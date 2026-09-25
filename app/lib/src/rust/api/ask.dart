@@ -9,6 +9,10 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 // These functions are ignored because they are not marked as `pub`: `event`, `scope`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`
 
+/// Help to show on the "Talk to someone" card (§4.7), for an ISO country code ("" = international).
+List<Helpline> helplines({required String country}) =>
+    RustLib.instance.api.crateApiAskHelplines(country: country);
+
 class AnswerCitation {
   final String target;
   final String? label;
@@ -159,4 +163,32 @@ class AskTurn {
           runtimeType == other.runtimeType &&
           question == other.question &&
           answer == other.answer;
+}
+
+class Helpline {
+  final String nameEn;
+  final String nameFa;
+  final String phone;
+  final String url;
+
+  const Helpline({
+    required this.nameEn,
+    required this.nameFa,
+    required this.phone,
+    required this.url,
+  });
+
+  @override
+  int get hashCode =>
+      nameEn.hashCode ^ nameFa.hashCode ^ phone.hashCode ^ url.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Helpline &&
+          runtimeType == other.runtimeType &&
+          nameEn == other.nameEn &&
+          nameFa == other.nameFa &&
+          phone == other.phone &&
+          url == other.url;
 }

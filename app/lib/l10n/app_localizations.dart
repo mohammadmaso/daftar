@@ -1440,6 +1440,180 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'Suggested fix: {fix}'**
   String fixSuggestion(String fix);
+
+  /// No description provided for @askTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask'**
+  String get askTitle;
+
+  /// No description provided for @askHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about your notes…'**
+  String get askHint;
+
+  /// No description provided for @askScopeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything'**
+  String get askScopeAll;
+
+  /// No description provided for @storyScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Story: {name}'**
+  String storyScope(String name);
+
+  /// No description provided for @saveToWiki.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to wiki'**
+  String get saveToWiki;
+
+  /// No description provided for @savedToWiki.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved; it will be filed.'**
+  String get savedToWiki;
+
+  /// No description provided for @saveDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as draft'**
+  String get saveDraft;
+
+  /// No description provided for @draftSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft saved.'**
+  String get draftSaved;
+
+  /// No description provided for @attachPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach a photo'**
+  String get attachPhoto;
+
+  /// No description provided for @removePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the photo'**
+  String get removePhoto;
+
+  /// No description provided for @send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get send;
+
+  /// No description provided for @talkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Talk'**
+  String get talkMode;
+
+  /// No description provided for @thinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading your wiki…'**
+  String get thinking;
+
+  /// No description provided for @askEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask anything about what you have captured.'**
+  String get askEmpty;
+
+  /// No description provided for @askReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading: {page}'**
+  String askReading(String page);
+
+  /// No description provided for @talkToSomeone.
+  ///
+  /// In en, this message translates to:
+  /// **'Talk to someone'**
+  String get talkToSomeone;
+
+  /// No description provided for @talkToSomeoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have to carry this alone. Someone trained can listen right now.'**
+  String get talkToSomeoneBody;
+
+  /// No description provided for @newConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'New conversation'**
+  String get newConversation;
+
+  /// No description provided for @voiceListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening'**
+  String get voiceListening;
+
+  /// No description provided for @voiceThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking'**
+  String get voiceThinking;
+
+  /// No description provided for @voiceSpeaking.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaking'**
+  String get voiceSpeaking;
+
+  /// No description provided for @voiceMuted.
+  ///
+  /// In en, this message translates to:
+  /// **'Muted'**
+  String get voiceMuted;
+
+  /// No description provided for @mute.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute'**
+  String get mute;
+
+  /// No description provided for @unmute.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute'**
+  String get unmute;
+
+  /// No description provided for @endConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get endConversation;
+
+  /// No description provided for @captions.
+  ///
+  /// In en, this message translates to:
+  /// **'Captions'**
+  String get captions;
+
+  /// No description provided for @voiceNoted.
+  ///
+  /// In en, this message translates to:
+  /// **'Noted.'**
+  String get voiceNoted;
+
+  /// No description provided for @voiceSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation saved; it will be filed.'**
+  String get voiceSaved;
+
+  /// No description provided for @voiceNeedsMic.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice mode needs the microphone.'**
+  String get voiceNeedsMic;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

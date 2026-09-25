@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 
 import '../src/rust/api/ai.dart' as ai;
+import '../src/rust/api/ask.dart' as ak;
 import '../src/rust/api/audit.dart' as au;
 import '../src/rust/api/library.dart' as rs;
+import '../src/rust/api/voice.dart' as vo;
 import '../src/rust/api/wiki.dart' as wk;
 
 export '../src/rust/api/ai.dart'
@@ -20,6 +22,17 @@ export '../src/rust/api/ai.dart'
         ProviderKindDto,
         RoleSetting,
         RunSummary;
+export '../src/rust/api/ask.dart'
+    show
+        AnswerCitation,
+        AskAnswer,
+        AskEvent,
+        AskEventKind,
+        AskImage,
+        AskScopeDto,
+        AskScopeKind,
+        AskTurn,
+        Helpline;
 export '../src/rust/api/audit.dart'
     show
         CardKind,
@@ -47,6 +60,8 @@ export '../src/rust/api/library.dart'
         SyncResult,
         SyncState,
         Vault;
+export '../src/rust/api/voice.dart'
+    show VoiceEventDto, VoiceEventKind, VoiceOptions, VoiceStateDto;
 export '../src/rust/api/wiki.dart'
     show
         FolderEntry,
@@ -113,6 +128,58 @@ abstract class LibraryApi {
     au.ReviewAction action, {
     String? editedText,
   });
+
+  // Ask (§4.3).
+  Stream<ak.AskEvent> ask(
+    List<ak.AskTurn> history,
+    String question,
+    ak.AskScopeDto scope,
+    List<ai.ApiKey> keys, {
+    ak.AskImage? image,
+  });
+  Future<String> saveAnswer(
+    String question,
+    String answer,
+    ak.AskScopeDto scope,
+  );
+  Future<String> saveDraft(String story, String title, String text);
+
+  // Voice mode (§8.4).
+  Future<VoiceConversation> startVoice(
+    vo.VoiceOptions options,
+    List<ai.ApiKey> keys,
+  );
+}
+
+/// A running voice conversation: microphone PCM in, events (captions, audio, state) out.
+abstract class VoiceConversation {
+  Stream<vo.VoiceEventDto> get events;
+  Future<void> feed(Int16List pcm);
+  Future<void> playbackFinished();
+  Future<void> setMuted(bool muted);
+
+  /// Ends it; returns the id of the saved transcript capture, if any.
+  Future<String?> end();
+}
+
+class _RustVoice implements VoiceConversation {
+  _RustVoice(this._h) : events = _h.events().asBroadcastStream();
+  final vo.VoiceHandle _h;
+
+  @override
+  final Stream<vo.VoiceEventDto> events;
+
+  @override
+  Future<void> feed(Int16List pcm) => _h.feed(pcm: pcm);
+
+  @override
+  Future<void> playbackFinished() => _h.playbackFinished();
+
+  @override
+  Future<void> setMuted(bool muted) => _h.setMuted(muted: muted);
+
+  @override
+  Future<String?> end() => _h.end();
 }
 
 /// Provider calls that need no open library.
@@ -120,6 +187,7 @@ abstract class ProviderApi {
   Future<List<String>> listModels(ai.AiProvider provider, String? apiKey);
   String defaultBaseUrl(ai.ProviderKindDto kind);
   ai.CapabilityWarning? capabilityWarning(ai.ModelRole role, String model);
+  List<ak.Helpline> helplines(String country);
 }
 
 class RustProviderApi implements ProviderApi {
@@ -136,6 +204,9 @@ class RustProviderApi implements ProviderApi {
   @override
   ai.CapabilityWarning? capabilityWarning(ai.ModelRole role, String model) =>
       ai.capabilityWarning(role: role, model: model);
+
+  @override
+  List<ak.Helpline> helplines(String country) => ak.helplines(country: country);
 }
 
 /// Library creation and lookup (before a library is open).
@@ -332,4 +403,36 @@ class RustLibraryApi implements LibraryApi {
     String? editedText,
   }) =>
       _h.resolveReview(cardId: cardId, action: action, editedText: editedText);
+
+  @override
+  Stream<ak.AskEvent> ask(
+    List<ak.AskTurn> history,
+    String question,
+    ak.AskScopeDto scope,
+    List<ai.ApiKey> keys, {
+    ak.AskImage? image,
+  }) => _h.ask(
+    history: history,
+    question: question,
+    image: image,
+    scopeDto: scope,
+    apiKeys: keys,
+  );
+
+  @override
+  Future<String> saveAnswer(
+    String question,
+    String answer,
+    ak.AskScopeDto scope,
+  ) => _h.saveAnswer(question: question, answer: answer, scopeDto: scope);
+
+  @override
+  Future<String> saveDraft(String story, String title, String text) =>
+      _h.saveDraft(story: story, title: title, text: text);
+
+  @override
+  Future<VoiceConversation> startVoice(
+    vo.VoiceOptions options,
+    List<ai.ApiKey> keys,
+  ) async => _RustVoice(await _h.startVoice(options: options, apiKeys: keys));
 }

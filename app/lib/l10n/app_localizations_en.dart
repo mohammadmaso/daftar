@@ -829,4 +829,96 @@ class L10nEn extends L10n {
   String fixSuggestion(String fix) {
     return 'Suggested fix: $fix';
   }
+
+  @override
+  String get askTitle => 'Ask';
+
+  @override
+  String get askHint => 'Ask about your notes…';
+
+  @override
+  String get askScopeAll => 'Everything';
+
+  @override
+  String storyScope(String name) {
+    return 'Story: $name';
+  }
+
+  @override
+  String get saveToWiki => 'Save to wiki';
+
+  @override
+  String get savedToWiki => 'Saved; it will be filed.';
+
+  @override
+  String get saveDraft => 'Save as draft';
+
+  @override
+  String get draftSaved => 'Draft saved.';
+
+  @override
+  String get attachPhoto => 'Attach a photo';
+
+  @override
+  String get removePhoto => 'Remove the photo';
+
+  @override
+  String get send => 'Send';
+
+  @override
+  String get talkMode => 'Talk';
+
+  @override
+  String get thinking => 'Reading your wiki…';
+
+  @override
+  String get askEmpty => 'Ask anything about what you have captured.';
+
+  @override
+  String askReading(String page) {
+    return 'Reading: $page';
+  }
+
+  @override
+  String get talkToSomeone => 'Talk to someone';
+
+  @override
+  String get talkToSomeoneBody =>
+      'You don\'t have to carry this alone. Someone trained can listen right now.';
+
+  @override
+  String get newConversation => 'New conversation';
+
+  @override
+  String get voiceListening => 'Listening';
+
+  @override
+  String get voiceThinking => 'Thinking';
+
+  @override
+  String get voiceSpeaking => 'Speaking';
+
+  @override
+  String get voiceMuted => 'Muted';
+
+  @override
+  String get mute => 'Mute';
+
+  @override
+  String get unmute => 'Unmute';
+
+  @override
+  String get endConversation => 'End';
+
+  @override
+  String get captions => 'Captions';
+
+  @override
+  String get voiceNoted => 'Noted.';
+
+  @override
+  String get voiceSaved => 'Conversation saved; it will be filed.';
+
+  @override
+  String get voiceNeedsMic => 'Voice mode needs the microphone.';
 }

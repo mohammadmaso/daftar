@@ -7,6 +7,7 @@ environment:
   sdk: ^3.11.0
 
 dependencies:
+  audioplayers: ^6.7.1
   daftar_bridge:
     path: rust_builder
   flutter:
@@ -24,6 +25,7 @@ dependencies:
   path_provider_foundation: ">=2.4.0 <2.5.0"
   record: ^6.2.1
   shared_preferences: ^2.5.5
+  wakelock_plus: ^1.7.0
 
 dev_dependencies:
   flutter_test:

@@ -824,4 +824,96 @@ class L10nFa extends L10n {
   String fixSuggestion(String fix) {
     return 'پیشنهاد: $fix';
   }
+
+  @override
+  String get askTitle => 'بپرس';
+
+  @override
+  String get askHint => 'از یادداشت‌هایت بپرس…';
+
+  @override
+  String get askScopeAll => 'همه‌چیز';
+
+  @override
+  String storyScope(String name) {
+    return 'داستان: $name';
+  }
+
+  @override
+  String get saveToWiki => 'ذخیره در ویکی';
+
+  @override
+  String get savedToWiki => 'ذخیره شد؛ بایگانی می‌شود.';
+
+  @override
+  String get saveDraft => 'ذخیره به‌عنوان پیش‌نویس';
+
+  @override
+  String get draftSaved => 'پیش‌نویس ذخیره شد.';
+
+  @override
+  String get attachPhoto => 'پیوست عکس';
+
+  @override
+  String get removePhoto => 'حذف عکس';
+
+  @override
+  String get send => 'بفرست';
+
+  @override
+  String get talkMode => 'گفت‌وگو';
+
+  @override
+  String get thinking => 'در حال خواندن ویکی…';
+
+  @override
+  String get askEmpty => 'هر چیزی درباره‌ی آنچه ثبت کرده‌ای بپرس.';
+
+  @override
+  String askReading(String page) {
+    return 'در حال خواندن: $page';
+  }
+
+  @override
+  String get talkToSomeone => 'با کسی حرف بزن';
+
+  @override
+  String get talkToSomeoneBody =>
+      'لازم نیست این را تنها به دوش بکشی. کسی که آموزش دیده همین حالا می‌تواند گوش کند.';
+
+  @override
+  String get newConversation => 'گفت‌وگوی تازه';
+
+  @override
+  String get voiceListening => 'گوش می‌دهم';
+
+  @override
+  String get voiceThinking => 'فکر می‌کنم';
+
+  @override
+  String get voiceSpeaking => 'صحبت می‌کنم';
+
+  @override
+  String get voiceMuted => 'بی‌صدا';
+
+  @override
+  String get mute => 'بی‌صدا کن';
+
+  @override
+  String get unmute => 'صدا را باز کن';
+
+  @override
+  String get endConversation => 'پایان';
+
+  @override
+  String get captions => 'زیرنویس';
+
+  @override
+  String get voiceNoted => 'یادداشت شد.';
+
+  @override
+  String get voiceSaved => 'گفت‌وگو ذخیره شد؛ بایگانی می‌شود.';
+
+  @override
+  String get voiceNeedsMic => 'حالت صوتی به میکروفون نیاز دارد.';
 }

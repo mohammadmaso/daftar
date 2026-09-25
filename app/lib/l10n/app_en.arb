@@ -412,5 +412,48 @@
         "type": "String"
       }
     }
-  }
+  },
+  "askTitle": "Ask",
+  "askHint": "Ask about your notes…",
+  "askScopeAll": "Everything",
+  "storyScope": "Story: {name}",
+  "@storyScope": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "saveToWiki": "Save to wiki",
+  "savedToWiki": "Saved; it will be filed.",
+  "saveDraft": "Save as draft",
+  "draftSaved": "Draft saved.",
+  "attachPhoto": "Attach a photo",
+  "removePhoto": "Remove the photo",
+  "send": "Send",
+  "talkMode": "Talk",
+  "thinking": "Reading your wiki…",
+  "askEmpty": "Ask anything about what you have captured.",
+  "askReading": "Reading: {page}",
+  "@askReading": {
+    "placeholders": {
+      "page": {
+        "type": "String"
+      }
+    }
+  },
+  "talkToSomeone": "Talk to someone",
+  "talkToSomeoneBody": "You don't have to carry this alone. Someone trained can listen right now.",
+  "newConversation": "New conversation",
+  "voiceListening": "Listening",
+  "voiceThinking": "Thinking",
+  "voiceSpeaking": "Speaking",
+  "voiceMuted": "Muted",
+  "mute": "Mute",
+  "unmute": "Unmute",
+  "endConversation": "End",
+  "captions": "Captions",
+  "voiceNoted": "Noted.",
+  "voiceSaved": "Conversation saved; it will be filed.",
+  "voiceNeedsMic": "Voice mode needs the microphone."
 }

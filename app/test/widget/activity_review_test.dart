@@ -7,7 +7,9 @@ import '../fakes.dart';
 import '../helpers.dart';
 
 void main() {
-  testWidgets('activity lists ops and an op can be undone, moved or re-run', (tester) async {
+  testWidgets('activity lists ops and an op can be undone, moved or re-run', (
+    tester,
+  ) async {
     final lib = activityLibrary();
     await pumpApp(tester, setup: FakeSetup(library: lib));
     await tester.tap(find.text('Activity'));
@@ -40,7 +42,10 @@ void main() {
     lib.nextUndo = UndoResult.queued;
     await tester.tap(find.text('Re-run with a note…'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(EditableText), 'Sara is my cousin, not my colleague');
+    await tester.enterText(
+      find.byType(EditableText),
+      'Sara is my cousin, not my colleague',
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
@@ -49,7 +54,9 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
   });
 
-  testWidgets('review: swipe right confirms a claim; routing can be kept', (tester) async {
+  testWidgets('review: swipe right confirms a claim; routing can be kept', (
+    tester,
+  ) async {
     final lib = activityLibrary();
     await pumpApp(tester, setup: FakeSetup(library: lib));
     expect(find.text('2 to review'), findsOneWidget);
@@ -57,7 +64,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Headaches follow short nights'), findsOneWidget);
 
-    await tester.drag(find.text('Headaches follow short nights'), const Offset(300, 0));
+    await tester.drag(
+      find.text('Headaches follow short nights'),
+      const Offset(300, 0),
+    );
     await tester.pumpAndSettle();
     expect(lib.resolved.single, ('card-1', ReviewAction.confirm, null));
     expect(find.text('Filed to Health — right?'), findsOneWidget);
@@ -68,21 +78,43 @@ void main() {
     expect(find.text('Nothing to review.'), findsOneWidget);
   });
 
-  testWidgets('review: edit a claim before confirming; swipe left rejects in Persian too', (tester) async {
-    final lib = activityLibrary();
-    await pumpApp(tester, setup: FakeSetup(library: lib), location: '/review');
-    await tester.tap(find.text('Edit'));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(EditableText), 'Headaches often follow short nights');
-    await tester.tap(find.text('Confirm').last);
-    await tester.pumpAndSettle();
-    expect(lib.resolved.single, ('card-1', ReviewAction.confirm, 'Headaches often follow short nights'));
+  testWidgets(
+    'review: edit a claim before confirming; swipe left rejects in Persian too',
+    (tester) async {
+      final lib = activityLibrary();
+      await pumpApp(
+        tester,
+        setup: FakeSetup(library: lib),
+        location: '/review',
+      );
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(EditableText),
+        'Headaches often follow short nights',
+      );
+      await tester.tap(find.text('Confirm').last);
+      await tester.pumpAndSettle();
+      expect(lib.resolved.single, (
+        'card-1',
+        ReviewAction.confirm,
+        'Headaches often follow short nights',
+      ));
 
-    final fa = activityLibrary();
-    await pumpApp(tester, setup: FakeSetup(library: fa), location: '/review', prefs: prefsFor(language: 'fa', theme: 'light'));
-    // In RTL, "forward" is to the left: dragging right rejects.
-    await tester.drag(find.text('Headaches follow short nights'), const Offset(300, 0));
-    await tester.pumpAndSettle();
-    expect(fa.resolved.single.$2, ReviewAction.reject);
-  });
+      final fa = activityLibrary();
+      await pumpApp(
+        tester,
+        setup: FakeSetup(library: fa),
+        location: '/review',
+        prefs: prefsFor(language: 'fa', theme: 'light'),
+      );
+      // In RTL, "forward" is to the left: dragging right rejects.
+      await tester.drag(
+        find.text('Headaches follow short nights'),
+        const Offset(300, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(fa.resolved.single.$2, ReviewAction.reject);
+    },
+  );
 }

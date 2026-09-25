@@ -180,8 +180,8 @@ abstract class LibraryHandle implements RustOpaqueInterface {
     required String model,
   });
 
-  /// Starts a voice conversation; events arrive on `sink` until `VoiceHandle::end`.
-  Stream<VoiceEventDto> startVoice({
+  /// Starts a voice conversation; listen with `VoiceHandle::events`.
+  Future<VoiceHandle> startVoice({
     required VoiceOptions options,
     required List<ApiKey> apiKeys,
   });
