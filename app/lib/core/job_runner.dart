@@ -5,6 +5,7 @@ import 'dart:ui' show Locale, PlatformDispatcher;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart' show basicLocaleListResolution;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app/appearance.dart';
 import '../app/identity.dart';
@@ -40,28 +41,46 @@ class JobRunnerView {
 }
 
 /// A reflection saw signs of a heavy day (§4.7): Today shows the Talk to someone card until the
-/// person closes it. Kept for this app session only; nothing about it is stored.
+/// person closes it. Only this yes/no is kept, in device preferences, so a reflection that ran in
+/// the background still brings the card up; nothing about the day itself is stored.
 final helpCardProvider = NotifierProvider<HelpCard, bool>(HelpCard.new);
 
-class HelpCard extends Notifier<bool> {
-  @override
-  bool build() => false;
+const helpPendingKey = 'reflect.helpPending';
 
-  void show() => state = true;
-  void close() => state = false;
+class HelpCard extends Notifier<bool> {
+  SharedPreferences get _prefs => ref.read(sharedPreferencesProvider);
+
+  @override
+  bool build() => _prefs.getBool(helpPendingKey) ?? false;
+
+  void show() {
+    state = true;
+    _prefs.setBool(helpPendingKey, true);
+  }
+
+  void close() {
+    state = false;
+    _prefs.remove(helpPendingKey);
+  }
+
+  /// Picks up a flag set by the background task, which writes through its own preferences.
+  Future<void> reload() async {
+    await _prefs.reload();
+    state = _prefs.getBool(helpPendingKey) ?? false;
+  }
 }
 
 /// The strings the app would show right now, for work that runs without a widget context.
-L10n currentL10n(Ref ref) {
-  final chosen = ref.read(appearanceProvider).locale;
-  final Locale locale =
-      chosen ??
+L10n currentL10n(Ref ref) => l10nFor(ref.read(appearanceProvider).locale);
+
+/// Strings for the chosen language, or the system's when [chosen] is null.
+L10n l10nFor(Locale? chosen) => lookupL10n(
+  chosen ??
       basicLocaleListResolution(
         PlatformDispatcher.instance.locales,
         supportedLocales,
-      );
-  return lookupL10n(locale);
-}
+      ),
+);
 
 final jobRunnerProvider = NotifierProvider<JobRunner, JobRunnerView>(
   JobRunner.new,
@@ -166,21 +185,32 @@ class JobRunner extends Notifier<JobRunnerView> {
   Future<void> _signals(LibraryApi lib) async {
     final signals = await lib.takeReflectSignals();
     if (signals.needsHelp) ref.read(helpCardProvider.notifier).show();
-    if (signals.notifications.isEmpty) return;
-    final l = currentL10n(ref);
-    final title = AppIdentity.name(Locale(l.localeName));
-    final notes = ref.read(systemNotificationsProvider);
-    for (final body in signals.notifications) {
-      try {
-        await notes.show(
-          title,
-          body,
-          channel: l.reflectChannel,
-          openLabel: l.open,
-        );
-      } catch (e) {
-        debugPrint('notification failed: ${humanError(e)}');
-      }
+    await showReflectNotes(
+      ref.read(systemNotificationsProvider),
+      currentL10n(ref),
+      signals.notifications,
+    );
+  }
+}
+
+/// Shows reflection notifications, titled with the app's name. A failure only loses the notice;
+/// the reflection itself is already filed.
+Future<void> showReflectNotes(
+  SystemNotifications notes,
+  L10n l,
+  List<String> bodies,
+) async {
+  final title = AppIdentity.name(Locale(l.localeName));
+  for (final body in bodies) {
+    try {
+      await notes.show(
+        title,
+        body,
+        channel: l.reflectChannel,
+        openLabel: l.open,
+      );
+    } catch (e) {
+      debugPrint('notification failed: ${humanError(e)}');
     }
   }
 }

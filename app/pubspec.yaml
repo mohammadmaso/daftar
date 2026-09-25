@@ -30,6 +30,7 @@ dependencies:
   shared_preferences: ^2.5.5
   url_launcher: ^6.3.2
   wakelock_plus: ^1.7.0
+  workmanager: ^0.10.10
 
 dev_dependencies:
   flutter_test:

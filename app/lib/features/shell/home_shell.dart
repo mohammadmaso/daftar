@@ -44,6 +44,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     _life = AppLifecycleListener(
       onResume: () {
         _refreshIndex();
+        ref.read(helpCardProvider.notifier).reload();
         _sync.syncNow();
         _sync.startPeriodic();
         _jobs.resume();

@@ -34,6 +34,18 @@ pub struct Session {
     help_flag: AtomicBool,
     /// Local notifications produced by reflections, taken by the app.
     notifications: Mutex<Vec<String>>,
+    /// Set while a `run_jobs` drains the queue. A second caller (the foreground app and a
+    /// background task in one process) returns at once instead of claiming the same job.
+    draining: AtomicBool,
+}
+
+/// Clears [`Session::draining`] however `run_jobs` ends.
+struct Draining<'a>(&'a AtomicBool);
+
+impl Drop for Draining<'_> {
+    fn drop(&mut self) {
+        self.0.store(false, Ordering::SeqCst);
+    }
 }
 
 /// Result of an undo request.
@@ -136,6 +148,7 @@ impl Session {
             index_dirty: AtomicBool::new(true),
             help_flag: AtomicBool::new(false),
             notifications: Mutex::new(vec![]),
+            draining: AtomicBool::new(false),
         })
     }
 
@@ -366,6 +379,10 @@ impl Session {
         online: bool,
         cancel: &Cancel,
     ) -> Result<Vec<JobReport>> {
+        if self.draining.swap(true, Ordering::SeqCst) {
+            return Ok(vec![]);
+        }
+        let _draining = Draining(&self.draining);
         let mut reports = Vec::new();
         loop {
             if cancel.is_cancelled() {

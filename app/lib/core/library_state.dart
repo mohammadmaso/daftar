@@ -14,10 +14,14 @@ import 'library_api.dart';
 final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 
 /// Where this device keeps its checkout of the (single, for now) library.
-final libraryRootProvider = FutureProvider<String>((ref) async {
+final libraryRootProvider = FutureProvider<String>(
+  (ref) => defaultLibraryRoot(),
+);
+
+Future<String> defaultLibraryRoot() async {
   final base = await getApplicationSupportDirectory();
   return '${base.path}${Platform.pathSeparator}libraries${Platform.pathSeparator}default';
-});
+}
 
 final setupApiProvider = Provider<SetupApi>((ref) => const RustSetupApi());
 

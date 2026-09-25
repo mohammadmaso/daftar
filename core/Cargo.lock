@@ -564,6 +564,7 @@ dependencies = [
  "flutter_rust_bridge",
  "jiff",
  "serde_json",
+ "tempfile",
  "tokio",
  "tracing",
 ]

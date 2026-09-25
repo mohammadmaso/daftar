@@ -1,4 +1,4 @@
-# ADR-0024: Share, quick actions, shortcuts and the command palette (M9)
+# ADR-0024: Share, quick actions, shortcuts, palette and background work (M9)
 
 * Status: accepted
 * Date: 2026-09-25
@@ -39,3 +39,20 @@ records. These work while the app has focus.
 in May 2024, so it fails the maintenance rule. The in-app shortcuts cover a focused window. A
 system-wide hotkey is left to the OS: GNOME/KDE custom shortcuts, macOS Shortcuts or a Windows
 shortcut key can launch the app with `--record`, which the desktop builds could accept later.
+
+**Background work, Android:** `workmanager` 0.10.10 (September 2026, maintained; the brief names
+it). An hourly periodic task, only when online, runs one pass: queue due reflections, sync, file
+waiting captures, push, and post reflection notifications. The pass is a plain function
+(`backgroundPass`), tested with fakes.
+
+Two supporting changes make it safe:
+* Android runs the task in the app's process, so `LibraryHandle.open` now joins a session already
+  open on the same library instead of opening a second one. The queue and commit lock stay single.
+* `Session::run_jobs` lets one caller drain the queue at a time. A concurrent call returns at once,
+  because `claim` treats a `running` job as re-runnable after a crash.
+
+The "heavy day" help flag is now a yes/no in device preferences, so a reflection that ran in the
+background still brings up the card. Nothing about the day is stored with it.
+
+iOS background refresh (BGTaskScheduler) needs capabilities and an identifier in Xcode. It is
+documented, not done.

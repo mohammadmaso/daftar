@@ -1,8 +1,9 @@
 //! Library lifecycle, capture and sync for the Flutter app. Thin wrappers over `daftar_core`;
 //! all types here are plain DTOs so the core stays free of FFI concerns.
 
+use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock, Mutex, Weak};
 
 use daftar_core::session::{CaptureStage, Session};
 use daftar_core::sync::{self, GitAuth};
@@ -196,6 +197,9 @@ pub fn generate_ssh_key(comment: String) -> anyhow::Result<SshKeyPair> {
     })
 }
 
+/// Sessions open in this process, by canonical library root.
+static OPEN: LazyLock<Mutex<HashMap<PathBuf, Weak<Session>>>> = LazyLock::new(Default::default);
+
 #[frb(opaque)]
 pub struct LibraryHandle {
     session: Arc<Session>,
@@ -212,10 +216,18 @@ impl LibraryHandle {
         self.session.clone()
     }
 
+    /// Opens the library, or joins the session already open on it in this process: the app and a
+    /// background task (Android runs both in one process) must share one queue and commit lock.
     pub fn open(root: String) -> anyhow::Result<LibraryHandle> {
-        Ok(LibraryHandle {
-            session: Arc::new(Session::open(root).map_err(err)?),
-        })
+        let key = std::fs::canonicalize(&root).unwrap_or_else(|_| PathBuf::from(&root));
+        let mut open = OPEN.lock().unwrap_or_else(|p| p.into_inner());
+        open.retain(|_, s| s.strong_count() > 0);
+        if let Some(session) = open.get(&key).and_then(Weak::upgrade) {
+            return Ok(LibraryHandle { session });
+        }
+        let session = Arc::new(Session::open(root).map_err(err)?);
+        open.insert(key, Arc::downgrade(&session));
+        Ok(LibraryHandle { session })
     }
 
     pub fn capture_text(&self, text: String, vault_hint: Option<String>) -> anyhow::Result<String> {
@@ -344,5 +356,27 @@ impl LibraryHandle {
             replays: o.replays.len() as u32,
             changed_paths: o.changed_paths,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn one_session_per_library_in_a_process() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().join("lib").to_string_lossy().into_owned();
+        init_library(root.clone(), "test".into(), "linux".into()).unwrap();
+        let a = LibraryHandle::open(root.clone()).unwrap();
+        let b = LibraryHandle::open(root.clone()).unwrap();
+        assert!(Arc::ptr_eq(&a.session, &b.session), "shared while open");
+        drop((a, b));
+        let c = LibraryHandle::open(root).unwrap();
+        assert_eq!(
+            Arc::strong_count(&c.session),
+            1,
+            "reopened fresh once closed"
+        );
     }
 }
