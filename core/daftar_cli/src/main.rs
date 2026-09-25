@@ -170,6 +170,14 @@ enum Command {
         #[command(subcommand)]
         action: McpAction,
     },
+    /// Queue the reflections that are due and run them.
+    Reflect { path: PathBuf },
+    /// Check the wiki. With --judge, the lint model reviews recently changed pages too.
+    Lint {
+        path: PathBuf,
+        #[arg(long)]
+        judge: bool,
+    },
     /// Generate an ed25519 key pair; prints the public key, writes the private key to FILE.
     Keygen {
         file: PathBuf,
@@ -860,6 +868,47 @@ fn main() -> anyhow::Result<()> {
                     }
                     eprintln!("saved credentials to {}", file.display());
                 }
+            }
+        }
+        Command::Reflect { path } => {
+            let s = Session::open(path)?;
+            let n = s.schedule_reflections(&now())?;
+            let rt = s.runtime(keys_from_env(&s)?)?;
+            let reports = runtime()?.block_on(s.run_jobs(&rt, true, &Cancel::default()))?;
+            let (notes, help) = s.take_reflect_signals();
+            print(
+                json,
+                &json!({"queued": n, "jobs": reports, "notifications": notes, "needs_help": help}),
+                |v| {
+                    format!(
+                        "{} reflection(s) due; {} notification(s){}",
+                        v["queued"],
+                        v["notifications"].as_array().map_or(0, Vec::len),
+                        if help {
+                            "; show the Talk to someone card"
+                        } else {
+                            ""
+                        }
+                    )
+                },
+            )?;
+        }
+        Command::Lint { path, judge } => {
+            let s = Session::open(path)?;
+            if judge {
+                s.schedule_lint(true)?;
+                let rt = s.runtime(keys_from_env(&s)?)?;
+                let r = runtime()?.block_on(s.run_jobs(&rt, true, &Cancel::default()))?;
+                print(json, &r, |r| format!("{r:?}"))?;
+            } else {
+                let r = s.lint_now()?;
+                print(json, &r, |r| {
+                    r.findings
+                        .iter()
+                        .map(|f| format!("{:?}: {}", f.kind, f.summary))
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                })?;
             }
         }
         Command::Keygen { file, comment } => {

@@ -38,6 +38,8 @@ pub struct Config {
     /// MCP servers (§10); credentials are per device and never stored here.
     #[serde(default)]
     pub mcp: Vec<crate::mcp::McpServerConfig>,
+    #[serde(default)]
+    pub reflect: crate::reflect::ReflectSettings,
     #[serde(flatten)]
     pub extra: Map<String, Value>,
 }
@@ -108,6 +110,7 @@ impl Default for Config {
             ai: Default::default(),
             routing_threshold: default_threshold(),
             mcp: vec![],
+            reflect: Default::default(),
             extra: Map::new(),
         }
     }

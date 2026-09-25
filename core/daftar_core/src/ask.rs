@@ -301,7 +301,7 @@ pub fn save_draft(
     let path = format!("{dir}/{slug}.md");
     let meta: wiki::PageMeta = serde_json::from_value(serde_json::json!({
         "id": crate::ids::new_id().to_string(),
-        "type": "summary",
+        "type": "draft",
         "vault": "stories",
         "title": {"en": format!("Draft · {title}"), "fa": format!("پیش‌نویس · {title}")},
         "summary": format!("Draft for {story}, {date}."),

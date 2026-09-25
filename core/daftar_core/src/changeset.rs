@@ -148,6 +148,27 @@ pub fn commit(
     mut entry: LedgerEntry,
     info: CommitInfo,
 ) -> Result<git2::Oid> {
+    // A claim proposed and then removed within the same op leaves no card behind.
+    let pruned;
+    let cs = {
+        let alive = |page: &str, id: &str| {
+            cs.read(lib, page)
+                .is_some_and(|t| t.lines().any(|l| l.trim_end().ends_with(&format!("^{id}"))))
+        };
+        let mut c = cs.clone();
+        c.review_items.retain(|r| {
+            r.kind != review::ReviewKind::Claim
+                || alive(
+                    r.payload["page"].as_str().unwrap_or_default(),
+                    r.payload["claim_id"].as_str().unwrap_or_default(),
+                )
+        });
+        let pages: Vec<String> = c.files.keys().cloned().collect();
+        c.claims_added
+            .retain(|id| pages.iter().any(|p| alive(p, id)));
+        pruned = c;
+        &pruned
+    };
     let (created, updated) = cs.page_changes();
     entry.pages_created = created;
     entry.pages_updated = updated;

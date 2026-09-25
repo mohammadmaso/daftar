@@ -30,6 +30,10 @@ pub struct Session {
     /// Search/link cache, opened on first use and refreshed when the repository may have changed.
     index: Mutex<Option<SearchIndex>>,
     index_dirty: AtomicBool,
+    /// Set when a reflection saw signs of crisis (§4.7); the app shows the help card.
+    help_flag: AtomicBool,
+    /// Local notifications produced by reflections, taken by the app.
+    notifications: Mutex<Vec<String>>,
 }
 
 /// Result of an undo request.
@@ -130,6 +134,8 @@ impl Session {
             sync_lock: Mutex::new(()),
             index: Mutex::new(None),
             index_dirty: AtomicBool::new(true),
+            help_flag: AtomicBool::new(false),
+            notifications: Mutex::new(vec![]),
         })
     }
 
@@ -408,6 +414,76 @@ impl Session {
                             IngestOutcome::Skipped(why) => Ok(Some(format!("skipped: {why}"))),
                         }
                     }
+                    (JobKind::Reflect, _) => {
+                        let due: crate::reflect::Due = serde_json::from_value(job.payload.clone())
+                            .map_err(|e| OpError::Permanent(e.to_string()))?;
+                        let settings = self.lib.config()?.reflect;
+                        let out = match due {
+                            crate::reflect::Due::Daily { date } => {
+                                let d = date
+                                    .parse()
+                                    .map_err(|_| OpError::Permanent("bad date".into()))?;
+                                crate::reflect::daily(
+                                    &self.lib,
+                                    &self.device,
+                                    rt,
+                                    d,
+                                    settings.notifications,
+                                    &now,
+                                    &self.sync_lock,
+                                )
+                                .await?
+                            }
+                            crate::reflect::Due::Weekly { week, from, to } => {
+                                let (f, t) = (
+                                    from.parse()
+                                        .map_err(|_| OpError::Permanent("bad date".into()))?,
+                                    to.parse()
+                                        .map_err(|_| OpError::Permanent("bad date".into()))?,
+                                );
+                                crate::reflect::weekly(
+                                    &self.lib,
+                                    &self.device,
+                                    rt,
+                                    &week,
+                                    f,
+                                    t,
+                                    settings.notifications,
+                                    &now,
+                                    cancel,
+                                    &self.sync_lock,
+                                )
+                                .await?
+                            }
+                        };
+                        if out.needs_help {
+                            self.help_flag.store(true, Ordering::SeqCst);
+                        }
+                        if let Some(n) = &out.notification {
+                            self.notifications
+                                .lock()
+                                .unwrap_or_else(|p| p.into_inner())
+                                .push(n.clone());
+                        }
+                        Ok(out.op_id.map(|_| "reflected".to_owned()))
+                    }
+                    (JobKind::Lint, _) => {
+                        let judge: Vec<String> =
+                            serde_json::from_value(job.payload["judge"].clone())
+                                .unwrap_or_default();
+                        let q = Queue::open(&self.lib.db_path())?;
+                        let r = crate::lint::run(
+                            &self.lib,
+                            &self.device,
+                            &q,
+                            Some(rt),
+                            &judge,
+                            &now,
+                            &self.sync_lock,
+                        )
+                        .await?;
+                        Ok(Some(format!("{} findings", r.new_cards)))
+                    }
                     (JobKind::Compensate, _) => {
                         let op_id = job.payload["op_id"].as_str().unwrap_or_default().to_owned();
                         let after: AfterUndo = serde_json::from_value(job.payload["after"].clone())
@@ -457,6 +533,8 @@ impl Session {
                             JobKind::Transcribe => Role::Stt,
                             JobKind::Describe => Role::Vision,
                             JobKind::Compensate => Role::Ingest,
+                            JobKind::Reflect => Role::Reflect,
+                            JobKind::Lint => Role::Lint,
                             _ if rt.has(Role::Router) => Role::Ingest,
                             _ => Role::Router,
                         }),
@@ -488,6 +566,95 @@ impl Session {
             self.invalidate_index();
         }
         Ok(reports)
+    }
+
+    // ─────────────── reflect and lint (§4.6, §4.7) ───────────────
+
+    /// Queues the reflections that are due now and have not run on any device. Returns how many.
+    pub fn schedule_reflections(&self, now: &Zoned) -> Result<usize> {
+        let settings = self.lib.config()?.reflect;
+        let q = self.queue();
+        let queued: Vec<serde_json::Value> = q
+            .open_jobs()?
+            .into_iter()
+            .filter(|j| j.kind == JobKind::Reflect)
+            .map(|j| j.payload)
+            .collect();
+        let mut n = 0;
+        for d in crate::reflect::due(&self.lib, &settings, now)? {
+            let payload = serde_json::to_value(&d)?;
+            if !queued.contains(&payload) {
+                q.enqueue(JobKind::Reflect, None, payload, true)?;
+                n += 1;
+            }
+        }
+        Ok(n)
+    }
+
+    /// Queues a lint pass. With `judge`, the model reviews the pages changed recently.
+    pub fn schedule_lint(&self, judge: bool) -> Result<()> {
+        let pages: Vec<String> = if judge {
+            self.recent_pages(None, 30)?
+                .into_iter()
+                .map(|p| p.path)
+                .collect()
+        } else {
+            vec![]
+        };
+        self.queue()
+            .enqueue(JobKind::Lint, None, json!({ "judge": pages }), judge)?;
+        Ok(())
+    }
+
+    /// Queues a lint pass after every `lint_every_ingests` filings, and weekly (§4.6).
+    pub fn schedule_lint_if_due(&self, now: &Zoned) -> Result<bool> {
+        let every = self.lib.config()?.reflect.lint_every_ingests as usize;
+        let entries = crate::ledger::all(&self.lib)?;
+        let last = entries
+            .iter()
+            .rposition(|e| e.op_type == crate::ledger::OpType::Lint);
+        let since = entries[last.map_or(0, |i| i + 1)..]
+            .iter()
+            .filter(|e| e.op_type == crate::ledger::OpType::Ingest)
+            .count();
+        let week_old = last.is_none_or(|i| {
+            entries[i]
+                .started_at
+                .parse::<jiff::Timestamp>()
+                .is_ok_and(|t| now.timestamp().duration_since(t).as_secs() > 7 * 24 * 3600)
+        });
+        let pending = self
+            .queue()
+            .open_jobs()?
+            .iter()
+            .any(|j| j.kind == JobKind::Lint);
+        if pending || since == 0 || !((every > 0 && since >= every) || week_old) {
+            return Ok(false);
+        }
+        self.schedule_lint(true)?;
+        Ok(true)
+    }
+
+    /// Deterministic lint now (no model), e.g. from Settings.
+    pub fn lint_now(&self) -> Result<crate::lint::LintReport> {
+        let q = Queue::open(&self.lib.db_path())?;
+        let rt = tokio::runtime::Builder::new_current_thread().build()?;
+        rt.block_on(crate::lint::run(
+            &self.lib,
+            &self.device,
+            &q,
+            None,
+            &[],
+            &jiff::Zoned::now(),
+            &self.sync_lock,
+        ))
+        .map_err(|e| crate::Error::Other(e.to_string()))
+    }
+
+    /// Notifications produced since the last call, and whether the help card should show.
+    pub fn take_reflect_signals(&self) -> (Vec<String>, bool) {
+        let n = std::mem::take(&mut *self.notifications.lock().unwrap_or_else(|p| p.into_inner()));
+        (n, self.help_flag.swap(false, Ordering::SeqCst))
     }
 
     // ─────────────── ask (§4.3) ───────────────
