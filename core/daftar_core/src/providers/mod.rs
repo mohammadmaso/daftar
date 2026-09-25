@@ -6,7 +6,7 @@ pub mod mock;
 mod openai;
 mod probe;
 mod retry;
-mod sse;
+pub(crate) mod sse;
 
 use std::collections::BTreeMap;
 use std::sync::Arc;

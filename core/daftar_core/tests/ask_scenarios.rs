@@ -182,6 +182,7 @@ async fn answers_cite_real_pages_and_do_not_invent() {
             "How much vitamin D do I take?",
             None,
             &AskScope::All,
+            None,
             &Cancel::default(),
             Some(&sink),
         )
@@ -210,6 +211,7 @@ async fn answers_cite_real_pages_and_do_not_invent() {
             "Where is my passport?",
             None,
             &AskScope::All,
+            None,
             &Cancel::default(),
             None,
         )
@@ -225,6 +227,7 @@ async fn answers_cite_real_pages_and_do_not_invent() {
         "What does this say about Sara?",
         Some(("image/png".into(), png)),
         &AskScope::All,
+        None,
         &Cancel::default(),
         None,
     )
@@ -239,6 +242,7 @@ async fn answers_cite_real_pages_and_do_not_invent() {
             "Some days I just want to die. Is Sara around?",
             None,
             &AskScope::All,
+            None,
             &Cancel::default(),
             None,
         )
@@ -260,6 +264,7 @@ async fn story_scope_is_isolated() {
             "Does Sara have diabetes?",
             None,
             &AskScope::Story("glass-city".into()),
+            None,
             &Cancel::default(),
             None,
         )
@@ -280,6 +285,7 @@ async fn story_scope_is_isolated() {
             "Does Sara have diabetes?",
             None,
             &AskScope::Vault("health".into()),
+            None,
             &Cancel::default(),
             None,
         )

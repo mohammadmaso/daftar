@@ -21,6 +21,15 @@ impl Cancel {
     }
 }
 
+/// Tools that live outside the op context and run asynchronously (MCP servers, §10).
+#[async_trait::async_trait]
+pub trait ExternalTools: Send + Sync {
+    fn specs(&self) -> Vec<ToolSpec>;
+    fn handles(&self, name: &str) -> bool;
+    /// Result text for the model; failures start with `ERROR:`.
+    async fn call(&self, name: &str, arguments: &serde_json::Value) -> String;
+}
+
 pub struct AgentSpec {
     pub model: String,
     pub system: String,
@@ -31,6 +40,7 @@ pub struct AgentSpec {
     /// Rough context budget in characters (≈ 4 chars per token).
     pub context_chars: usize,
     pub params: serde_json::Map<String, serde_json::Value>,
+    pub external: Option<Arc<dyn ExternalTools>>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -73,11 +83,15 @@ pub async fn run(
             return Err(AgentError::Cancelled);
         }
         trim_context(&mut messages, spec.context_chars);
+        let mut tools = spec.tools.clone();
+        if let Some(x) = &spec.external {
+            tools.extend(x.specs());
+        }
         let req = ChatRequest {
             model: spec.model.clone(),
             system: spec.system.clone(),
             messages: messages.clone(),
-            tools: spec.tools.clone(),
+            tools,
             max_tokens: spec.max_tokens,
             temperature: spec.temperature,
             json: false,
@@ -118,6 +132,11 @@ pub async fn run(
         for call in &resp.tool_calls {
             if cancel.is_cancelled() {
                 return Err(AgentError::Cancelled);
+            }
+            if let Some(x) = spec.external.as_ref().filter(|x| x.handles(&call.name)) {
+                let text = x.call(&call.name, &call.arguments).await;
+                messages.push(Message::tool(call, text));
+                continue;
             }
             let out = ctx.call(&call.name, &call.arguments);
             messages.push(Message::tool(call, out.text));

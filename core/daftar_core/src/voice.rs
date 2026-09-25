@@ -687,6 +687,7 @@ async fn run_turn(
         None,
         &AskScope::All,
         true,
+        None,
         &jiff::Zoned::now(),
         &cancel,
         Some(&on_delta),

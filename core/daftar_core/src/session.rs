@@ -500,6 +500,7 @@ impl Session {
         question: &str,
         image: Option<(String, Vec<u8>)>,
         scope: &crate::ask::AskScope,
+        external: Option<std::sync::Arc<dyn crate::agent::ExternalTools>>,
         cancel: &Cancel,
         on_delta: crate::providers::OnDelta<'_>,
     ) -> std::result::Result<crate::ask::Answer, OpError> {
@@ -514,6 +515,7 @@ impl Session {
             image,
             scope,
             false,
+            external,
             &jiff::Zoned::now(),
             cancel,
             on_delta,

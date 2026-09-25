@@ -543,6 +543,7 @@ pub async fn ingest(
             .filter(|(k, _)| !matches!(k.as_str(), "max_steps" | "max_tokens"))
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect(),
+        external: None,
     };
     let lib_ref = lib;
     let validator = move |c: &OpContext<'_>| -> Vec<String> {

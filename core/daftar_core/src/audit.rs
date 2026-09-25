@@ -526,6 +526,7 @@ pub async fn compensate(
         temperature: Some(0.0),
         context_chars: 400_000,
         params: rc.params.clone(),
+        external: None,
     };
     let validator = move |c: &OpContext<'_>| -> Vec<String> {
         let blame = |p: &str| tools::human_lines_at_head(lib, p);

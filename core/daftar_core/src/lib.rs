@@ -18,6 +18,7 @@ pub mod lang;
 pub mod layout;
 pub mod ledger;
 pub mod library;
+pub mod mcp;
 pub mod normalize;
 pub mod ops;
 pub mod pages;

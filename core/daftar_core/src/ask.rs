@@ -104,6 +104,7 @@ pub async fn ask(
     image: Option<(String, Vec<u8>)>,
     scope: &AskScope,
     voice: bool,
+    external: Option<std::sync::Arc<dyn agent::ExternalTools>>,
     now: &Zoned,
     cancel: &Cancel,
     on_delta: OnDelta<'_>,
@@ -222,6 +223,7 @@ pub async fn ask(
             .filter(|(k, _)| k.as_str() != "max_tokens")
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect(),
+        external,
     };
     let outcome = agent::run(
         &provider, &spec, &mut ctx, messages, None, 0, cancel, on_delta,

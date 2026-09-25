@@ -14,6 +14,7 @@ use daftar_core::agent::Cancel;
 use daftar_core::providers::{self, ProviderConfig, Role};
 use daftar_core::session::Session;
 use daftar_core::sync::{self, GitAuth};
+use serde_json::json;
 
 #[derive(Parser)]
 #[command(name = daftar_core::APP_ID, version = daftar_core::VERSION, about = "Daftar core CLI")]
@@ -163,11 +164,49 @@ enum Command {
         #[arg(long)]
         save: bool,
     },
+    /// MCP servers: list, add, remove, tools. Credentials from `DAFTAR_MCP_SECRETS_<ID>` (JSON).
+    Mcp {
+        path: PathBuf,
+        #[command(subcommand)]
+        action: McpAction,
+    },
     /// Generate an ed25519 key pair; prints the public key, writes the private key to FILE.
     Keygen {
         file: PathBuf,
         #[arg(long, default_value = "daftar")]
         comment: String,
+    },
+}
+
+#[derive(Subcommand)]
+enum McpAction {
+    List,
+    /// Add a server; prints its id.
+    Add {
+        #[arg(long)]
+        name: String,
+        /// URL for streamable_http / sse, or the command for stdio.
+        #[arg(long)]
+        target: String,
+        #[arg(long, default_value = "streamable_http")]
+        transport: String,
+        /// none, bearer, oauth
+        #[arg(long, default_value = "none")]
+        auth: String,
+        #[arg(long)]
+        arg: Vec<String>,
+    },
+    Remove {
+        id: String,
+    },
+    /// Connect and list the server's tools.
+    Tools {
+        id: String,
+    },
+    /// Run the OAuth flow on this computer; writes the credentials JSON to FILE (mode 600).
+    Login {
+        id: String,
+        file: PathBuf,
     },
 }
 
@@ -684,6 +723,7 @@ fn main() -> anyhow::Result<()> {
                 &question,
                 image,
                 &scope,
+                None,
                 &Cancel::default(),
                 Some(&stream),
             ))?;
@@ -704,6 +744,122 @@ fn main() -> anyhow::Result<()> {
             if save {
                 let item = s.save_answer(&question, &a.text, &scope)?;
                 eprintln!("saved as {}; run `jobs` to file it", item.path);
+            }
+        }
+        Command::Mcp { path, action } => {
+            use daftar_core::mcp::{self, McpAuth, McpServerConfig, McpTransport, ToolPolicy};
+            let s = Session::open(path)?;
+            let find = |id: &str| -> anyhow::Result<McpServerConfig> {
+                s.library()
+                    .config()?
+                    .mcp
+                    .into_iter()
+                    .find(|m| m.id == id)
+                    .with_context(|| format!("no MCP server {id}"))
+            };
+            let secrets = |id: &str| -> mcp::McpSecrets {
+                std::env::var(format!(
+                    "DAFTAR_MCP_SECRETS_{}",
+                    id.to_uppercase().replace('-', "_")
+                ))
+                .ok()
+                .and_then(|v| serde_json::from_str(&v).ok())
+                .unwrap_or_default()
+            };
+            match action {
+                McpAction::List => {
+                    let servers = s.library().config()?.mcp;
+                    print(json, &servers, |ss| {
+                        ss.iter()
+                            .map(|m| {
+                                format!("{}  {}  {:?}  {:?}", m.id, m.name, m.transport, m.auth)
+                            })
+                            .collect::<Vec<_>>()
+                            .join("\n")
+                    })?;
+                }
+                McpAction::Add {
+                    name,
+                    target,
+                    transport,
+                    auth,
+                    arg,
+                } => {
+                    let transport = match transport.as_str() {
+                        "streamable_http" => McpTransport::StreamableHttp { url: target },
+                        "sse" => McpTransport::Sse { url: target },
+                        "stdio" => McpTransport::Stdio {
+                            command: target,
+                            args: arg,
+                            env_names: vec![],
+                            cwd: None,
+                        },
+                        other => bail!("unknown transport {other}"),
+                    };
+                    let auth = match auth.as_str() {
+                        "none" => McpAuth::None,
+                        "bearer" => McpAuth::Bearer,
+                        "oauth" => McpAuth::OAuth {
+                            client_id: None,
+                            scopes: vec![],
+                        },
+                        other => bail!("unknown auth {other}"),
+                    };
+                    let id = daftar_core::wiki::sanitize_slug(&name);
+                    let server = McpServerConfig {
+                        id: id.clone(),
+                        name,
+                        transport,
+                        auth,
+                        policy: ToolPolicy::default(),
+                        enabled: true,
+                    };
+                    s.library().update_config(|c| {
+                        c.mcp.retain(|m| m.id != id);
+                        c.mcp.push(server);
+                    })?;
+                    println!("{id}");
+                }
+                McpAction::Remove { id } => {
+                    s.library()
+                        .update_config(|c| c.mcp.retain(|m| m.id != id))?;
+                }
+                McpAction::Tools { id } => {
+                    let cfg = find(&id)?;
+                    let conn = runtime()?.block_on(mcp::connect(&cfg, &secrets(&id)))?;
+                    print(json, &conn.tools, |ts| {
+                        ts.iter()
+                            .map(|t| {
+                                format!(
+                                    "mcp.{}.{}{}  {}",
+                                    id,
+                                    t.name,
+                                    if t.read_only { " (read-only)" } else { "" },
+                                    t.description
+                                )
+                            })
+                            .collect::<Vec<_>>()
+                            .join("\n")
+                    })?;
+                }
+                McpAction::Login { id, file } => {
+                    let cfg = find(&id)?;
+                    let rt = runtime()?;
+                    let creds = rt.block_on(async {
+                        let (redirect, callback) = mcp::loopback_redirect().await?;
+                        let flow = mcp::oauth_begin(&cfg, &secrets(&id), &redirect).await?;
+                        eprintln!("Open this address in your browser:\n{}", flow.auth_url);
+                        let url = callback.await?;
+                        Ok::<_, anyhow::Error>(flow.complete(&url).await?)
+                    })?;
+                    std::fs::write(&file, serde_json::to_vec(&json!({ "oauth": creds }))?)?;
+                    #[cfg(unix)]
+                    {
+                        use std::os::unix::fs::PermissionsExt;
+                        std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o600))?;
+                    }
+                    eprintln!("saved credentials to {}", file.display());
+                }
             }
         }
         Command::Keygen { file, comment } => {

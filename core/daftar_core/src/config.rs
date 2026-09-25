@@ -35,6 +35,9 @@ pub struct Config {
     /// Routing confidence below which a "Was this right?" card is added (§4.2).
     #[serde(default = "default_threshold")]
     pub routing_threshold: f64,
+    /// MCP servers (§10); credentials are per device and never stored here.
+    #[serde(default)]
+    pub mcp: Vec<crate::mcp::McpServerConfig>,
     #[serde(flatten)]
     pub extra: Map<String, Value>,
 }
@@ -104,6 +107,7 @@ impl Default for Config {
             ],
             ai: Default::default(),
             routing_threshold: default_threshold(),
+            mcp: vec![],
             extra: Map::new(),
         }
     }
