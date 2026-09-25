@@ -55,6 +55,7 @@ pub struct AgentOutcome {
 /// Validation hook: returns error messages (empty = accept).
 pub type Validator<'v> = &'v dyn Fn(&OpContext<'_>) -> Vec<String>;
 
+#[allow(clippy::too_many_arguments)]
 pub async fn run(
     provider: &DynProvider,
     spec: &AgentSpec,

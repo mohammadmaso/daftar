@@ -125,7 +125,7 @@ pub fn sanitize_slug(proposed: &str) -> String {
     if s.is_empty() {
         format!(
             "page-{}",
-            &ids::new_id().to_string()[16..].to_ascii_lowercase()
+            ids::new_id().to_string()[16..].to_ascii_lowercase()
         )
     } else {
         s
@@ -364,14 +364,14 @@ pub fn claims(text: &str) -> Vec<Claim> {
         let mut j = 0;
         let b = body.as_bytes();
         while j < b.len() {
-            if b[j] == b'(' {
-                if let Some(close) = matching_paren(body, j) {
-                    let inner = &body[j + 1..close];
-                    if let Some((k, v)) = inner.split_once("::") {
-                        fields.insert(k.trim().to_owned(), v.trim().to_owned());
-                        j = close + 1;
-                        continue;
-                    }
+            if b[j] == b'('
+                && let Some(close) = matching_paren(body, j)
+            {
+                let inner = &body[j + 1..close];
+                if let Some((k, v)) = inner.split_once("::") {
+                    fields.insert(k.trim().to_owned(), v.trim().to_owned());
+                    j = close + 1;
+                    continue;
                 }
             }
             let ch = body[j..].chars().next().expect("in bounds");

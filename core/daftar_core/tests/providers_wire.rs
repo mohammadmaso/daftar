@@ -1,8 +1,8 @@
 //! Adapters against a local HTTP server that replays provider-shaped responses.
 
 use daftar_core::providers::{
-    self, ChatRequest, LlmProvider, Message, ProviderConfig, ProviderErrorKind, ProviderKind,
-    StopReason, ToolSpec,
+    self, ChatRequest, Message, ProviderConfig, ProviderErrorKind, ProviderKind, StopReason,
+    ToolSpec,
 };
 use serde_json::{Value, json};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};

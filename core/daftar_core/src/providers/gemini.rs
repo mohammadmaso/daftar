@@ -82,11 +82,12 @@ impl Gemini {
                     ],
                 ),
             };
-            if let Some(last) = contents.last_mut() {
-                if last["role"] == role && m.role == MsgRole::Tool {
-                    last["parts"].as_array_mut().expect("array").extend(parts);
-                    continue;
-                }
+            if let Some(last) = contents.last_mut()
+                && last["role"] == role
+                && m.role == MsgRole::Tool
+            {
+                last["parts"].as_array_mut().expect("array").extend(parts);
+                continue;
             }
             contents.push(json!({"role": role, "parts": parts}));
         }

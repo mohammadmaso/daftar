@@ -98,6 +98,13 @@ pub fn configure_git(state_dir: &Path) -> crate::Result<()> {
     if DONE.get().is_some() {
         return Ok(());
     }
+    // libgit2 uses the OS TLS stack on Apple platforms (SecureTransport) and Windows (WinHTTP);
+    // those use the system trust store and reject a CA file. Only the OpenSSL backend needs one.
+    if cfg!(any(target_vendor = "apple", target_os = "windows")) {
+        let _ = DONE.set(());
+        let _ = state_dir;
+        return Ok(());
+    }
     // Prefer the OS bundle where it is a plain file (keeps enterprise CAs working on Linux).
     let system = [
         "/etc/ssl/certs/ca-certificates.crt",

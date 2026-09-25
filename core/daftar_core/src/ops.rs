@@ -270,24 +270,25 @@ pub async fn route(
         .map(|v| (v.to_owned(), "forced"))
         .or_else(|| item.meta.vault_hint.clone().map(|v| (v, "hint")));
     // A fixed personal vault needs no model call; a fixed `stories` still needs the story slug.
-    if let Some((v, by)) = &fixed {
-        if v != "stories" && config.vault(v).is_some() {
-            return Ok((
-                Route {
-                    targets: vec![Target {
-                        vault: v.clone(),
-                        reason: format!("chosen by the user ({by})"),
-                        confidence: 1.0,
-                    }],
-                    is_fiction: false,
-                    story: None,
-                    lang: item.meta.lang.clone(),
-                    decided_by: (*by).into(),
-                },
-                Usage::default(),
-                String::new(),
-            ));
-        }
+    if let Some((v, by)) = &fixed
+        && v != "stories"
+        && config.vault(v).is_some()
+    {
+        return Ok((
+            Route {
+                targets: vec![Target {
+                    vault: v.clone(),
+                    reason: format!("chosen by the user ({by})"),
+                    confidence: 1.0,
+                }],
+                is_fiction: false,
+                story: None,
+                lang: item.meta.lang.clone(),
+                decided_by: (*by).into(),
+            },
+            Usage::default(),
+            String::new(),
+        ));
     }
     let (p, rc) = rt.for_role(Role::Router)?;
     let system = prompts::render(

@@ -224,23 +224,23 @@ impl<'a> OpContext<'a> {
             .map_err(|e| e.to_string())?;
         // Pages created in this op are not in the index yet.
         for (p, c) in &self.cs.files {
-            if let (Some(c), true) = (c, self.cs.created.contains(p)) {
-                if crate::normalize::normalize(c).contains(&crate::normalize::normalize(q)) {
-                    hits.insert(
-                        0,
-                        crate::search::Hit {
-                            path: p.clone(),
-                            vault: pages::vault_of(p).unwrap_or_default().into(),
-                            kind: String::new(),
-                            title_en: String::new(),
-                            title_fa: String::new(),
-                            summary: "(created in this operation)".into(),
-                            snippet: String::new(),
-                            updated: String::new(),
-                            score: 0.0,
-                        },
-                    );
-                }
+            if let (Some(c), true) = (c, self.cs.created.contains(p))
+                && crate::normalize::normalize(c).contains(&crate::normalize::normalize(q))
+            {
+                hits.insert(
+                    0,
+                    crate::search::Hit {
+                        path: p.clone(),
+                        vault: pages::vault_of(p).unwrap_or_default().into(),
+                        kind: String::new(),
+                        title_en: String::new(),
+                        title_fa: String::new(),
+                        summary: "(created in this operation)".into(),
+                        snippet: String::new(),
+                        updated: String::new(),
+                        score: 0.0,
+                    },
+                );
             }
         }
         if hits.is_empty() {
@@ -517,15 +517,15 @@ impl<'a> OpContext<'a> {
                     if let Some(s) = e["summary"].as_str() {
                         page.meta.summary = s.trim().to_owned();
                     }
-                    if let Some(t) = e.pointer("/title/en").and_then(Value::as_str) {
-                        if page.meta.title.en.is_empty() {
-                            page.meta.title.en = t.to_owned();
-                        }
+                    if let Some(t) = e.pointer("/title/en").and_then(Value::as_str)
+                        && page.meta.title.en.is_empty()
+                    {
+                        page.meta.title.en = t.to_owned();
                     }
-                    if let Some(t) = e.pointer("/title/fa").and_then(Value::as_str) {
-                        if page.meta.title.fa.is_empty() {
-                            page.meta.title.fa = t.to_owned();
-                        }
+                    if let Some(t) = e.pointer("/title/fa").and_then(Value::as_str)
+                        && page.meta.title.fa.is_empty()
+                    {
+                        page.meta.title.fa = t.to_owned();
                     }
                     body_text = page.render();
                 }

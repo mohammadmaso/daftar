@@ -165,12 +165,12 @@ impl OpenAiCompatible {
             let Some(choice) = v.pointer("/choices/0") else {
                 return Ok(());
             };
-            if let Some(d) = choice.pointer("/delta/content").and_then(Value::as_str) {
-                if !d.is_empty() {
-                    text.push_str(d);
-                    if let Some(cb) = on_delta {
-                        cb(d);
-                    }
+            if let Some(d) = choice.pointer("/delta/content").and_then(Value::as_str)
+                && !d.is_empty()
+            {
+                text.push_str(d);
+                if let Some(cb) = on_delta {
+                    cb(d);
                 }
             }
             if let Some(tcs) = choice

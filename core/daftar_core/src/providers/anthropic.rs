@@ -79,14 +79,16 @@ impl Anthropic {
                 MsgRole::Tool => ("user", vec![json!({"type": "tool_result", "tool_use_id": m.tool_call_id, "content": m.text()})]),
             };
             // Consecutive tool results must share one user turn.
-            if let Some(last) = messages.last_mut() {
-                if last["role"] == role && role == "user" && m.role == MsgRole::Tool {
-                    last["content"]
-                        .as_array_mut()
-                        .expect("array")
-                        .extend(content);
-                    continue;
-                }
+            if let Some(last) = messages.last_mut()
+                && last["role"] == role
+                && role == "user"
+                && m.role == MsgRole::Tool
+            {
+                last["content"]
+                    .as_array_mut()
+                    .expect("array")
+                    .extend(content);
+                continue;
             }
             messages.push(json!({"role": role, "content": content}));
         }

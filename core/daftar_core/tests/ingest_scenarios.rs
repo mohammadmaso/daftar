@@ -10,7 +10,7 @@ use daftar_core::providers::{
     ChatRequest, ChatResponse, MockProvider, MsgRole, StopReason, ToolCall,
 };
 use daftar_core::queue::{JobKind, JobState};
-use daftar_core::raw::{self, NewCapture, RawKind, RawStatus};
+use daftar_core::raw::{self, RawStatus};
 use daftar_core::session::Session;
 use daftar_core::sync::{GitAuth, SyncState};
 use daftar_core::testutil::zoned;
@@ -585,8 +585,5 @@ async fn persian_voice_note_is_filed_with_journal_link_and_claim() {
         "{}",
         e.summary
     );
-    assert!(
-        d.read(&format!("log/2026-09.md"))
-            .contains("ingest | health, life")
-    );
+    assert!(d.read("log/2026-09.md").contains("ingest | health, life"));
 }
