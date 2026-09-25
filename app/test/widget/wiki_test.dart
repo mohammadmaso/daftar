@@ -25,18 +25,20 @@ void main() {
 
     await tester.tap(find.text('Journal · 23 Sep'));
     await tester.pumpAndSettle();
-    expect(find.byType(MarkdownView), findsOneWidget);
+    expect(find.byType(MarkdownBlock).first, findsOneWidget);
     expect(
       find.text('journal-day'),
       findsOneWidget,
       reason: 'property header, not raw YAML',
     );
+    // The body is built lazily: bring the callout into view first.
+    await scrollTo(tester, find.text('From laptop'));
+    expect(find.text('From laptop'), findsOneWidget);
     expect(
       find.text('Edited on two devices'),
       findsNothing,
       reason: 'a titled callout shows its own title',
     );
-    expect(find.text('From laptop'), findsOneWidget);
   });
 
   testWidgets(

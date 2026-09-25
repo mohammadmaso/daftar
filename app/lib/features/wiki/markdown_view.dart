@@ -63,7 +63,20 @@ class BlockIdSyntax extends md.InlineSyntax {
   }
 }
 
+/// Recently parsed bodies: rebuilds (theme, language, a sync elsewhere) don't re-parse a page.
+final _parsed = <String, List<md.Node>>{};
+const _parsedKeep = 16;
+
 List<md.Node> parseMarkdown(String text) {
+  final hit = _parsed.remove(text);
+  if (hit != null) return _parsed[text] = hit; // most recent last
+  final nodes = _parse(text);
+  _parsed[text] = nodes;
+  if (_parsed.length > _parsedKeep) _parsed.remove(_parsed.keys.first);
+  return nodes;
+}
+
+List<md.Node> _parse(String text) {
   final doc = md.Document(
     extensionSet: md.ExtensionSet.gitHubFlavored,
     inlineSyntaxes: [WikiLinkSyntax(), InlineFieldSyntax(), BlockIdSyntax()],
@@ -113,6 +126,31 @@ class MarkdownView extends StatelessWidget {
     );
     return selectable ? SelectionArea(child: column) : column;
   }
+}
+
+/// One top-level block of a parsed body. Long pages hand these to a lazy list, so only what is on
+/// screen is laid out and painted (§12: smooth scrolling on long pages).
+class MarkdownBlock extends StatelessWidget {
+  const MarkdownBlock({
+    super.key,
+    required this.node,
+    required this.onLink,
+    this.imageRoot,
+  });
+
+  final md.Node node;
+  final LinkTap onLink;
+  final String? imageRoot;
+
+  // Full width, as in MarkdownView's stretched column: each paragraph then aligns by its own
+  // direction, not by the UI's.
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    child:
+        _Renderer(context, onLink, imageRoot).block(node) ??
+        const SizedBox.shrink(),
+  );
 }
 
 class _Renderer {

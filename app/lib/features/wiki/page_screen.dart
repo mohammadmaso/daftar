@@ -88,11 +88,13 @@ class PageScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-          children: [
-            _Properties(page: pg),
-            MarkdownView(text: pg.body, onLink: open, imageRoot: root),
-            if (!isRaw) _Backlinks(page: pg),
+          selectable: true,
+          blocks: [
+            for (final n in parseMarkdown(pg.body))
+              MarkdownBlock(node: n, onLink: open, imageRoot: root),
           ],
+          after: [if (!isRaw) _Backlinks(page: pg)],
+          children: [_Properties(page: pg)],
         );
       },
     );

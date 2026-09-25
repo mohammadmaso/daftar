@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart'
-    show InputBorder, InputDecoration, Material, TextField;
+    show InputBorder, InputDecoration, Material, SelectionArea, TextField;
 import 'package:flutter/widgets.dart';
 
 import '../icons.dart';
@@ -245,10 +245,23 @@ class DPage extends StatelessWidget {
     this.onBack,
     this.backLabel,
     this.trailing,
+    this.blocks = const [],
+    this.after = const [],
+    this.selectable = false,
   });
 
   final String title;
   final List<Widget> children;
+
+  /// Body blocks after [children], built lazily and without section gaps (they carry their own
+  /// spacing): a long page lays out only what is on screen.
+  final List<Widget> blocks;
+
+  /// Sections after [blocks], spaced like [children].
+  final List<Widget> after;
+
+  /// Text on the page can be selected across blocks.
+  final bool selectable;
   final VoidCallback? onBack;
   final String? backLabel;
   final Widget? trailing;
@@ -256,51 +269,60 @@ class DPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final scroll = CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: _Measure(
+            child: Padding(
+              padding: const EdgeInsets.only(top: Space.x4, bottom: Space.x6),
+              child: Row(
+                children: [
+                  if (onBack != null) ...[
+                    DIconButton(
+                      icon: DIcons.back,
+                      onPressed: onBack,
+                      semanticLabel: backLabel ?? '',
+                    ),
+                    const SizedBox(width: Space.x1),
+                  ],
+                  Expanded(
+                    child: Semantics(
+                      header: true,
+                      child: Text(
+                        title,
+                        style: context.type.display.copyWith(color: p.ink),
+                      ),
+                    ),
+                  ),
+                  ?trailing,
+                ],
+              ),
+            ),
+          ),
+        ),
+        SliverList.separated(
+          itemCount: children.length,
+          separatorBuilder: (_, _) => const SizedBox(height: Space.x8),
+          itemBuilder: (_, i) => _Measure(child: children[i]),
+        ),
+        if (blocks.isNotEmpty) ...[
+          const SliverToBoxAdapter(child: SizedBox(height: Space.x8)),
+          SliverList.builder(
+            itemCount: blocks.length,
+            itemBuilder: (_, i) => _Measure(child: blocks[i]),
+          ),
+        ],
+        for (final a in after) ...[
+          const SliverToBoxAdapter(child: SizedBox(height: Space.x8)),
+          SliverToBoxAdapter(child: _Measure(child: a)),
+        ],
+        const SliverToBoxAdapter(child: SizedBox(height: Space.x12)),
+      ],
+    );
     return Material(
       color: p.paper,
       child: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: _Measure(
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: Space.x4,
-                    bottom: Space.x6,
-                  ),
-                  child: Row(
-                    children: [
-                      if (onBack != null) ...[
-                        DIconButton(
-                          icon: DIcons.back,
-                          onPressed: onBack,
-                          semanticLabel: backLabel ?? '',
-                        ),
-                        const SizedBox(width: Space.x1),
-                      ],
-                      Expanded(
-                        child: Semantics(
-                          header: true,
-                          child: Text(
-                            title,
-                            style: context.type.display.copyWith(color: p.ink),
-                          ),
-                        ),
-                      ),
-                      ?trailing,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            SliverList.separated(
-              itemCount: children.length,
-              separatorBuilder: (_, _) => const SizedBox(height: Space.x8),
-              itemBuilder: (_, i) => _Measure(child: children[i]),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: Space.x12)),
-          ],
-        ),
+        child: selectable ? SelectionArea(child: scroll) : scroll,
       ),
     );
   }
