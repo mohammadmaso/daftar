@@ -4,6 +4,8 @@ mod anthropic;
 mod gemini;
 pub mod mock;
 mod openai;
+mod probe;
+mod retry;
 mod sse;
 
 use std::collections::BTreeMap;
@@ -18,6 +20,8 @@ pub use anthropic::Anthropic;
 pub use gemini::Gemini;
 pub use mock::MockProvider;
 pub use openai::OpenAiCompatible;
+pub use probe::{ProbeResult, probe};
+pub use retry::Retrying;
 
 // ─────────────────────────── configuration ───────────────────────────
 
@@ -146,6 +150,55 @@ impl AiConfig {
 
     pub fn provider(&self, id: &str) -> Option<&ProviderConfig> {
         self.providers.iter().find(|p| p.id == id)
+    }
+
+    /// Adds or replaces a provider. An empty id gets a fresh one. Returns the id.
+    pub fn upsert_provider(&mut self, mut p: ProviderConfig) -> String {
+        if p.id.trim().is_empty() {
+            p.id = format!("p-{}", crate::ids::new_id().to_string().to_lowercase());
+        }
+        let id = p.id.clone();
+        match self.providers.iter_mut().find(|x| x.id == id) {
+            Some(x) => *x = p,
+            None => self.providers.push(p),
+        }
+        id
+    }
+
+    /// Removes a provider and every role that used it (those roles fall back again).
+    pub fn remove_provider(&mut self, id: &str) {
+        self.providers.retain(|p| p.id != id);
+        self.roles.retain(|r| r.provider != id);
+    }
+
+    /// Points `role` at a provider and model, keeping parameters when only the model changes.
+    pub fn set_role(&mut self, role: Role, provider: &str, model: &str) {
+        match self.roles.iter_mut().find(|r| r.role == role) {
+            Some(r) => {
+                if r.provider != provider {
+                    r.params.clear();
+                }
+                r.provider = provider.to_owned();
+                r.model = model.trim().to_owned();
+            }
+            None => self.roles.push(RoleConfig {
+                role,
+                provider: provider.to_owned(),
+                model: model.trim().to_owned(),
+                params: Default::default(),
+            }),
+        }
+    }
+
+    /// Removes the explicit setting for `role`; it falls back to another role if it can.
+    pub fn clear_role(&mut self, role: Role) {
+        self.roles.retain(|r| r.role != role);
+    }
+
+    /// The role whose setting `role` actually uses, if it is not set itself.
+    pub fn inherited_from(&self, role: Role) -> Option<Role> {
+        let used = self.role(role)?.role;
+        (used != role).then_some(used)
     }
 
     pub fn cost(&self, model: &str, u: &Usage) -> Option<f64> {
@@ -462,9 +515,11 @@ pub fn build(config: &ProviderConfig, api_key: Option<String>) -> ProviderResult
     let key = api_key.unwrap_or_default();
     let timeout = std::time::Duration::from_secs(config.timeout_s.max(5));
     Ok(match config.kind {
-        ProviderKind::OpenaiCompatible => Arc::new(OpenAiCompatible::new(config, key, timeout)),
-        ProviderKind::Anthropic => Arc::new(Anthropic::new(config, key, timeout)),
-        ProviderKind::Gemini => Arc::new(Gemini::new(config, key, timeout)),
+        ProviderKind::OpenaiCompatible => {
+            retry::wrap(Arc::new(OpenAiCompatible::new(config, key, timeout)))
+        }
+        ProviderKind::Anthropic => retry::wrap(Arc::new(Anthropic::new(config, key, timeout))),
+        ProviderKind::Gemini => retry::wrap(Arc::new(Gemini::new(config, key, timeout))),
         ProviderKind::Mock => Arc::new(
             MockProvider::from_file(&config.base_url)
                 .map_err(|e| ProviderError::new(ProviderErrorKind::NotConfigured, e.to_string()))?,
@@ -535,6 +590,36 @@ mod tests {
         };
         assert_eq!(cfg.role(Role::Router).unwrap().role, Role::Chat);
         assert!(cfg.role(Role::Stt).is_none());
+    }
+
+    #[test]
+    fn editing_providers_and_roles() {
+        let mut cfg = AiConfig::default();
+        let id = cfg.upsert_provider(ProviderConfig {
+            id: String::new(),
+            name: "OpenRouter".into(),
+            kind: ProviderKind::OpenaiCompatible,
+            base_url: "https://openrouter.ai/api/v1".into(),
+            extra_headers: Default::default(),
+            timeout_s: 60,
+        });
+        assert!(id.starts_with("p-"));
+        cfg.set_role(Role::Chat, &id, " gpt-5-mini ");
+        assert_eq!(cfg.role(Role::Chat).unwrap().model, "gpt-5-mini");
+        assert_eq!(cfg.inherited_from(Role::Router), Some(Role::Chat));
+        assert_eq!(cfg.inherited_from(Role::Chat), None);
+
+        let mut renamed = cfg.provider(&id).unwrap().clone();
+        renamed.name = "My OpenRouter".into();
+        assert_eq!(cfg.upsert_provider(renamed), id);
+        assert_eq!(cfg.providers.len(), 1);
+        assert_eq!(cfg.providers[0].name, "My OpenRouter");
+
+        cfg.clear_role(Role::Chat);
+        assert!(cfg.role(Role::Router).is_none());
+        cfg.set_role(Role::Stt, &id, "whisper-1");
+        cfg.remove_provider(&id);
+        assert!(cfg.providers.is_empty() && cfg.roles.is_empty());
     }
 
     #[test]

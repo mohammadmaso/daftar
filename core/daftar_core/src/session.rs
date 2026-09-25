@@ -12,7 +12,7 @@ use crate::agent::Cancel;
 use crate::layout::Date;
 use crate::library::{Library, LocalDevice};
 use crate::ops::{self, IngestOptions, IngestOutcome, OpError};
-use crate::providers::ProviderErrorKind;
+use crate::providers::{ProviderErrorKind, Role};
 use crate::queue::{JobKind, JobState, Queue};
 use crate::raw::{self, NewCapture, RawItem, RawKind, RawStatus};
 use crate::runtime::AiRuntime;
@@ -55,6 +55,22 @@ pub struct CaptureView {
     pub images: Vec<String>,
     pub stage: CaptureStage,
     pub problem: Option<String>,
+    /// What filing did, once filed (§4.2 step 5).
+    pub filing: Option<Filing>,
+}
+
+/// The outcome of the live ingest op for a capture, for "Filed to Life · Health — 4 pages
+/// updated, 1 claim to review".
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Filing {
+    pub op_id: String,
+    pub vaults: Vec<String>,
+    pub pages_created: usize,
+    pub pages_updated: usize,
+    /// Proposed claims from this op still waiting in Review.
+    pub claims_to_review: usize,
+    /// All Review items from this op still waiting (claims, routing, questions).
+    pub to_review: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -64,6 +80,9 @@ pub struct JobReport {
     pub raw_id: Option<String>,
     pub state: JobState,
     pub message: Option<String>,
+    /// Set when the job waits because no model is set up for this role yet.
+    #[serde(default)]
+    pub waiting_for: Option<crate::providers::Role>,
 }
 
 impl Session {
@@ -203,6 +222,36 @@ impl Session {
 
     pub fn day(&self, date: Date) -> Result<Vec<CaptureView>> {
         let items = raw::list_day(&self.lib, date)?;
+        let ops = if items.iter().any(|i| i.meta.status == RawStatus::Ingested) {
+            crate::ledger::since(&self.lib, date.year, date.month)?
+        } else {
+            vec![]
+        };
+        let live = crate::ledger::live_ingests_by_source(&ops);
+        let pending_review = if live.is_empty() {
+            vec![]
+        } else {
+            crate::review::list(&self.lib)?
+        };
+        let filing_of = |raw_id: &str| -> Option<Filing> {
+            // The newest live op wins (a replay or re-run supersedes older ones).
+            let op_id = live.get(raw_id)?.last()?;
+            let e = ops.iter().find(|e| &e.op_id == op_id)?;
+            let mine = pending_review
+                .iter()
+                .filter(|r| r.op_id.as_deref() == Some(op_id));
+            Some(Filing {
+                op_id: op_id.clone(),
+                vaults: vaults_of(e),
+                pages_created: e.pages_created.len(),
+                pages_updated: e.pages_updated.len(),
+                claims_to_review: mine
+                    .clone()
+                    .filter(|r| r.kind == crate::review::ReviewKind::Claim)
+                    .count(),
+                to_review: mine.count(),
+            })
+        };
         let q = self.queue();
         let mut out = Vec::with_capacity(items.len());
         for item in items {
@@ -244,6 +293,11 @@ impl Session {
                     .collect(),
                 stage,
                 problem,
+                filing: if item.meta.status == RawStatus::Ingested {
+                    filing_of(&item.meta.id)
+                } else {
+                    None
+                },
             });
         }
         Ok(out)
@@ -321,6 +375,7 @@ impl Session {
                         raw_id: job.raw_id,
                         state: JobState::Done,
                         message: summary,
+                        waiting_for: None,
                     }
                 }
                 Err(OpError::Provider(p)) if p.kind == ProviderErrorKind::NotConfigured => {
@@ -332,6 +387,12 @@ impl Session {
                         raw_id: job.raw_id,
                         state: JobState::Queued,
                         message: Some(p.message),
+                        waiting_for: Some(match job.kind {
+                            JobKind::Transcribe => Role::Stt,
+                            JobKind::Describe => Role::Vision,
+                            _ if rt.has(Role::Router) => Role::Ingest,
+                            _ => Role::Router,
+                        }),
                     });
                     break;
                 }
@@ -348,6 +409,7 @@ impl Session {
                         raw_id: job.raw_id,
                         state,
                         message: Some(msg),
+                        waiting_for: None,
                     });
                     if stop {
                         break; // FIFO: later jobs wait for this one's retry
@@ -358,6 +420,30 @@ impl Session {
             reports.push(report);
         }
         Ok(reports)
+    }
+
+    /// Model roles resolved against the shared config, with API keys from secure storage.
+    pub fn runtime(&self, secrets: std::collections::HashMap<String, String>) -> Result<AiRuntime> {
+        Ok(AiRuntime::new(self.lib.config()?.ai, secrets))
+    }
+
+    /// Makes a failed capture's jobs runnable again (the user pressed Retry).
+    pub fn retry_capture(&self, raw_id: &str) -> Result<()> {
+        let id: ulid::Ulid = raw_id
+            .parse()
+            .map_err(|_| crate::Error::invalid("bad id"))?;
+        let q = self.queue();
+        for j in q.jobs_for_raw(id)? {
+            if j.state == JobState::Failed && j.last_error.as_deref() != Some("discarded") {
+                q.retry(&j.id)?;
+            }
+        }
+        Ok(())
+    }
+
+    /// Whether any AI job is waiting to run.
+    pub fn has_pending_jobs(&self) -> Result<bool> {
+        self.queue().has_pending()
     }
 
     pub fn status(&self) -> Result<LocalStatus> {
@@ -386,6 +472,19 @@ impl Session {
         }
         Ok(outcome)
     }
+}
+
+/// Vaults an op wrote to, in first-touched order, from the pages it created or updated.
+fn vaults_of(e: &crate::ledger::LedgerEntry) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    for p in e.pages_created.iter().chain(&e.pages_updated) {
+        if let Some(v) = crate::pages::vault_of(p)
+            && !out.iter().any(|x| x == v)
+        {
+            out.push(v.to_owned());
+        }
+    }
+    out
 }
 
 #[cfg(test)]
@@ -422,6 +521,62 @@ mod tests {
             s.day(crate::time::date_of(&now)).unwrap()[0].stage,
             CaptureStage::Filed
         );
+    }
+
+    #[test]
+    fn filed_captures_carry_what_filing_did() {
+        use crate::ledger::{LedgerEntry, OpType};
+        use crate::review::{ReviewItem, ReviewKind};
+
+        let (_d, s) = session();
+        let now = zoned("2026-09-23T10:00:00+03:30[Asia/Tehran]");
+        let t = s.capture_text("سر درد دارم", None, &now).unwrap();
+        let op = crate::ids::new_id().to_string();
+        crate::ledger::write(
+            s.library(),
+            &LedgerEntry {
+                op_id: op.clone(),
+                op_type: OpType::Ingest,
+                sources: vec![t.meta.id.clone()],
+                router: None,
+                models: vec![],
+                pages_created: vec!["vaults/life/journal/2026/2026-09-23.md".into()],
+                pages_updated: vec![
+                    "vaults/life/people/sara.md".into(),
+                    "vaults/health/profile.md".into(),
+                    "vaults/health/symptoms-log.md".into(),
+                ],
+                claims_added: vec!["c-1".into()],
+                review_items: vec![],
+                usage: Default::default(),
+                started_at: String::new(),
+                finished_at: String::new(),
+                device: "pixel-8".into(),
+                summary: String::new(),
+                note: None,
+                forced_vault: None,
+                replayed_from: None,
+                reverts: None,
+            },
+        )
+        .unwrap();
+        for kind in [ReviewKind::Claim, ReviewKind::Routing] {
+            crate::review::add(
+                s.library(),
+                &ReviewItem::new(kind, "pixel-8", &now, Some(op.clone()), json!({})),
+            )
+            .unwrap();
+        }
+        raw::set_status(s.library(), &t.path, RawStatus::Ingested).unwrap();
+
+        let f = s.day(crate::time::date_of(&now)).unwrap()[0]
+            .filing
+            .clone()
+            .expect("filed capture has a filing");
+        assert_eq!(f.op_id, op);
+        assert_eq!(f.vaults, vec!["life".to_string(), "health".to_string()]);
+        assert_eq!((f.pages_created, f.pages_updated), (1, 3));
+        assert_eq!((f.claims_to_review, f.to_review), (1, 2));
     }
 
     #[test]

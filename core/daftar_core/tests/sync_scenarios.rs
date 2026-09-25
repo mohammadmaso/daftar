@@ -327,3 +327,58 @@ fn capture_is_fast() {
         "worst capture took {worst:?}"
     );
 }
+
+/// Settings changed on two devices while apart merge structurally; config.json stays valid JSON.
+#[test]
+fn concurrent_settings_changes_merge() {
+    use daftar_core::providers::{ProviderConfig, ProviderKind, Role};
+
+    let remote = Remote::new();
+    let a = Device::clone_from(&remote, "pixel-8");
+    let b = Device::clone_from(&remote, "laptop");
+    let provider = |name: &str| ProviderConfig {
+        id: String::new(),
+        name: name.into(),
+        kind: ProviderKind::OpenaiCompatible,
+        base_url: String::new(),
+        extra_headers: Default::default(),
+        timeout_s: 60,
+    };
+    let pa = a
+        .lib
+        .update_config(|c| {
+            let id = c.ai.upsert_provider(provider("OpenRouter"));
+            c.ai.set_role(Role::Chat, &id, "gpt-5-mini");
+            id
+        })
+        .unwrap();
+    let pb = b
+        .lib
+        .update_config(|c| {
+            c.routing_threshold = 0.7;
+            let id = c.ai.upsert_provider(provider("Anthropic"));
+            c.ai.set_role(Role::Ingest, &id, "claude-sonnet-5");
+            id
+        })
+        .unwrap();
+    assert_eq!(a.sync().state, SyncState::Synced);
+    let o = b.sync();
+    assert_eq!(o.state, SyncState::Synced, "{o:?}");
+    assert!(o.conflicts.is_empty(), "{:?}", o.conflicts);
+    a.sync();
+
+    for d in [&a, &b] {
+        let c = d.lib.config().expect("config.json is still valid");
+        assert!(c.ai.provider(&pa).is_some() && c.ai.provider(&pb).is_some());
+        assert_eq!(c.ai.role(Role::Chat).unwrap().provider, pa);
+        assert_eq!(c.ai.role(Role::Ingest).unwrap().provider, pb);
+        assert_eq!(c.routing_threshold, 0.7);
+        no_conflict_markers(d.root());
+    }
+    assert!(
+        remote
+            .commit_subjects()
+            .iter()
+            .any(|s| s == "settings: shared settings changed")
+    );
+}

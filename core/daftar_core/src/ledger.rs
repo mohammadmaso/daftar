@@ -106,17 +106,37 @@ pub fn write(lib: &Library, entry: &LedgerEntry) -> Result<String> {
 
 /// All ledger entries, ordered by op id (= chronological).
 pub fn all(lib: &Library) -> Result<Vec<LedgerEntry>> {
+    load(lib, None)
+}
+
+/// Entries of ops that ran in `(year, month)` or later, ordered by op id. Anything that refers to
+/// an older op (a revert, a replay) is always newer than it, so this is enough to judge the fate
+/// of a capture made in that month without reading the whole ledger.
+pub fn since(lib: &Library, year: i32, month: u8) -> Result<Vec<LedgerEntry>> {
+    load(lib, Some((year, month)))
+}
+
+fn load(lib: &Library, from: Option<(i32, u8)>) -> Result<Vec<LedgerEntry>> {
     let mut out = BTreeMap::new();
     let root = lib.path(".daftar/ledger");
-    let mut stack = vec![root];
-    while let Some(dir) = stack.pop() {
+    // (dir, depth): depth 0 = ledger root, 1 = year, 2 = month.
+    let mut stack = vec![(root, 0u8, 0i32)];
+    while let Some((dir, depth, year)) = stack.pop() {
         let Ok(entries) = fs::read_dir(&dir) else {
             continue;
         };
         for e in entries.flatten() {
             let p = e.path();
             if p.is_dir() {
-                stack.push(p);
+                let n: Option<i32> = p.file_name().and_then(|n| n.to_str()?.parse().ok());
+                let keep = match (from, depth, n) {
+                    (Some((y, _)), 0, Some(v)) => v >= y,
+                    (Some((y, m)), 1, Some(v)) => year > y || v >= i32::from(m),
+                    _ => true,
+                };
+                if keep {
+                    stack.push((p, depth + 1, n.unwrap_or(0)));
+                }
             } else if p.extension().is_some_and(|x| x == "json") {
                 match fs::read(&p)
                     .map_err(crate::Error::from)
@@ -244,6 +264,28 @@ mod tests {
         let rev = reverted_ops(&es);
         assert!(rev.contains(r1) && !rev.contains(a));
         assert_eq!(live_ingests_by_source(&es)["raw1"], vec![a.to_string()]);
+    }
+
+    #[test]
+    fn since_skips_older_months() {
+        let (_d, lib) = crate::testutil::lib_in();
+        let at = |s: &str| {
+            let ms = s.parse::<jiff::Timestamp>().unwrap().as_millisecond() as u64;
+            ulid::Ulid::from_parts(ms, 7).to_string()
+        };
+        let aug = at("2026-08-30T10:00:00Z");
+        let sep = at("2026-09-02T10:00:00Z");
+        let jan = at("2027-01-05T10:00:00Z");
+        for id in [&aug, &sep, &jan] {
+            write(&lib, &entry(id, OpType::Ingest, &["r"], None)).unwrap();
+        }
+        let ids = |es: Vec<LedgerEntry>| es.into_iter().map(|e| e.op_id).collect::<Vec<_>>();
+        assert_eq!(
+            ids(since(&lib, 2026, 9).unwrap()),
+            vec![sep.clone(), jan.clone()]
+        );
+        assert_eq!(ids(since(&lib, 2027, 1).unwrap()), vec![jan.clone()]);
+        assert_eq!(all(&lib).unwrap().len(), 3);
     }
 
     #[test]

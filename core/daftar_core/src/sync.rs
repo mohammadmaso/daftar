@@ -251,6 +251,7 @@ pub fn commit_local(lib: &Library, queue: &Queue, dev: &LocalDevice) -> Result<u
     let mut captures = Vec::new();
     let mut capture_kinds: Vec<&'static str> = Vec::new();
     let mut raw_other = Vec::new();
+    let mut settings = Vec::new();
     let mut edits = Vec::new();
 
     for s in statuses.iter() {
@@ -282,6 +283,8 @@ pub fn commit_local(lib: &Library, queue: &Queue, dev: &LocalDevice) -> Result<u
             }
         } else if path.starts_with(".daftar/devices/") {
             raw_other.push(path);
+        } else if path == layout::CONFIG_FILE {
+            settings.push(path);
         } else {
             edits.push(path);
         }
@@ -308,6 +311,12 @@ pub fn commit_local(lib: &Library, queue: &Queue, dev: &LocalDevice) -> Result<u
         all.extend(raw_other);
         let msg = format!("{subject}\n\nDevice: {}\n", dev.id);
         if commit_paths(&repo, &all, &msg, &sig)?.is_some() {
+            n += 1;
+        }
+    }
+    if !settings.is_empty() {
+        let msg = format!("settings: shared settings changed\n\nDevice: {}\n", dev.id);
+        if commit_paths(&repo, &settings, &msg, &sig)?.is_some() {
             n += 1;
         }
     }
@@ -903,6 +912,17 @@ fn resolve_human_conflicts(
                     && path.matches('/').count() == 2;
                 if is_generated {
                     Some(repo.find_blob(ours.id)?.content().to_vec())
+                } else if path == layout::CONFIG_FILE {
+                    let parse = |e: &git2::IndexEntry| -> Result<serde_json::Value> {
+                        Ok(serde_json::from_slice(repo.find_blob(e.id)?.content())?)
+                    };
+                    let base = c.ancestor.as_ref().map(parse).transpose()?;
+                    // `ours` is the remote side here, `theirs` this device (see labels below).
+                    let merged =
+                        crate::config::merge_json(base.as_ref(), &parse(ours)?, &parse(theirs)?);
+                    let mut text = serde_json::to_string_pretty(&merged)?;
+                    text.push('\n');
+                    Some(text.into_bytes())
                 } else {
                     let mut opts = git2::MergeFileOptions::new();
                     opts.our_label("remote").their_label("local");

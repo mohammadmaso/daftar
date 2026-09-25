@@ -247,6 +247,16 @@ impl Queue {
         Ok(())
     }
 
+    /// Whether any job is waiting or running (failed jobs wait for the user and do not count).
+    pub fn has_pending(&self) -> Result<bool> {
+        let n: i64 = self.conn.query_row(
+            "SELECT count(*) FROM jobs WHERE state IN ('queued','running')",
+            [],
+            |r| r.get(0),
+        )?;
+        Ok(n > 0)
+    }
+
     /// Jobs not yet done, oldest first.
     pub fn open_jobs(&self) -> Result<Vec<Job>> {
         let mut stmt = self
