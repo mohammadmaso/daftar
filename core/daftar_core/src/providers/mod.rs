@@ -152,7 +152,12 @@ impl AiConfig {
         let p = self.prices.get(model)?;
         let cached = p.cached_input.unwrap_or(p.input);
         let fresh = u.input_tokens.saturating_sub(u.cached_input_tokens) as f64;
-        Some((fresh * p.input + u.cached_input_tokens as f64 * cached + u.output_tokens as f64 * p.output) / 1e6)
+        Some(
+            (fresh * p.input
+                + u.cached_input_tokens as f64 * cached
+                + u.output_tokens as f64 * p.output)
+                / 1e6,
+        )
     }
 }
 
@@ -161,9 +166,14 @@ impl AiConfig {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Part {
-    Text { text: String },
+    Text {
+        text: String,
+    },
     /// Base64 image data.
-    Image { media_type: String, data: String },
+    Image {
+        media_type: String,
+        data: String,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -196,17 +206,35 @@ pub struct Message {
 
 impl Message {
     pub fn user(text: impl Into<String>) -> Self {
-        Self { role: MsgRole::User, parts: vec![Part::Text { text: text.into() }], tool_calls: vec![], tool_call_id: None, tool_name: None }
+        Self {
+            role: MsgRole::User,
+            parts: vec![Part::Text { text: text.into() }],
+            tool_calls: vec![],
+            tool_call_id: None,
+            tool_name: None,
+        }
     }
     pub fn assistant(text: impl Into<String>, tool_calls: Vec<ToolCall>) -> Self {
         let text = text.into();
-        let parts = if text.is_empty() { vec![] } else { vec![Part::Text { text }] };
-        Self { role: MsgRole::Assistant, parts, tool_calls, tool_call_id: None, tool_name: None }
+        let parts = if text.is_empty() {
+            vec![]
+        } else {
+            vec![Part::Text { text }]
+        };
+        Self {
+            role: MsgRole::Assistant,
+            parts,
+            tool_calls,
+            tool_call_id: None,
+            tool_name: None,
+        }
     }
     pub fn tool(call: &ToolCall, result: impl Into<String>) -> Self {
         Self {
             role: MsgRole::Tool,
-            parts: vec![Part::Text { text: result.into() }],
+            parts: vec![Part::Text {
+                text: result.into(),
+            }],
             tool_calls: vec![],
             tool_call_id: Some(call.id.clone()),
             tool_name: Some(call.name.clone()),
@@ -292,40 +320,91 @@ pub struct ProviderError {
 
 impl ProviderError {
     pub fn new(kind: ProviderErrorKind, message: impl Into<String>) -> Self {
-        Self { kind, message: message.into(), retry_after_s: None }
+        Self {
+            kind,
+            message: message.into(),
+            retry_after_s: None,
+        }
     }
 
     /// Whether retrying later can succeed (network blips, rate limits, 5xx).
     pub fn transient(&self) -> bool {
-        matches!(self.kind, ProviderErrorKind::RateLimited | ProviderErrorKind::Network | ProviderErrorKind::Timeout | ProviderErrorKind::Server)
+        matches!(
+            self.kind,
+            ProviderErrorKind::RateLimited
+                | ProviderErrorKind::Network
+                | ProviderErrorKind::Timeout
+                | ProviderErrorKind::Server
+        )
     }
 
-    pub(crate) fn from_status(provider: &str, status: u16, body: &str, retry_after: Option<u64>) -> Self {
+    pub(crate) fn from_status(
+        provider: &str,
+        status: u16,
+        body: &str,
+        retry_after: Option<u64>,
+    ) -> Self {
         let detail = extract_message(body);
         let (kind, msg) = match status {
-            401 | 403 => (ProviderErrorKind::Auth, format!("{provider} rejected the API key.")),
-            429 => (ProviderErrorKind::RateLimited, format!("{provider} is rate-limiting requests; will retry.")),
-            404 => (ProviderErrorKind::BadRequest, format!("{provider} doesn't know this model or endpoint.")),
-            400 | 413 | 422 => (ProviderErrorKind::BadRequest, format!("{provider} refused the request.")),
-            500..=599 => (ProviderErrorKind::Server, format!("{provider} had a server error; will retry.")),
-            _ => (ProviderErrorKind::Server, format!("{provider} answered with status {status}.")),
+            401 | 403 => (
+                ProviderErrorKind::Auth,
+                format!("{provider} rejected the API key."),
+            ),
+            429 => (
+                ProviderErrorKind::RateLimited,
+                format!("{provider} is rate-limiting requests; will retry."),
+            ),
+            404 => (
+                ProviderErrorKind::BadRequest,
+                format!("{provider} doesn't know this model or endpoint."),
+            ),
+            400 | 413 | 422 => (
+                ProviderErrorKind::BadRequest,
+                format!("{provider} refused the request."),
+            ),
+            500..=599 => (
+                ProviderErrorKind::Server,
+                format!("{provider} had a server error; will retry."),
+            ),
+            _ => (
+                ProviderErrorKind::Server,
+                format!("{provider} answered with status {status}."),
+            ),
         };
         let message = match detail {
-            Some(d) if !d.is_empty() => format!("{msg} ({})", d.chars().take(200).collect::<String>()),
+            Some(d) if !d.is_empty() => {
+                format!("{msg} ({})", d.chars().take(200).collect::<String>())
+            }
             _ => msg,
         };
-        Self { kind, message, retry_after_s: retry_after }
+        Self {
+            kind,
+            message,
+            retry_after_s: retry_after,
+        }
     }
 
     pub(crate) fn from_reqwest(provider: &str, e: reqwest::Error) -> Self {
         if e.is_timeout() {
-            Self::new(ProviderErrorKind::Timeout, format!("{provider} took too long to answer."))
+            Self::new(
+                ProviderErrorKind::Timeout,
+                format!("{provider} took too long to answer."),
+            )
         } else if e.is_connect() || e.is_request() {
-            Self::new(ProviderErrorKind::Network, format!("Couldn't reach {provider}."))
+            Self::new(
+                ProviderErrorKind::Network,
+                format!("Couldn't reach {provider}."),
+            )
         } else if e.is_decode() || e.is_body() {
-            Self::new(ProviderErrorKind::Server, format!("{provider} sent a response that couldn't be read."))
+            Self::new(
+                ProviderErrorKind::Server,
+                format!("{provider} sent a response that couldn't be read."),
+            )
         } else {
-            Self::new(ProviderErrorKind::Network, format!("Connection to {provider} failed."))
+            Self::new(
+                ProviderErrorKind::Network,
+                format!("Connection to {provider} failed."),
+            )
         }
     }
 }
@@ -347,14 +426,29 @@ pub type OnDelta<'a> = Option<&'a (dyn Fn(&str) + Send + Sync)>;
 pub trait LlmProvider: Send + Sync {
     fn name(&self) -> &str;
     async fn chat(&self, req: &ChatRequest, on_delta: OnDelta<'_>) -> ProviderResult<ChatResponse>;
-    async fn transcribe(&self, _model: &str, _audio: Vec<u8>, _file_name: &str, _language: Option<&str>) -> ProviderResult<String> {
-        Err(ProviderError::new(ProviderErrorKind::NotSupported, format!("{} has no speech-to-text endpoint.", self.name())))
+    async fn transcribe(
+        &self,
+        _model: &str,
+        _audio: Vec<u8>,
+        _file_name: &str,
+        _language: Option<&str>,
+    ) -> ProviderResult<String> {
+        Err(ProviderError::new(
+            ProviderErrorKind::NotSupported,
+            format!("{} has no speech-to-text endpoint.", self.name()),
+        ))
     }
     async fn speech(&self, _model: &str, _voice: &str, _text: &str) -> ProviderResult<Vec<u8>> {
-        Err(ProviderError::new(ProviderErrorKind::NotSupported, format!("{} has no text-to-speech endpoint.", self.name())))
+        Err(ProviderError::new(
+            ProviderErrorKind::NotSupported,
+            format!("{} has no text-to-speech endpoint.", self.name()),
+        ))
     }
     async fn embed(&self, _model: &str, _inputs: &[String]) -> ProviderResult<Vec<Vec<f32>>> {
-        Err(ProviderError::new(ProviderErrorKind::NotSupported, format!("{} has no embeddings endpoint.", self.name())))
+        Err(ProviderError::new(
+            ProviderErrorKind::NotSupported,
+            format!("{} has no embeddings endpoint.", self.name()),
+        ))
     }
     async fn list_models(&self) -> ProviderResult<Vec<String>> {
         Ok(vec![])
@@ -371,7 +465,10 @@ pub fn build(config: &ProviderConfig, api_key: Option<String>) -> ProviderResult
         ProviderKind::OpenaiCompatible => Arc::new(OpenAiCompatible::new(config, key, timeout)),
         ProviderKind::Anthropic => Arc::new(Anthropic::new(config, key, timeout)),
         ProviderKind::Gemini => Arc::new(Gemini::new(config, key, timeout)),
-        ProviderKind::Mock => Arc::new(MockProvider::from_file(&config.base_url).map_err(|e| ProviderError::new(ProviderErrorKind::NotConfigured, e.to_string()))?),
+        ProviderKind::Mock => Arc::new(
+            MockProvider::from_file(&config.base_url)
+                .map_err(|e| ProviderError::new(ProviderErrorKind::NotConfigured, e.to_string()))?,
+        ),
     })
 }
 
@@ -379,16 +476,38 @@ pub fn build(config: &ProviderConfig, api_key: Option<String>) -> ProviderResult
 pub fn capability_warning(role: Role, model: &str) -> Option<&'static str> {
     let m = model.to_lowercase();
     match role {
-        Role::Vision if ["whisper", "embedding", "tts", "gpt-3.5", "deepseek-r1", "llama-3.1", "mixtral"].iter().any(|x| m.contains(x)) => {
+        Role::Vision
+            if [
+                "whisper",
+                "embedding",
+                "tts",
+                "gpt-3.5",
+                "deepseek-r1",
+                "llama-3.1",
+                "mixtral",
+            ]
+            .iter()
+            .any(|x| m.contains(x)) =>
+        {
             Some("This model probably can't read images.")
         }
-        Role::Stt if !["whisper", "transcribe", "stt", "speech", "scribe", "nova"].iter().any(|x| m.contains(x)) => {
+        Role::Stt
+            if !["whisper", "transcribe", "stt", "speech", "scribe", "nova"]
+                .iter()
+                .any(|x| m.contains(x)) =>
+        {
             Some("This doesn't look like a speech-to-text model.")
         }
-        Role::Tts if !["tts", "speech", "voice", "sonic", "aura"].iter().any(|x| m.contains(x)) => {
+        Role::Tts
+            if !["tts", "speech", "voice", "sonic", "aura"]
+                .iter()
+                .any(|x| m.contains(x)) =>
+        {
             Some("This doesn't look like a text-to-speech model.")
         }
-        Role::Embedding if !m.contains("embed") => Some("This doesn't look like an embedding model."),
+        Role::Embedding if !m.contains("embed") => {
+            Some("This doesn't look like an embedding model.")
+        }
         Role::Router | Role::Ingest | Role::Chat | Role::Voice | Role::Reflect | Role::Lint
             if ["whisper", "embed", "tts-"].iter().any(|x| m.contains(x)) =>
         {
@@ -406,7 +525,12 @@ mod tests {
     fn roles_fall_back_to_chat() {
         let cfg = AiConfig {
             providers: vec![],
-            roles: vec![RoleConfig { role: Role::Chat, provider: "p1".into(), model: "m".into(), params: Default::default() }],
+            roles: vec![RoleConfig {
+                role: Role::Chat,
+                provider: "p1".into(),
+                model: "m".into(),
+                params: Default::default(),
+            }],
             prices: Default::default(),
         };
         assert_eq!(cfg.role(Role::Router).unwrap().role, Role::Chat);
@@ -416,17 +540,37 @@ mod tests {
     #[test]
     fn cost_uses_cached_price() {
         let mut cfg = AiConfig::default();
-        cfg.prices.insert("m".into(), Price { input: 3.0, output: 15.0, cached_input: Some(0.3) });
-        let u = Usage { input_tokens: 1_000_000, output_tokens: 100_000, cached_input_tokens: 500_000, cost_usd: None };
+        cfg.prices.insert(
+            "m".into(),
+            Price {
+                input: 3.0,
+                output: 15.0,
+                cached_input: Some(0.3),
+            },
+        );
+        let u = Usage {
+            input_tokens: 1_000_000,
+            output_tokens: 100_000,
+            cached_input_tokens: 500_000,
+            cost_usd: None,
+        };
         let c = cfg.cost("m", &u).unwrap();
         assert!((c - (1.5 + 0.15 + 1.5)).abs() < 1e-9, "{c}");
     }
 
     #[test]
     fn errors_are_human() {
-        let e = ProviderError::from_status("OpenRouter", 401, r#"{"error":{"message":"No auth credentials found"}}"#, None);
+        let e = ProviderError::from_status(
+            "OpenRouter",
+            401,
+            r#"{"error":{"message":"No auth credentials found"}}"#,
+            None,
+        );
         assert_eq!(e.kind, ProviderErrorKind::Auth);
-        assert_eq!(e.message, "OpenRouter rejected the API key. (No auth credentials found)");
+        assert_eq!(
+            e.message,
+            "OpenRouter rejected the API key. (No auth credentials found)"
+        );
         assert!(ProviderError::from_status("X", 503, "", None).transient());
         assert!(!e.transient());
     }

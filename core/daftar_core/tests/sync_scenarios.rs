@@ -322,5 +322,8 @@ fn capture_is_fast() {
         s.capture_text(&format!("note {i}"), None, &now).unwrap();
         worst = worst.max(t.elapsed());
     }
-    assert!(worst < std::time::Duration::from_millis(100), "worst capture took {worst:?}");
+    assert!(
+        worst < std::time::Duration::from_millis(100),
+        "worst capture took {worst:?}"
+    );
 }

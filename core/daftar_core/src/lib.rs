@@ -28,11 +28,11 @@ pub mod search;
 pub mod session;
 pub mod sync;
 pub mod testutil;
-pub mod wiki;
 pub mod time;
 pub mod tls;
 pub mod tools;
 pub mod validate;
+pub mod wiki;
 
 pub use error::{Error, Result};
 

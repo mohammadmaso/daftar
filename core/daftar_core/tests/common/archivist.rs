@@ -4,14 +4,29 @@
 use std::sync::Arc;
 
 use daftar_core::ledger::Usage;
-use daftar_core::providers::{AiConfig, ChatRequest, ChatResponse, MockProvider, MsgRole, ProviderConfig, ProviderKind, Role, RoleConfig, StopReason, ToolCall};
+use daftar_core::providers::{
+    AiConfig, ChatRequest, ChatResponse, MockProvider, MsgRole, ProviderConfig, ProviderKind, Role,
+    RoleConfig, StopReason, ToolCall,
+};
 use daftar_core::runtime::AiRuntime;
 use serde_json::{Value, json};
 
 pub fn ai_config() -> AiConfig {
-    let role = |r: Role| RoleConfig { role: r, provider: "mock".into(), model: "mock-large".into(), params: Default::default() };
+    let role = |r: Role| RoleConfig {
+        role: r,
+        provider: "mock".into(),
+        model: "mock-large".into(),
+        params: Default::default(),
+    };
     AiConfig {
-        providers: vec![ProviderConfig { id: "mock".into(), name: "Mock".into(), kind: ProviderKind::Mock, base_url: String::new(), extra_headers: Default::default(), timeout_s: 10 }],
+        providers: vec![ProviderConfig {
+            id: "mock".into(),
+            name: "Mock".into(),
+            kind: ProviderKind::Mock,
+            base_url: String::new(),
+            extra_headers: Default::default(),
+            timeout_s: 10,
+        }],
         roles: vec![role(Role::Chat), role(Role::Stt), role(Role::Vision)],
         prices: Default::default(),
     }
@@ -22,12 +37,36 @@ pub fn runtime(p: MockProvider) -> AiRuntime {
 }
 
 fn reply(text: &str, calls: Vec<(&str, Value)>) -> ChatResponse {
-    let tool_calls: Vec<ToolCall> = calls.into_iter().enumerate().map(|(i, (n, a))| ToolCall { id: format!("t{i}"), name: n.into(), arguments: a }).collect();
-    ChatResponse { text: text.into(), stop: if tool_calls.is_empty() { StopReason::EndTurn } else { StopReason::ToolUse }, tool_calls, usage: Usage { input_tokens: 100, output_tokens: 20, ..Default::default() } }
+    let tool_calls: Vec<ToolCall> = calls
+        .into_iter()
+        .enumerate()
+        .map(|(i, (n, a))| ToolCall {
+            id: format!("t{i}"),
+            name: n.into(),
+            arguments: a,
+        })
+        .collect();
+    ChatResponse {
+        text: text.into(),
+        stop: if tool_calls.is_empty() {
+            StopReason::EndTurn
+        } else {
+            StopReason::ToolUse
+        },
+        tool_calls,
+        usage: Usage {
+            input_tokens: 100,
+            output_tokens: 20,
+            ..Default::default()
+        },
+    }
 }
 
 fn field<'a>(msg: &'a str, key: &str) -> &'a str {
-    msg.lines().find_map(|l| l.strip_prefix(key)).map(str::trim).unwrap_or("")
+    msg.lines()
+        .find_map(|l| l.strip_prefix(key))
+        .map(str::trim)
+        .unwrap_or("")
 }
 
 fn capture_text(msg: &str) -> String {
@@ -37,11 +76,17 @@ fn capture_text(msg: &str) -> String {
 
 /// Last tool result text for a tool call about `path` (by name order in this turn).
 fn results(req: &ChatRequest) -> Vec<String> {
-    req.messages.iter().filter(|m| m.role == MsgRole::Tool).map(|m| m.text()).collect()
+    req.messages
+        .iter()
+        .filter(|m| m.role == MsgRole::Tool)
+        .map(|m| m.text())
+        .collect()
 }
 
 fn hash_of(text: &str) -> Option<String> {
-    text.lines().find_map(|l| l.strip_prefix("hash: ")).map(str::to_owned)
+    text.lines()
+        .find_map(|l| l.strip_prefix("hash: "))
+        .map(str::to_owned)
 }
 
 /// Files every capture into today's journal and, if it mentions Sara, into her person page.
@@ -70,7 +115,11 @@ pub fn archivist() -> MockProvider {
         let story = field(&first, "story:");
         let res = results(req);
         let journal = format!("vaults/life/journal/{}/{date}.md", &date[..4]);
-        let sara = if story.is_empty() { "vaults/life/people/sara.md".to_owned() } else { format!("vaults/stories/{story}/characters/sara.md") };
+        let sara = if story.is_empty() {
+            "vaults/life/people/sara.md".to_owned()
+        } else {
+            format!("vaults/stories/{story}/characters/sara.md")
+        };
         let mentions_sara = text.contains("Sara") || text.contains("سارا");
 
         // Phase 1: read what exists.
@@ -89,16 +138,35 @@ pub fn archivist() -> MockProvider {
         }
         // Stale hash → read again (a real model would do the same).
         if res.last().is_some_and(|r| r.contains("stale base_hash")) {
-            return reply("", vec![("page_read", json!({"path": if res.last().unwrap().contains("people") || res.last().unwrap().contains("characters") { &sara } else { &journal }}))]);
+            return reply(
+                "",
+                vec![(
+                    "page_read",
+                    json!({"path": if res.last().unwrap().contains("people") || res.last().unwrap().contains("characters") { &sara } else { &journal }}),
+                )],
+            );
         }
-        let wrote_any = res.iter().any(|r| r.starts_with("created") || r.starts_with("edited"));
+        let wrote_any = res
+            .iter()
+            .any(|r| r.starts_with("created") || r.starts_with("edited"));
         if wrote_any && !res.last().unwrap().starts_with("ERROR") {
             return reply("Filed.", vec![]);
         }
         // Phase 2: write, using the latest read of each page.
-        let latest = |p: &str| res.iter().rev().find(|r| r.contains(&format!("path: {p}\n")) || (r.starts_with("ERROR") && r.contains(p))).cloned();
+        let latest = |p: &str| {
+            res.iter()
+                .rev()
+                .find(|r| {
+                    r.contains(&format!("path: {p}\n")) || (r.starts_with("ERROR") && r.contains(p))
+                })
+                .cloned()
+        };
         let mut calls = vec![];
-        let sara_link = if story.is_empty() { "[[vaults/life/people/sara|Sara]]".to_owned() } else { format!("[[vaults/stories/{story}/characters/sara|Sara]]") };
+        let sara_link = if story.is_empty() {
+            "[[vaults/life/people/sara|Sara]]".to_owned()
+        } else {
+            format!("[[vaults/stories/{story}/characters/sara|Sara]]")
+        };
         if story.is_empty() {
             let entry = format!("### {hhmm}\n{} {}", text.replace("Sara", &sara_link), cite);
             match latest(&journal).as_deref().and_then(hash_of) {

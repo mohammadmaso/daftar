@@ -56,7 +56,11 @@ impl Parser {
 }
 
 /// Feeds a response body through the parser, calling `on_event` for each event.
-pub async fn read(provider: &str, resp: reqwest::Response, mut on_event: impl FnMut(Event) -> ProviderResult<()>) -> ProviderResult<()> {
+pub async fn read(
+    provider: &str,
+    resp: reqwest::Response,
+    mut on_event: impl FnMut(Event) -> ProviderResult<()>,
+) -> ProviderResult<()> {
     let mut parser = Parser::default();
     let mut stream = resp.bytes_stream();
     let mut pending: Vec<u8> = Vec::new();

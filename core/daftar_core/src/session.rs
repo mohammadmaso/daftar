@@ -10,12 +10,12 @@ use serde_json::json;
 
 use crate::agent::Cancel;
 use crate::layout::Date;
+use crate::library::{Library, LocalDevice};
 use crate::ops::{self, IngestOptions, IngestOutcome, OpError};
 use crate::providers::ProviderErrorKind;
-use crate::runtime::AiRuntime;
-use crate::library::{Library, LocalDevice};
 use crate::queue::{JobKind, JobState, Queue};
 use crate::raw::{self, NewCapture, RawItem, RawKind, RawStatus};
+use crate::runtime::AiRuntime;
 use crate::sync::{self, GitAuth, LocalStatus, SyncOutcome};
 use crate::{Result, assets};
 
@@ -95,37 +95,76 @@ impl Session {
         self.queue.lock().unwrap_or_else(|p| p.into_inner())
     }
 
-    pub fn capture_text(&self, text: &str, vault_hint: Option<String>, now: &Zoned) -> Result<RawItem> {
+    pub fn capture_text(
+        &self,
+        text: &str,
+        vault_hint: Option<String>,
+        now: &Zoned,
+    ) -> Result<RawItem> {
         let item = raw::create(
             &self.lib,
             &self.device,
             now,
             RawKind::Text,
-            NewCapture { text: text.to_owned(), vault_hint, assets: vec![] },
+            NewCapture {
+                text: text.to_owned(),
+                vault_hint,
+                assets: vec![],
+            },
         )?;
-        self.queue().enqueue(JobKind::Ingest, Some(item.id()), json!({}), true)?;
+        self.queue()
+            .enqueue(JobKind::Ingest, Some(item.id()), json!({}), true)?;
         Ok(item)
     }
 
     /// Normalises the image, stores it as an asset and queues the vision description.
-    pub fn capture_photo(&self, bytes: &[u8], note: Option<String>, vault_hint: Option<String>, now: &Zoned) -> Result<RawItem> {
+    pub fn capture_photo(
+        &self,
+        bytes: &[u8],
+        note: Option<String>,
+        vault_hint: Option<String>,
+        now: &Zoned,
+    ) -> Result<RawItem> {
         let asset = assets::import_image(&self.lib, bytes, now)?;
         let item = raw::create(
             &self.lib,
             &self.device,
             now,
             RawKind::Photo,
-            NewCapture { text: String::new(), vault_hint, assets: vec![asset] },
+            NewCapture {
+                text: String::new(),
+                vault_hint,
+                assets: vec![asset],
+            },
         )?;
         let q = self.queue();
-        q.enqueue(JobKind::Describe, Some(item.id()), json!({ "note": note }), true)?;
+        q.enqueue(
+            JobKind::Describe,
+            Some(item.id()),
+            json!({ "note": note }),
+            true,
+        )?;
         q.enqueue(JobKind::Ingest, Some(item.id()), json!({}), true)?;
         Ok(item)
     }
 
     /// Keeps the recording on this device and queues transcription.
-    pub fn capture_voice(&self, audio: &Path, vault_hint: Option<String>, now: &Zoned) -> Result<RawItem> {
-        let item = raw::create(&self.lib, &self.device, now, RawKind::Voice, NewCapture { vault_hint, ..Default::default() })?;
+    pub fn capture_voice(
+        &self,
+        audio: &Path,
+        vault_hint: Option<String>,
+        now: &Zoned,
+    ) -> Result<RawItem> {
+        let item = raw::create(
+            &self.lib,
+            &self.device,
+            now,
+            RawKind::Voice,
+            NewCapture {
+                vault_hint,
+                ..Default::default()
+            },
+        )?;
         if let Err(e) = assets::store_audio(&self.lib, item.id(), audio) {
             let _ = std::fs::remove_file(self.lib.path(&item.path));
             return Err(e);
@@ -138,10 +177,17 @@ impl Session {
 
     /// Deletes a capture that has not left this device yet (e.g. a recording cancelled after save).
     pub fn discard_unsynced(&self, raw_id: &str) -> Result<bool> {
-        let id: ulid::Ulid = raw_id.parse().map_err(|_| crate::Error::invalid("bad id"))?;
-        let Some(item) = raw::find(&self.lib, id)? else { return Ok(false) };
+        let id: ulid::Ulid = raw_id
+            .parse()
+            .map_err(|_| crate::Error::invalid("bad id"))?;
+        let Some(item) = raw::find(&self.lib, id)? else {
+            return Ok(false);
+        };
         let repo = git2::Repository::open(self.lib.root())?;
-        if repo.status_file(Path::new(&item.path))?.contains(git2::Status::WT_NEW) {
+        if repo
+            .status_file(Path::new(&item.path))?
+            .contains(git2::Status::WT_NEW)
+        {
             std::fs::remove_file(self.lib.path(&item.path))?;
             if let Some(a) = assets::audio_for(&self.lib, id) {
                 let _ = std::fs::remove_file(a);
@@ -161,12 +207,19 @@ impl Session {
         let mut out = Vec::with_capacity(items.len());
         for item in items {
             let jobs = q.jobs_for_raw(item.id())?;
-            let failed = jobs.iter().find(|j| j.state == JobState::Failed && j.last_error.as_deref() != Some("discarded"));
+            let failed = jobs.iter().find(|j| {
+                j.state == JobState::Failed && j.last_error.as_deref() != Some("discarded")
+            });
             let (stage, problem) = match item.meta.status {
                 RawStatus::Ingested => (CaptureStage::Filed, None),
                 RawStatus::Excluded => (CaptureStage::Excluded, None),
-                RawStatus::Pending if failed.is_some() => (CaptureStage::Failed, failed.and_then(|j| j.last_error.clone())),
-                RawStatus::Pending if jobs.iter().any(|j| j.state == JobState::Running) => (CaptureStage::Working, None),
+                RawStatus::Pending if failed.is_some() => (
+                    CaptureStage::Failed,
+                    failed.and_then(|j| j.last_error.clone()),
+                ),
+                RawStatus::Pending if jobs.iter().any(|j| j.state == JobState::Running) => {
+                    (CaptureStage::Working, None)
+                }
                 RawStatus::Pending => (CaptureStage::Saved, None),
             };
             out.push(CaptureView {
@@ -181,7 +234,12 @@ impl Session {
                     .meta
                     .assets
                     .iter()
-                    .filter(|a| a.ends_with(".jpg") || a.ends_with(".jpeg") || a.ends_with(".png") || a.ends_with(".webp"))
+                    .filter(|a| {
+                        a.ends_with(".jpg")
+                            || a.ends_with(".jpeg")
+                            || a.ends_with(".png")
+                            || a.ends_with(".webp")
+                    })
                     .map(|a| self.lib.path(a).to_string_lossy().into_owned())
                     .collect(),
                 stage,
@@ -193,7 +251,12 @@ impl Session {
 
     /// Runs queued AI jobs in order until the queue is empty, the network is needed but absent, or
     /// a model role is not configured yet. Returns one report per job touched.
-    pub async fn run_jobs(&self, rt: &AiRuntime, online: bool, cancel: &Cancel) -> Result<Vec<JobReport>> {
+    pub async fn run_jobs(
+        &self,
+        rt: &AiRuntime,
+        online: bool,
+        cancel: &Cancel,
+    ) -> Result<Vec<JobReport>> {
         let mut reports = Vec::new();
         loop {
             if cancel.is_cancelled() {
@@ -210,39 +273,82 @@ impl Session {
                 };
                 match (job.kind, item) {
                     (_, None) if raw_id.is_some() => Ok(Some("capture was deleted".into())),
-                    (JobKind::Transcribe, Some(item)) => ops::transcribe(&self.lib, rt, &item).await.map(|_| None),
+                    (JobKind::Transcribe, Some(item)) => {
+                        ops::transcribe(&self.lib, rt, &item).await.map(|_| None)
+                    }
                     (JobKind::Describe, Some(item)) => {
-                        let note = job.payload.get("note").and_then(|v| v.as_str()).map(str::to_owned);
-                        ops::describe(&self.lib, rt, &item, note.as_deref(), &now).await.map(|_| None)
+                        let note = job
+                            .payload
+                            .get("note")
+                            .and_then(|v| v.as_str())
+                            .map(str::to_owned);
+                        ops::describe(&self.lib, rt, &item, note.as_deref(), &now)
+                            .await
+                            .map(|_| None)
                     }
                     (JobKind::Ingest, Some(item)) => {
-                        let opts: IngestOptions = serde_json::from_value(job.payload.clone()).unwrap_or_default();
-                        match ops::ingest(&self.lib, &self.device, rt, item.id(), &opts, &now, cancel, &self.sync_lock).await? {
+                        let opts: IngestOptions =
+                            serde_json::from_value(job.payload.clone()).unwrap_or_default();
+                        match ops::ingest(
+                            &self.lib,
+                            &self.device,
+                            rt,
+                            item.id(),
+                            &opts,
+                            &now,
+                            cancel,
+                            &self.sync_lock,
+                        )
+                        .await?
+                        {
                             IngestOutcome::Filed(r) => Ok(Some(r.summary)),
                             IngestOutcome::Skipped(why) => Ok(Some(format!("skipped: {why}"))),
                         }
                     }
-                    (kind, _) => Err(OpError::Permanent(format!("{} jobs are not supported yet", kind.as_str()))),
+                    (kind, _) => Err(OpError::Permanent(format!(
+                        "{} jobs are not supported yet",
+                        kind.as_str()
+                    ))),
                 }
             }
             .await;
             let report = match result {
                 Ok(summary) => {
                     self.queue().complete(&job.id)?;
-                    JobReport { job_id: job.id, kind: job.kind, raw_id: job.raw_id, state: JobState::Done, message: summary }
+                    JobReport {
+                        job_id: job.id,
+                        kind: job.kind,
+                        raw_id: job.raw_id,
+                        state: JobState::Done,
+                        message: summary,
+                    }
                 }
                 Err(OpError::Provider(p)) if p.kind == ProviderErrorKind::NotConfigured => {
                     // Not a failure: wait until the user sets up a model.
                     self.queue().defer(&job.id)?;
-                    reports.push(JobReport { job_id: job.id, kind: job.kind, raw_id: job.raw_id, state: JobState::Queued, message: Some(p.message) });
+                    reports.push(JobReport {
+                        job_id: job.id,
+                        kind: job.kind,
+                        raw_id: job.raw_id,
+                        state: JobState::Queued,
+                        message: Some(p.message),
+                    });
                     break;
                 }
                 Err(e) => {
                     let transient = e.transient();
                     let msg = e.to_string();
-                    let state = self.queue().fail(&job.id, &msg, transient, crate::time::now_ms())?;
+                    let state =
+                        self.queue()
+                            .fail(&job.id, &msg, transient, crate::time::now_ms())?;
                     let stop = state == JobState::Queued;
-                    reports.push(JobReport { job_id: job.id, kind: job.kind, raw_id: job.raw_id, state, message: Some(msg) });
+                    reports.push(JobReport {
+                        job_id: job.id,
+                        kind: job.kind,
+                        raw_id: job.raw_id,
+                        state,
+                        message: Some(msg),
+                    });
                     if stop {
                         break; // FIFO: later jobs wait for this one's retry
                     }
@@ -289,7 +395,12 @@ mod tests {
 
     fn session() -> (tempfile::TempDir, Session) {
         let (d, lib) = lib_in();
-        lib.set_device("Pixel 8", "android", &zoned("2026-09-23T09:00:00+03:30[Asia/Tehran]")).unwrap();
+        lib.set_device(
+            "Pixel 8",
+            "android",
+            &zoned("2026-09-23T09:00:00+03:30[Asia/Tehran]"),
+        )
+        .unwrap();
         let s = Session::open(lib.root()).unwrap();
         (d, s)
     }
@@ -298,14 +409,19 @@ mod tests {
     fn day_view_reflects_pipeline_state() {
         let (_d, s) = session();
         let now = zoned("2026-09-23T10:00:00+03:30[Asia/Tehran]");
-        let t = s.capture_text("Sara called", Some("life".into()), &now).unwrap();
+        let t = s
+            .capture_text("Sara called", Some("life".into()), &now)
+            .unwrap();
         let view = s.day(crate::time::date_of(&now)).unwrap();
         assert_eq!(view.len(), 1);
         assert_eq!(view[0].stage, CaptureStage::Saved);
         assert_eq!(view[0].vault_hint.as_deref(), Some("life"));
 
         raw::set_status(s.library(), &t.path, RawStatus::Ingested).unwrap();
-        assert_eq!(s.day(crate::time::date_of(&now)).unwrap()[0].stage, CaptureStage::Filed);
+        assert_eq!(
+            s.day(crate::time::date_of(&now)).unwrap()[0].stage,
+            CaptureStage::Filed
+        );
     }
 
     #[test]

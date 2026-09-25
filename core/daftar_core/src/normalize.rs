@@ -18,7 +18,7 @@ fn map_char(c: char) -> Option<char> {
         '\u{0629}' | '\u{06C0}' => 'ه',
         '\u{0623}' | '\u{0625}' | '\u{0622}' | '\u{0671}' => 'ا',
         '\u{0624}' => 'و',
-        '\u{0640}' => return None,                        // tatweel
+        '\u{0640}' => return None,                           // tatweel
         '\u{064B}'..='\u{065F}' | '\u{0670}' => return None, // harakat, superscript alef
         '\u{06F0}'..='\u{06F9}' => char::from(b'0' + (c as u32 - 0x06F0) as u8),
         '\u{0660}'..='\u{0669}' => char::from(b'0' + (c as u32 - 0x0660) as u8),
@@ -74,7 +74,11 @@ pub fn joined_variants(text: &str) -> String {
 /// Index form: normalised text plus joined variants.
 pub fn index_form(text: &str) -> String {
     let j = joined_variants(text);
-    if j.is_empty() { normalize(text) } else { format!("{} {j}", normalize(text)) }
+    if j.is_empty() {
+        normalize(text)
+    } else {
+        format!("{} {j}", normalize(text))
+    }
 }
 
 #[cfg(test)]

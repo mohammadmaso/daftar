@@ -39,8 +39,14 @@ impl From<Auth> for GitAuth {
     fn from(a: Auth) -> Self {
         match a.kind {
             AuthKind::None => GitAuth::None,
-            AuthKind::Token => GitAuth::Token { username: a.username, token: a.secret },
-            AuthKind::SshKey => GitAuth::SshKey { private_key: a.secret, passphrase: a.passphrase },
+            AuthKind::Token => GitAuth::Token {
+                username: a.username,
+                token: a.secret,
+            },
+            AuthKind::SshKey => GitAuth::SshKey {
+                private_key: a.secret,
+                passphrase: a.passphrase,
+            },
         }
     }
 }
@@ -123,14 +129,26 @@ pub fn library_ready(root: String) -> bool {
 /// New library on this device only; a remote can be added later.
 pub fn init_library(root: String, device_name: String, platform: String) -> anyhow::Result<()> {
     let lib = sync::init_local(&PathBuf::from(&root), "main").map_err(err)?;
-    lib.set_device(&device_name, &platform, &now()).map_err(err)?;
+    lib.set_device(&device_name, &platform, &now())
+        .map_err(err)?;
     Ok(())
 }
 
 /// Clones (or initialises an empty) remote into `root`.
-pub fn clone_library(url: String, root: String, auth: Auth, branch: String, device_name: String, platform: String) -> anyhow::Result<()> {
+pub fn clone_library(
+    url: String,
+    root: String,
+    auth: Auth,
+    branch: String,
+    device_name: String,
+    platform: String,
+) -> anyhow::Result<()> {
     let root = PathBuf::from(root);
-    if root.exists() && std::fs::read_dir(&root).map(|mut d| d.next().is_some()).unwrap_or(false) {
+    if root.exists()
+        && std::fs::read_dir(&root)
+            .map(|mut d| d.next().is_some())
+            .unwrap_or(false)
+    {
         return Err(anyhow::anyhow!("The target folder is not empty."));
     }
     let res = sync::clone(&url, &root, &auth.into(), &branch);
@@ -141,21 +159,30 @@ pub fn clone_library(url: String, root: String, auth: Auth, branch: String, devi
             return Err(err(human_error(&e)));
         }
     };
-    lib.set_device(&device_name, &platform, &now()).map_err(err)?;
+    lib.set_device(&device_name, &platform, &now())
+        .map_err(err)?;
     Ok(())
 }
 
 fn human_error(e: &daftar_core::Error) -> String {
     match e {
-        daftar_core::Error::Offline => "Couldn't reach the repository. Check the address and your connection.".into(),
-        daftar_core::Error::Auth(_) => "The repository refused the credentials. Check the token or that the SSH key is added.".into(),
+        daftar_core::Error::Offline => {
+            "Couldn't reach the repository. Check the address and your connection.".into()
+        }
+        daftar_core::Error::Auth(_) => {
+            "The repository refused the credentials. Check the token or that the SSH key is added."
+                .into()
+        }
         other => other.to_string(),
     }
 }
 
 pub fn generate_ssh_key(comment: String) -> anyhow::Result<SshKeyPair> {
     let k = daftar_core::keys::generate_ed25519(&comment).map_err(err)?;
-    Ok(SshKeyPair { private_openssh: k.private_openssh, public_openssh: k.public_openssh })
+    Ok(SshKeyPair {
+        private_openssh: k.private_openssh,
+        public_openssh: k.public_openssh,
+    })
 }
 
 #[frb(opaque)]
@@ -165,19 +192,45 @@ pub struct LibraryHandle {
 
 impl LibraryHandle {
     pub fn open(root: String) -> anyhow::Result<LibraryHandle> {
-        Ok(LibraryHandle { session: Arc::new(Session::open(root).map_err(err)?) })
+        Ok(LibraryHandle {
+            session: Arc::new(Session::open(root).map_err(err)?),
+        })
     }
 
     pub fn capture_text(&self, text: String, vault_hint: Option<String>) -> anyhow::Result<String> {
-        Ok(self.session.capture_text(&text, vault_hint, &now()).map_err(err)?.meta.id)
+        Ok(self
+            .session
+            .capture_text(&text, vault_hint, &now())
+            .map_err(err)?
+            .meta
+            .id)
     }
 
-    pub fn capture_photo(&self, bytes: Vec<u8>, note: Option<String>, vault_hint: Option<String>) -> anyhow::Result<String> {
-        Ok(self.session.capture_photo(&bytes, note, vault_hint, &now()).map_err(err)?.meta.id)
+    pub fn capture_photo(
+        &self,
+        bytes: Vec<u8>,
+        note: Option<String>,
+        vault_hint: Option<String>,
+    ) -> anyhow::Result<String> {
+        Ok(self
+            .session
+            .capture_photo(&bytes, note, vault_hint, &now())
+            .map_err(err)?
+            .meta
+            .id)
     }
 
-    pub fn capture_voice(&self, audio_path: String, vault_hint: Option<String>) -> anyhow::Result<String> {
-        Ok(self.session.capture_voice(&PathBuf::from(audio_path), vault_hint, &now()).map_err(err)?.meta.id)
+    pub fn capture_voice(
+        &self,
+        audio_path: String,
+        vault_hint: Option<String>,
+    ) -> anyhow::Result<String> {
+        Ok(self
+            .session
+            .capture_voice(&PathBuf::from(audio_path), vault_hint, &now())
+            .map_err(err)?
+            .meta
+            .id)
     }
 
     pub fn discard(&self, id: String) -> anyhow::Result<bool> {
@@ -186,7 +239,10 @@ impl LibraryHandle {
 
     /// Captures of the given local date, oldest first.
     pub fn day(&self, year: i32, month: u8, day: u8) -> anyhow::Result<Vec<Capture>> {
-        let items = self.session.day(daftar_core::layout::Date { year, month, day }).map_err(err)?;
+        let items = self
+            .session
+            .day(daftar_core::layout::Date { year, month, day })
+            .map_err(err)?;
         Ok(items
             .into_iter()
             .map(|c| Capture {
@@ -231,12 +287,20 @@ impl LibraryHandle {
     pub fn vaults(&self) -> anyhow::Result<Vec<Vault>> {
         let c = self.session.library().config().map_err(err)?;
         Ok(c.active_vaults()
-            .map(|v| Vault { id: v.id.clone(), title_en: v.title.en.clone(), title_fa: v.title.fa.clone(), fiction: v.fiction })
+            .map(|v| Vault {
+                id: v.id.clone(),
+                title_en: v.title.en.clone(),
+                title_fa: v.title.fa.clone(),
+                fiction: v.fiction,
+            })
             .collect())
     }
 
     pub fn sync(&self, auth: Auth) -> anyhow::Result<SyncResult> {
-        let o = self.session.sync(&auth.into(), &now()).map_err(|e| err(human_error(&e)))?;
+        let o = self
+            .session
+            .sync(&auth.into(), &now())
+            .map_err(|e| err(human_error(&e)))?;
         Ok(SyncResult {
             state: match o.state {
                 daftar_core::sync::SyncState::Synced => SyncState::Synced,

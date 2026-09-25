@@ -785,13 +785,27 @@ fn integrate(
 }
 
 /// Generated indexes are never merged (§4.4): rebuild those of vaults whose pages changed.
-fn regenerate_indexes_after_merge(lib: &Library, repo: &Repository, dev: &LocalDevice, changed: &[String]) -> Result<()> {
-    let vaults: BTreeSet<String> = changed.iter().filter(|p| !crate::pages::is_generated_index(p)).filter_map(|p| crate::pages::vault_of(p).map(str::to_owned)).collect();
+fn regenerate_indexes_after_merge(
+    lib: &Library,
+    repo: &Repository,
+    dev: &LocalDevice,
+    changed: &[String],
+) -> Result<()> {
+    let vaults: BTreeSet<String> = changed
+        .iter()
+        .filter(|p| !crate::pages::is_generated_index(p))
+        .filter_map(|p| crate::pages::vault_of(p).map(str::to_owned))
+        .collect();
     if vaults.is_empty() {
         return Ok(());
     }
     let paths = crate::pages::regenerate_indexes(lib, &vaults.into_iter().collect::<Vec<_>>())?;
-    commit_paths(repo, &paths, &format!("index: regenerate\n\nDevice: {}\n", dev.id), &signature(dev)?)?;
+    commit_paths(
+        repo,
+        &paths,
+        &format!("index: regenerate\n\nDevice: {}\n", dev.id),
+        &signature(dev)?,
+    )?;
     Ok(())
 }
 

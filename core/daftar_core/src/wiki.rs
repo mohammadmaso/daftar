@@ -15,9 +15,29 @@ use crate::frontmatter::{self, quote};
 use crate::{Error, Result, ids};
 
 pub const PAGE_TYPES: &[&str] = &[
-    "person", "topic", "concern", "condition", "medication", "lab", "journal-day", "profile", "pattern",
-    "idea", "character", "place", "thread", "answer", "summary", "review", "project", "goal", "visit",
-    "symptom-log", "chapter", "draft", "story",
+    "person",
+    "topic",
+    "concern",
+    "condition",
+    "medication",
+    "lab",
+    "journal-day",
+    "profile",
+    "pattern",
+    "idea",
+    "character",
+    "place",
+    "thread",
+    "answer",
+    "summary",
+    "review",
+    "project",
+    "goal",
+    "visit",
+    "symptom-log",
+    "chapter",
+    "draft",
+    "story",
 ];
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -47,7 +67,10 @@ pub struct PageMeta {
 }
 
 fn empty_title() -> Bilingual {
-    Bilingual { en: String::new(), fa: String::new() }
+    Bilingual {
+        en: String::new(),
+        fa: String::new(),
+    }
 }
 fn active() -> String {
     "active".into()
@@ -71,7 +94,11 @@ impl Page {
 
     /// Display title in the given UI language, falling back to the other language, then the slug.
     pub fn title(&self, lang: &str) -> &str {
-        let (a, b) = if lang == "fa" { (&self.meta.title.fa, &self.meta.title.en) } else { (&self.meta.title.en, &self.meta.title.fa) };
+        let (a, b) = if lang == "fa" {
+            (&self.meta.title.fa, &self.meta.title.en)
+        } else {
+            (&self.meta.title.en, &self.meta.title.fa)
+        };
         if !a.is_empty() {
             a
         } else if !b.is_empty() {
@@ -96,7 +123,10 @@ pub fn sanitize_slug(proposed: &str) -> String {
         s.pop();
     }
     if s.is_empty() {
-        format!("page-{}", &ids::new_id().to_string()[16..].to_ascii_lowercase())
+        format!(
+            "page-{}",
+            &ids::new_id().to_string()[16..].to_ascii_lowercase()
+        )
     } else {
         s
     }
@@ -105,7 +135,8 @@ pub fn sanitize_slug(proposed: &str) -> String {
 pub fn parse(path: &str, doc: &str) -> Result<Page> {
     let (yaml, body) = frontmatter::split(doc);
     let meta: PageMeta = match yaml {
-        Some(y) if !y.trim().is_empty() => serde_saphyr::from_str(y).map_err(|e| Error::invalid(format!("{path}: frontmatter: {e}")))?,
+        Some(y) if !y.trim().is_empty() => serde_saphyr::from_str(y)
+            .map_err(|e| Error::invalid(format!("{path}: frontmatter: {e}")))?,
         _ => PageMeta {
             id: String::new(),
             kind: String::new(),
@@ -120,7 +151,11 @@ pub fn parse(path: &str, doc: &str) -> Result<Page> {
             extra: BTreeMap::new(),
         },
     };
-    Ok(Page { path: path.to_owned(), meta, body: body.trim_start_matches(['\n', '\r']).to_owned() })
+    Ok(Page {
+        path: path.to_owned(),
+        meta,
+        body: body.trim_start_matches(['\n', '\r']).to_owned(),
+    })
 }
 
 fn yaml_scalar(v: &Value) -> String {
@@ -129,13 +164,25 @@ fn yaml_scalar(v: &Value) -> String {
         Value::Bool(b) => b.to_string(),
         Value::Number(n) => n.to_string(),
         Value::String(s) => quote(s),
-        Value::Array(a) => format!("[{}]", a.iter().map(yaml_scalar).collect::<Vec<_>>().join(", ")),
-        Value::Object(o) => format!("{{ {} }}", o.iter().map(|(k, v)| format!("{k}: {}", yaml_scalar(v))).collect::<Vec<_>>().join(", ")),
+        Value::Array(a) => format!(
+            "[{}]",
+            a.iter().map(yaml_scalar).collect::<Vec<_>>().join(", ")
+        ),
+        Value::Object(o) => format!(
+            "{{ {} }}",
+            o.iter()
+                .map(|(k, v)| format!("{k}: {}", yaml_scalar(v)))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ),
     }
 }
 
 fn list(v: &[String]) -> String {
-    format!("[{}]", v.iter().map(|s| quote(s)).collect::<Vec<_>>().join(", "))
+    format!(
+        "[{}]",
+        v.iter().map(|s| quote(s)).collect::<Vec<_>>().join(", ")
+    )
 }
 
 pub fn render(m: &PageMeta, body: &str) -> String {
@@ -143,7 +190,11 @@ pub fn render(m: &PageMeta, body: &str) -> String {
     out.push_str(&format!("id: {}\n", m.id));
     out.push_str(&format!("type: {}\n", m.kind));
     out.push_str(&format!("vault: {}\n", m.vault));
-    out.push_str(&format!("title: {{ en: {}, fa: {} }}\n", quote(&m.title.en), quote(&m.title.fa)));
+    out.push_str(&format!(
+        "title: {{ en: {}, fa: {} }}\n",
+        quote(&m.title.en),
+        quote(&m.title.fa)
+    ));
     out.push_str(&format!("aliases: {}\n", list(&m.aliases)));
     out.push_str(&format!("summary: {}\n", quote(&m.summary)));
     out.push_str(&format!("sources: {}\n", list(&m.sources)));
@@ -172,7 +223,10 @@ pub fn line_numbered(text: &str, from: usize, to: usize) -> String {
     let lines: Vec<&str> = text.lines().collect();
     let to = to.min(lines.len());
     let width = to.to_string().len();
-    (from.max(1)..=to).map(|n| format!("{n:>width$} | {}", lines[n - 1])).collect::<Vec<_>>().join("\n")
+    (from.max(1)..=to)
+        .map(|n| format!("{n:>width$} | {}", lines[n - 1]))
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -203,13 +257,22 @@ pub fn sections(text: &str) -> Vec<Section> {
             if let Some(prev) = out.last_mut() {
                 prev.end = i;
             }
-            out.push(Section { heading: t[level..].trim().to_owned(), level, start: i + 1, end: lines.len() });
+            out.push(Section {
+                heading: t[level..].trim().to_owned(),
+                level,
+                start: i + 1,
+                end: lines.len(),
+            });
         }
     }
     // A section ends where the next heading of the same or higher level starts.
     for i in 0..out.len() {
         let lvl = out[i].level;
-        let next = out[i + 1..].iter().find(|s| s.level <= lvl).map(|s| s.start - 1).unwrap_or(lines.len());
+        let next = out[i + 1..]
+            .iter()
+            .find(|s| s.level <= lvl)
+            .map(|s| s.start - 1)
+            .unwrap_or(lines.len());
         out[i].end = next;
     }
     out
@@ -288,8 +351,12 @@ pub fn claims(text: &str) -> Vec<Claim> {
     let mut out = Vec::new();
     for (i, line) in text.lines().enumerate() {
         let t = line.trim_start();
-        let Some(rest) = t.strip_prefix("- ").or_else(|| t.strip_prefix("* ")) else { continue };
-        let Some(caret) = rest.rfind(" ^c-") else { continue };
+        let Some(rest) = t.strip_prefix("- ").or_else(|| t.strip_prefix("* ")) else {
+            continue;
+        };
+        let Some(caret) = rest.rfind(" ^c-") else {
+            continue;
+        };
         let id = rest[caret + 2..].trim().to_owned();
         let body = &rest[..caret];
         let mut fields = BTreeMap::new();
@@ -318,7 +385,10 @@ pub fn claims(text: &str) -> Vec<Claim> {
         out.push(Claim {
             id,
             text: plain.split_whitespace().collect::<Vec<_>>().join(" "),
-            status: fields.get("status").cloned().unwrap_or_else(|| "confirmed".into()),
+            status: fields
+                .get("status")
+                .cloned()
+                .unwrap_or_else(|| "confirmed".into()),
             confidence: fields.get("confidence").cloned(),
             sources,
             line: i + 1,
@@ -345,14 +415,25 @@ fn matching_paren(s: &str, open: usize) -> Option<usize> {
 }
 
 /// Formats a claim line (§3.4). `sources` are `(raw_path, label)` pairs.
-pub fn claim_line(text: &str, status: &str, confidence: Option<&str>, sources: &[(String, String)], id: &str) -> String {
+pub fn claim_line(
+    text: &str,
+    status: &str,
+    confidence: Option<&str>,
+    sources: &[(String, String)],
+    id: &str,
+) -> String {
     let src = sources
         .iter()
         .map(|(p, l)| format!("[[{}|{}]]", p.trim_end_matches(".md"), l))
         .collect::<Vec<_>>()
         .join(", ");
-    let conf = confidence.map(|c| format!(" (confidence:: {c})")).unwrap_or_default();
-    format!("- {} (status:: {status}){conf} (src:: {src}) ^{id}", text.trim().trim_end_matches('.'))
+    let conf = confidence
+        .map(|c| format!(" (confidence:: {c})"))
+        .unwrap_or_default();
+    format!(
+        "- {} (status:: {status}){conf} (src:: {src}) ^{id}",
+        text.trim().trim_end_matches('.')
+    )
 }
 
 #[cfg(test)]
@@ -380,10 +461,18 @@ mod tests {
         assert_eq!(targets, vec!["shiraz", "isfahan-trip", "raw/2026/09/23/x"]);
         assert_eq!(ls[0].label.as_deref(), Some("Shiraz"));
         let s = sections(&p.body);
-        assert_eq!(s.iter().map(|s| s.heading.as_str()).collect::<Vec<_>>(), vec!["Sara", "Who", "Timeline"]);
+        assert_eq!(
+            s.iter().map(|s| s.heading.as_str()).collect::<Vec<_>>(),
+            vec!["Sara", "Who", "Timeline"]
+        );
         assert_eq!(s[0].end, p.body.lines().count(), "h1 spans the whole page");
         assert_eq!((s[1].start, s[1].end), (3, 5));
-        assert!(links("`[[not a link]]` and [[real]]").iter().map(|l| &l.target).eq(["real"].iter()));
+        assert!(
+            links("`[[not a link]]` and [[real]]")
+                .iter()
+                .map(|l| &l.target)
+                .eq(["real"].iter())
+        );
     }
 
     #[test]
@@ -395,8 +484,13 @@ mod tests {
             &[("raw/2026/03/03/x.md".into(), "voice · 3 Mar".into())],
             "c-01JAB9",
         );
-        assert_eq!(line, "- Takes vitamin D 50,000 IU weekly (status:: confirmed) (src:: [[raw/2026/03/03/x|voice · 3 Mar]]) ^c-01JAB9");
-        let doc = format!("## Claims\n{line}\n- Sleeps worse after late coffee (status:: proposed) (confidence:: medium) (src:: [[raw/a]], [[raw/b]]) ^c-01JAC2\n- plain item\n");
+        assert_eq!(
+            line,
+            "- Takes vitamin D 50,000 IU weekly (status:: confirmed) (src:: [[raw/2026/03/03/x|voice · 3 Mar]]) ^c-01JAB9"
+        );
+        let doc = format!(
+            "## Claims\n{line}\n- Sleeps worse after late coffee (status:: proposed) (confidence:: medium) (src:: [[raw/a]], [[raw/b]]) ^c-01JAC2\n- plain item\n"
+        );
         let cs = claims(&doc);
         assert_eq!(cs.len(), 2);
         assert_eq!(cs[0].text, "Takes vitamin D 50,000 IU weekly");
@@ -408,7 +502,10 @@ mod tests {
 
     #[test]
     fn slugs_and_hashes() {
-        assert_eq!(sanitize_slug("Vitamin D Deficiency"), "vitamin-d-deficiency");
+        assert_eq!(
+            sanitize_slug("Vitamin D Deficiency"),
+            "vitamin-d-deficiency"
+        );
         assert!(sanitize_slug("کمبود ویتامین").starts_with("page-"));
         assert_eq!(content_hash("a"), content_hash("a"));
         assert_ne!(content_hash("a"), content_hash("b"));
