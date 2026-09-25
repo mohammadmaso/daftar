@@ -2070,6 +2070,12 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'⌘K opens this anywhere'**
   String get paletteShortcutHintMac;
+
+  /// No description provided for @sharedSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Saved what you shared} other{Saved {n} shared items}}'**
+  String sharedSaved(int n);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

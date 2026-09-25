@@ -25,6 +25,7 @@ dependencies:
   markdown: ^7.3.1
   path_provider: ^2.1.6
   path_provider_foundation: ">=2.4.0 <2.5.0"
+  quick_actions: ^1.1.1
   record: ^6.2.1
   shared_preferences: ^2.5.5
   url_launcher: ^6.3.2

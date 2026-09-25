@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart' show Material;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -5,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/identity.dart';
+import '../../core/app_shortcuts.dart';
+import '../../core/incoming_shares.dart';
 import '../../core/job_runner.dart';
 import '../../core/library_state.dart';
 import '../../design/design.dart';
@@ -30,6 +34,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   late final AppLifecycleListener _life;
   late final SyncController _sync;
   late final JobRunner _jobs;
+  StreamSubscription<void>? _shares;
 
   @override
   void initState() {
@@ -48,11 +53,33 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         _jobs.pause();
       },
     );
+    _shares = ref.read(incomingSharesProvider).arrived.listen((_) {
+      _fileShares();
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _sync.syncNow();
       _sync.startPeriodic();
       _jobs.resume();
+      _fileShares();
     });
+  }
+
+  /// Whatever was shared into the app becomes raw captures, filed like any other (§8.1).
+  Future<void> _fileShares() async {
+    final items = await ref.read(incomingSharesProvider).take();
+    if (items.isEmpty) return;
+    final lib = await ref.read(libraryProvider.future);
+    if (lib == null) return;
+    for (final item in items) {
+      if (item.text case final t?) await lib.captureText(t);
+      if (item.image case final b?) await lib.capturePhoto(b);
+    }
+    ref.read(revisionProvider.notifier).bump();
+    _sync.changed();
+    _jobs.kick();
+    if (!mounted) return;
+    context.go('/');
+    showNote(context, L10n.of(context).sharedSaved(items.length));
   }
 
   /// Files may have changed outside the app (Obsidian, another editor) while it was away.
@@ -68,8 +95,33 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   void dispose() {
     _sync.stopPeriodic();
     _jobs.pause();
+    _shares?.cancel();
     _life.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Re-set on language change so the app-icon menu speaks the app's language.
+    final l = L10n.of(context);
+    ref.read(appShortcutsProvider).set({
+      AppShortcut.record: l.recordVoiceNote,
+      AppShortcut.note: l.paletteNewNote,
+      AppShortcut.ask: l.askTitle,
+    }, _onShortcut);
+  }
+
+  void _onShortcut(AppShortcut s) {
+    if (!mounted) return;
+    switch (s) {
+      case AppShortcut.record:
+        _capture(CaptureRequest.record);
+      case AppShortcut.note:
+        _capture(CaptureRequest.note);
+      case AppShortcut.ask:
+        context.go('/ask');
+    }
   }
 
   void _capture(CaptureRequest r) {

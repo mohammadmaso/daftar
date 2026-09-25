@@ -586,5 +586,14 @@
   },
   "paletteNoMatch": "Nothing matches.",
   "paletteShortcutHint": "Ctrl+K opens this anywhere",
-  "paletteShortcutHintMac": "⌘K opens this anywhere"
+  "paletteShortcutHintMac": "⌘K opens this anywhere",
+  "sharedSaved": "{n, plural, =1{Saved what you shared} other{Saved {n} shared items}}",
+  "@sharedSaved": {
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  }
 }

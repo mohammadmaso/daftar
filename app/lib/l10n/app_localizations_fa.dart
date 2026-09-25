@@ -1193,4 +1193,19 @@ class L10nFa extends L10n {
 
   @override
   String get paletteShortcutHintMac => '⌘K این را از هر جا باز می‌کند';
+
+  @override
+  String sharedSaved(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString مورد هم‌رسانی‌شده ذخیره شد',
+    );
+    return '$_temp0';
+  }
 }

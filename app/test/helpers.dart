@@ -1,7 +1,9 @@
 import 'package:daftar/app/app.dart';
 import 'package:daftar/app/appearance.dart';
 import 'package:daftar/app/core.dart';
+import 'package:daftar/core/app_shortcuts.dart';
 import 'package:daftar/core/credentials.dart';
+import 'package:daftar/core/incoming_shares.dart';
 import 'package:daftar/core/job_runner.dart';
 import 'package:daftar/core/library_state.dart';
 import 'package:daftar/core/notifications.dart';
@@ -43,6 +45,8 @@ Future<ProviderContainer> pumpApp(
   FakeAwake? awake,
   FakeBrowser? browser,
   FakeNotifications? notifications,
+  FakeAppShortcuts? shortcuts,
+  FakeShares? shares,
   String? location,
 }) async {
   SharedPreferences.setMockInitialValues(prefs);
@@ -70,6 +74,8 @@ Future<ProviderContainer> pumpApp(
       voicePlayerProvider.overrideWithValue(player ?? FakePlayer()),
       screenAwakeProvider.overrideWithValue(awake ?? FakeAwake()),
       oauthBrowserProvider.overrideWithValue(browser ?? FakeBrowser()),
+      incomingSharesProvider.overrideWithValue(shares ?? FakeShares()),
+      appShortcutsProvider.overrideWithValue(shortcuts ?? FakeAppShortcuts()),
       systemNotificationsProvider.overrideWithValue(
         notifications ?? FakeNotifications(),
       ),

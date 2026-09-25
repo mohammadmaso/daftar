@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:daftar/core/app_shortcuts.dart';
+import 'package:daftar/core/incoming_shares.dart';
 import 'package:daftar/core/library_api.dart';
 import 'package:daftar/core/notifications.dart';
 import 'package:daftar/core/oauth_browser.dart';
@@ -819,4 +821,41 @@ class FakeNotifications implements SystemNotifications {
     required String channel,
     required String openLabel,
   }) async => shown.add(body);
+}
+
+class FakeAppShortcuts implements AppShortcuts {
+  Map<AppShortcut, String> titles = const {};
+  void Function(AppShortcut)? _handler;
+
+  /// Simulates a long press on the app icon and picking [s].
+  void launch(AppShortcut s) => _handler!(s);
+
+  @override
+  Future<void> set(
+    Map<AppShortcut, String> titles,
+    void Function(AppShortcut) onAction,
+  ) async {
+    this.titles = titles;
+    _handler = onAction;
+  }
+}
+
+class FakeShares implements IncomingShares {
+  final pending = <SharedItem>[];
+  final _arrived = StreamController<void>.broadcast();
+
+  void share(SharedItem item) {
+    pending.add(item);
+    _arrived.add(null);
+  }
+
+  @override
+  Stream<void> get arrived => _arrived.stream;
+
+  @override
+  Future<List<SharedItem>> take() async {
+    final items = List.of(pending);
+    pending.clear();
+    return items;
+  }
 }

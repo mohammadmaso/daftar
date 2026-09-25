@@ -328,5 +328,6 @@
   "paletteGoTo": "برو به {place}",
   "paletteNoMatch": "چیزی پیدا نشد.",
   "paletteShortcutHint": "Ctrl+K این را از هر جا باز می‌کند",
-  "paletteShortcutHintMac": "⌘K این را از هر جا باز می‌کند"
+  "paletteShortcutHintMac": "⌘K این را از هر جا باز می‌کند",
+  "sharedSaved": "{n, plural, other{{n} مورد هم‌رسانی‌شده ذخیره شد}}"
 }

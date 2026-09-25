@@ -1,3 +1,6 @@
+import 'package:daftar/core/app_shortcuts.dart';
+import 'package:daftar/core/incoming_shares.dart';
+import 'package:daftar/core/library_api.dart';
 import 'package:daftar/features/palette/command_palette.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -26,6 +29,9 @@ Finder get paletteField => find.descendant(
 );
 
 void main() {
+  quickActionTests();
+  shareTests();
+
   testWidgets('Ctrl+K finds a page and opens it', (tester) async {
     final lib = FakeLibrary()
       ..addPage(
@@ -119,5 +125,52 @@ void main() {
 
     await chord(tester, LogicalKeyboardKey.keyN, shift: true);
     expect(recorder.recording, isTrue);
+  });
+}
+
+void quickActionTests() {
+  testWidgets('the app-icon Record action opens straight into recording', (
+    tester,
+  ) async {
+    final shortcuts = FakeAppShortcuts();
+    final recorder = FakeRecorder();
+    await pumpApp(
+      tester,
+      shortcuts: shortcuts,
+      recorder: recorder,
+      location: '/wiki',
+    );
+    expect(shortcuts.titles.values, ['Record a voice note', 'New note', 'Ask']);
+    shortcuts.launch(AppShortcut.record);
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(recorder.recording, isTrue);
+    expect(find.text('Save'), findsOneWidget);
+  });
+}
+
+void shareTests() {
+  testWidgets('text and photos shared into the app become captures', (
+    tester,
+  ) async {
+    final lib = FakeLibrary();
+    final shares = FakeShares()
+      ..pending.add(const SharedItem.text('Shared at launch'));
+    await pumpApp(
+      tester,
+      setup: FakeSetup(library: lib),
+      shares: shares,
+      location: '/wiki',
+    );
+    await tester.pumpAndSettle();
+    expect(lib.texts, ['Shared at launch'], reason: 'a cold-start share');
+
+    shares.share(SharedItem.image(Uint8List.fromList([1, 2, 3])));
+    await tester.pumpAndSettle();
+    expect(lib.captures.last.kind, RawKind.photo);
+    expect(find.text('Saved what you shared'), findsWidgets);
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pumpAndSettle();
   });
 }

@@ -1201,4 +1201,20 @@ class L10nEn extends L10n {
 
   @override
   String get paletteShortcutHintMac => '⌘K opens this anywhere';
+
+  @override
+  String sharedSaved(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Saved $nString shared items',
+      one: 'Saved what you shared',
+    );
+    return '$_temp0';
+  }
 }
