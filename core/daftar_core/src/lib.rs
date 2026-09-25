@@ -5,6 +5,7 @@ pub mod agent;
 pub mod assets;
 pub mod changeset;
 pub mod config;
+pub mod edit;
 mod error;
 pub mod frontmatter;
 pub mod fsutil;

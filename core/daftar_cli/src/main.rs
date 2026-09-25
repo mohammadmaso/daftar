@@ -90,6 +90,32 @@ enum Command {
     },
     /// Make one real minimal call for a role and report its latency.
     Test { path: PathBuf, role: String },
+    /// Search the wiki (Persian-aware).
+    Search {
+        path: PathBuf,
+        query: String,
+        #[arg(long)]
+        vault: Vec<String>,
+        #[arg(long, default_value_t = 10)]
+        limit: usize,
+    },
+    /// Show a page's properties and backlinks.
+    Page { path: PathBuf, page: String },
+    /// Pages around PAGE within DEPTH links (1–2).
+    Graph {
+        path: PathBuf,
+        page: String,
+        #[arg(long, default_value_t = 1)]
+        depth: usize,
+    },
+    /// Rebuild the search and link cache from the files.
+    Reindex { path: PathBuf },
+    /// Replace PAGE with the contents of FILE as a human edit (one `edit:` commit).
+    Edit {
+        path: PathBuf,
+        page: String,
+        file: PathBuf,
+    },
     /// Generate an ed25519 key pair; prints the public key, writes the private key to FILE.
     Keygen {
         file: PathBuf,
@@ -387,6 +413,76 @@ fn main() -> anyhow::Result<()> {
             let r = runtime()?.block_on(providers::probe(&p, &rc))?;
             print(json, &r, |r| {
                 format!("ok · {} ms · {}", r.latency_ms, r.detail)
+            })?;
+        }
+        Command::Search {
+            path,
+            query,
+            vault,
+            limit,
+        } => {
+            let s = Session::open(path)?;
+            let hits = s.search(&query, &vault, limit)?;
+            print(json, &hits, |hs| {
+                hs.iter()
+                    .map(|h| {
+                        format!(
+                            "{}  {} · {}\n    {}",
+                            h.path, h.title_en, h.title_fa, h.snippet
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            })?;
+        }
+        Command::Page { path, page } => {
+            let s = Session::open(path)?;
+            let v = s.page(&page)?;
+            print(json, &v, |v| {
+                let mut out = format!(
+                    "{} · {}\n{} · {} · updated {} · {} sources\n",
+                    v.meta.title.en,
+                    v.meta.title.fa,
+                    v.meta.kind,
+                    v.meta.vault,
+                    v.meta.updated,
+                    v.meta.sources.len()
+                );
+                out.push_str("backlinks:\n");
+                for b in &v.backlinks {
+                    out.push_str(&format!("  {}\n", b.path));
+                }
+                out
+            })?;
+        }
+        Command::Graph { path, page, depth } => {
+            let s = Session::open(path)?;
+            let g = s.local_graph(&page, depth)?;
+            print(json, &g, |g| {
+                g.nodes
+                    .iter()
+                    .map(|n| format!("{}{}", "  ".repeat(n.depth), n.page.path))
+                    .chain(g.edges.iter().map(|(a, b)| format!("{a} → {b}")))
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            })?;
+        }
+        Command::Reindex { path } => {
+            let s = Session::open(path)?;
+            let n = s.rebuild_index()?;
+            print(json, &n, |n| format!("indexed {n} pages"))?;
+        }
+        Command::Edit { path, page, file } => {
+            let s = Session::open(path)?;
+            let base = s.page(&page).map(|v| v.hash).unwrap_or_default();
+            let text = std::fs::read_to_string(&file)?;
+            let out = s.save_page(&page, &base, &text)?;
+            print(json, &out, |o| {
+                if o.committed {
+                    "committed".into()
+                } else {
+                    "unchanged".into()
+                }
             })?;
         }
         Command::Keygen { file, comment } => {

@@ -16,14 +16,33 @@ use crate::providers::{ProviderErrorKind, Role};
 use crate::queue::{JobKind, JobState, Queue};
 use crate::raw::{self, NewCapture, RawItem, RawKind, RawStatus};
 use crate::runtime::AiRuntime;
+use crate::search::{Graph, Hit, PageRef, SearchIndex};
 use crate::sync::{self, GitAuth, LocalStatus, SyncOutcome};
 use crate::{Result, assets};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 pub struct Session {
     lib: Library,
     device: LocalDevice,
     queue: Mutex<Queue>,
     sync_lock: Mutex<()>,
+    /// Search/link cache, opened on first use and refreshed when the repository may have changed.
+    index: Mutex<Option<SearchIndex>>,
+    index_dirty: AtomicBool,
+}
+
+/// A page opened in the reader or editor.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PageView {
+    pub path: String,
+    /// The whole file, for the source editor.
+    pub text: String,
+    /// Markdown after the frontmatter, for the renderer.
+    pub body: String,
+    /// Base for `save_page`.
+    pub hash: String,
+    pub meta: crate::wiki::PageMeta,
+    pub backlinks: Vec<PageRef>,
 }
 
 /// Where a capture is in its life, as shown in the Today timeline.
@@ -99,6 +118,8 @@ impl Session {
             device,
             queue: Mutex::new(queue),
             sync_lock: Mutex::new(()),
+            index: Mutex::new(None),
+            index_dirty: AtomicBool::new(true),
         })
     }
 
@@ -418,8 +439,111 @@ impl Session {
                 }
             };
             reports.push(report);
+            self.invalidate_index();
         }
         Ok(reports)
+    }
+
+    // ─────────────── wiki (§8.3, §4.5) ───────────────
+
+    /// Marks the search cache stale; the next query re-reads changed files.
+    pub fn invalidate_index(&self) {
+        self.index_dirty.store(true, Ordering::SeqCst);
+    }
+
+    fn with_index<T>(&self, f: impl FnOnce(&SearchIndex) -> Result<T>) -> Result<T> {
+        let mut guard = self.index.lock().unwrap_or_else(|p| p.into_inner());
+        if guard.is_none() {
+            *guard = Some(SearchIndex::open(&self.lib)?);
+        }
+        let idx = guard.as_mut().expect("opened above");
+        if self.index_dirty.swap(false, Ordering::SeqCst) {
+            idx.refresh(&self.lib)?;
+        }
+        f(idx)
+    }
+
+    /// Re-reads files changed outside the app (e.g. Obsidian). Returns pages re-indexed.
+    pub fn refresh_index(&self) -> Result<usize> {
+        self.index_dirty.store(false, Ordering::SeqCst);
+        let mut guard = self.index.lock().unwrap_or_else(|p| p.into_inner());
+        if guard.is_none() {
+            *guard = Some(SearchIndex::open(&self.lib)?);
+        }
+        guard.as_mut().expect("opened above").refresh(&self.lib)
+    }
+
+    /// Drops and rebuilds the cache (Settings › Repository › Rebuild index).
+    pub fn rebuild_index(&self) -> Result<usize> {
+        let mut guard = self.index.lock().unwrap_or_else(|p| p.into_inner());
+        let mut idx = SearchIndex::open(&self.lib)?;
+        let n = idx.rebuild(&self.lib)?;
+        *guard = Some(idx);
+        self.index_dirty.store(false, Ordering::SeqCst);
+        Ok(n)
+    }
+
+    pub fn search(&self, query: &str, vaults: &[String], limit: usize) -> Result<Vec<Hit>> {
+        self.with_index(|i| i.search(query, vaults, &[], limit))
+    }
+
+    pub fn recent_pages(&self, vault: Option<&str>, limit: usize) -> Result<Vec<PageRef>> {
+        self.with_index(|i| i.recent(vault, limit))
+    }
+
+    pub fn list_dir(&self, dir: &str) -> Result<crate::search::DirListing> {
+        self.with_index(|i| i.list_dir(dir))
+    }
+
+    pub fn local_graph(&self, path: &str, depth: usize) -> Result<Graph> {
+        self.with_index(|i| i.local_graph(path, depth.clamp(1, 2), 60))
+    }
+
+    /// Resolves a wikilink target as Obsidian would (for taps in the reader).
+    pub fn resolve_link(&self, target: &str) -> Result<Option<String>> {
+        let r = crate::pages::resolver(&self.lib)?;
+        Ok(r.resolve(target))
+    }
+
+    pub fn page(&self, path: &str) -> Result<PageView> {
+        if path.contains("..") || !(path.starts_with("vaults/") || path.starts_with("raw/")) {
+            return Err(crate::Error::invalid("not a page path"));
+        }
+        let text = std::fs::read_to_string(self.lib.path(path))?;
+        let (meta, body) = match crate::wiki::parse(path, &text) {
+            Ok(p) => (p.meta, p.body),
+            // Unreadable frontmatter (edited by hand): show the file as it is.
+            Err(_) => (
+                serde_json::from_value(json!({})).expect("defaults"),
+                text.clone(),
+            ),
+        };
+        let backlinks = if path.starts_with("vaults/") {
+            self.with_index(|i| i.backlinks(path))?
+        } else {
+            vec![]
+        };
+        Ok(PageView {
+            path: path.to_owned(),
+            hash: crate::wiki::content_hash(&text),
+            text,
+            body,
+            meta,
+            backlinks,
+        })
+    }
+
+    /// Saves an edit from the in-app editor as one human commit (`edit: <page>`).
+    pub fn save_page(
+        &self,
+        path: &str,
+        base_hash: &str,
+        text: &str,
+    ) -> Result<crate::edit::EditOutcome> {
+        let _g = self.sync_lock.lock().unwrap_or_else(|p| p.into_inner());
+        let out = crate::edit::save_page(&self.lib, &self.device, path, base_hash, text)?;
+        self.invalidate_index();
+        Ok(out)
     }
 
     /// Model roles resolved against the shared config, with API keys from secure storage.
@@ -457,6 +581,7 @@ impl Session {
             let q = self.queue();
             sync::sync(&self.lib, &q, &self.device, auth, now)?
         };
+        self.invalidate_index();
         // Dropped AI ops are re-run on the merged state (§5.4 step 3).
         for r in &outcome.replays {
             for s in &r.sources {

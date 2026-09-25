@@ -122,7 +122,7 @@ pub struct LocalStatus {
 
 // ───────────────────────────── setup ─────────────────────────────
 
-fn signature(dev: &LocalDevice) -> Result<Signature<'static>> {
+pub(crate) fn signature(dev: &LocalDevice) -> Result<Signature<'static>> {
     let name = if dev.name.is_empty() {
         dev.id.clone()
     } else {
