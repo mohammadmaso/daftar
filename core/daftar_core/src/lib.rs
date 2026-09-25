@@ -3,6 +3,7 @@
 
 pub mod agent;
 pub mod assets;
+pub mod audit;
 pub mod changeset;
 pub mod config;
 pub mod edit;
@@ -24,6 +25,7 @@ pub mod providers;
 pub mod queue;
 pub mod raw;
 pub mod review;
+pub mod review_ops;
 pub mod runtime;
 pub mod search;
 pub mod session;

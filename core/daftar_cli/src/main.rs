@@ -116,6 +116,38 @@ enum Command {
         page: String,
         file: PathBuf,
     },
+    /// AI operations, newest first.
+    Activity {
+        path: PathBuf,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+    },
+    /// The page changes of one operation.
+    Diff { path: PathBuf, op: String },
+    /// Undo an operation (revert, or a queued compensating op). Run `jobs` to complete a queued one.
+    Undo { path: PathBuf, op: String },
+    /// Undo an ingest and file the capture again into VAULT.
+    Move {
+        path: PathBuf,
+        op: String,
+        vault: String,
+    },
+    /// Undo an ingest and file the capture again with a correction.
+    Rerun {
+        path: PathBuf,
+        op: String,
+        note: String,
+    },
+    /// File an excluded capture again.
+    Include { path: PathBuf, raw_id: String },
+    /// List Review cards, or resolve one: confirm [--text T], reject, dismiss.
+    Review {
+        path: PathBuf,
+        id: Option<String>,
+        action: Option<String>,
+        #[arg(long)]
+        text: Option<String>,
+    },
     /// Generate an ed25519 key pair; prints the public key, writes the private key to FILE.
     Keygen {
         file: PathBuf,
@@ -484,6 +516,117 @@ fn main() -> anyhow::Result<()> {
                     "unchanged".into()
                 }
             })?;
+        }
+        Command::Activity { path, limit } => {
+            let s = Session::open(path)?;
+            let ops = s.activity(limit, None)?;
+            print(json, &ops, |ops| {
+                ops.iter()
+                    .map(|o| {
+                        format!(
+                            "{}  {:<10} {}{}",
+                            o.op_id,
+                            o.op_type.as_str(),
+                            o.summary,
+                            if o.reverted { "  [undone]" } else { "" }
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            })?;
+        }
+        Command::Diff { path, op } => {
+            let s = Session::open(path)?;
+            let files = s.op_diff(&op)?;
+            print(json, &files, |fs| {
+                let mut out = String::new();
+                for f in fs {
+                    out.push_str(&format!("--- {} ({:?})\n", f.path, f.change));
+                    for l in &f.lines {
+                        use daftar_core::audit::LineKind::*;
+                        let p = match l.kind {
+                            Added => "+",
+                            Removed => "-",
+                            Context => " ",
+                            Gap => "…",
+                        };
+                        out.push_str(&format!("{p}{}\n", l.text));
+                    }
+                }
+                out
+            })?;
+        }
+        Command::Undo { path, op } => {
+            let s = Session::open(path)?;
+            let st = s.undo(&op, None)?;
+            print(json, &st, |st| format!("{st:?}"))?;
+        }
+        Command::Move { path, op, vault } => {
+            let s = Session::open(path)?;
+            let opts = daftar_core::ops::IngestOptions {
+                forced_vault: Some(vault),
+                ..Default::default()
+            };
+            let st = s.undo(&op, Some(opts))?;
+            print(json, &st, |st| {
+                format!("{st:?}; run `jobs` to file it again")
+            })?;
+        }
+        Command::Rerun { path, op, note } => {
+            let s = Session::open(path)?;
+            let opts = daftar_core::ops::IngestOptions {
+                note: Some(note),
+                ..Default::default()
+            };
+            let st = s.undo(&op, Some(opts))?;
+            print(json, &st, |st| {
+                format!("{st:?}; run `jobs` to file it again")
+            })?;
+        }
+        Command::Include { path, raw_id } => {
+            let s = Session::open(path)?;
+            s.include(&raw_id)?;
+        }
+        Command::Review {
+            path,
+            id,
+            action,
+            text,
+        } => {
+            use daftar_core::review_ops::Resolution;
+            let s = Session::open(path)?;
+            match (id, action.as_deref()) {
+                (None, _) => {
+                    let cards = s.review_cards()?;
+                    print(json, &cards, |cs| {
+                        cs.iter()
+                            .map(|c| {
+                                format!(
+                                    "{}  {:?}  {}",
+                                    c.item.id,
+                                    c.item.kind,
+                                    c.claim
+                                        .as_ref()
+                                        .map(|x| x.text.clone())
+                                        .unwrap_or_else(|| c.item.payload.to_string())
+                                )
+                            })
+                            .collect::<Vec<_>>()
+                            .join("\n")
+                    })?;
+                }
+                (Some(id), Some(a)) => {
+                    let r = match a {
+                        "confirm" => Resolution::ConfirmClaim { text },
+                        "reject" => Resolution::RejectClaim,
+                        "dismiss" => Resolution::Dismiss,
+                        other => bail!("unknown action {other}: confirm, reject or dismiss"),
+                    };
+                    let op = s.resolve_review(&id, r)?;
+                    print(json, &op, |o| o.clone())?;
+                }
+                (Some(_), None) => bail!("give an action: confirm, reject or dismiss"),
+            }
         }
         Command::Keygen { file, comment } => {
             if file.exists() {

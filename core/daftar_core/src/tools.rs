@@ -63,6 +63,8 @@ pub struct OpContext<'a> {
     pub source: Option<RawItem>,
     /// Raw captures the model may cite (the source plus any it opened).
     pub citable: BTreeMap<String, RawItem>,
+    /// Undoing an op (§7): edits drop the source from `sources` instead of adding it.
+    pub compensating: bool,
     search: Option<SearchIndex>,
     human_lines: HashMap<String, BTreeSet<usize>>,
 }
@@ -94,6 +96,7 @@ impl<'a> OpContext<'a> {
             scope,
             source,
             citable,
+            compensating: false,
             search,
             human_lines: HashMap::new(),
         })
@@ -534,9 +537,14 @@ impl<'a> OpContext<'a> {
         let mut page = wiki::parse(&path, &body_text)
             .map_err(|e| format!("The edit broke the frontmatter: {e}"))?;
         page.meta.updated = self.today();
-        for s in self.source_ids() {
-            if !page.meta.sources.contains(&s) {
-                page.meta.sources.push(s);
+        if self.compensating {
+            let gone = self.source_ids();
+            page.meta.sources.retain(|s| !gone.contains(s));
+        } else {
+            for s in self.source_ids() {
+                if !page.meta.sources.contains(&s) {
+                    page.meta.sources.push(s);
+                }
             }
         }
         let doc = page.render();

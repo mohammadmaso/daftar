@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::agent::Cancel;
+use crate::audit::{AfterUndo, OpSummary, UndoOutcome};
 use crate::layout::Date;
 use crate::library::{Library, LocalDevice};
 use crate::ops::{self, IngestOptions, IngestOutcome, OpError};
@@ -29,6 +30,15 @@ pub struct Session {
     /// Search/link cache, opened on first use and refreshed when the repository may have changed.
     index: Mutex<Option<SearchIndex>>,
     index_dirty: AtomicBool,
+}
+
+/// Result of an undo request.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum UndoState {
+    /// Reverted; the id of the `revert-op`.
+    Done(String),
+    /// Later changes overlap; a compensating op will run with the AI jobs.
+    Queued,
 }
 
 /// A page opened in the reader or editor.
@@ -380,6 +390,23 @@ impl Session {
                             IngestOutcome::Skipped(why) => Ok(Some(format!("skipped: {why}"))),
                         }
                     }
+                    (JobKind::Compensate, _) => {
+                        let op_id = job.payload["op_id"].as_str().unwrap_or_default().to_owned();
+                        let after: AfterUndo = serde_json::from_value(job.payload["after"].clone())
+                            .unwrap_or(AfterUndo::Exclude);
+                        crate::audit::compensate(
+                            &self.lib,
+                            &self.device,
+                            rt,
+                            &op_id,
+                            after,
+                            &now,
+                            cancel,
+                            &self.sync_lock,
+                        )
+                        .await
+                        .map(|_| Some("undone".to_owned()))
+                    }
                     (kind, _) => Err(OpError::Permanent(format!(
                         "{} jobs are not supported yet",
                         kind.as_str()
@@ -411,6 +438,7 @@ impl Session {
                         waiting_for: Some(match job.kind {
                             JobKind::Transcribe => Role::Stt,
                             JobKind::Describe => Role::Vision,
+                            JobKind::Compensate => Role::Ingest,
                             _ if rt.has(Role::Router) => Role::Ingest,
                             _ => Role::Router,
                         }),
@@ -442,6 +470,94 @@ impl Session {
             self.invalidate_index();
         }
         Ok(reports)
+    }
+
+    // ─────────────── audit and review (§7, §8.5) ───────────────
+
+    pub fn activity(&self, limit: usize, before: Option<&str>) -> Result<Vec<OpSummary>> {
+        crate::audit::activity(&self.lib, limit, before)
+    }
+
+    pub fn op(&self, op_id: &str) -> Result<OpSummary> {
+        crate::audit::op(&self.lib, op_id)
+    }
+
+    pub fn op_diff(&self, op_id: &str) -> Result<Vec<crate::audit::FileDiff>> {
+        crate::audit::op_diff(&self.lib, op_id)
+    }
+
+    /// Undo (§7): `git revert` now if possible, otherwise a compensating op is queued. With
+    /// `refile`, the capture is filed again afterwards (move to vault, re-run with note).
+    pub fn undo(&self, op_id: &str, refile: Option<IngestOptions>) -> Result<UndoState> {
+        let now = jiff::Zoned::now();
+        let after = if refile.is_some() {
+            AfterUndo::Refile
+        } else {
+            AfterUndo::Exclude
+        };
+        let target = crate::audit::op(&self.lib, op_id)?;
+        let outcome = {
+            let _g = self.sync_lock.lock().unwrap_or_else(|p| p.into_inner());
+            // Files on disk must match HEAD before a revert writes over them.
+            sync::commit_local(&self.lib, &self.queue(), &self.device)?;
+            crate::audit::try_revert(&self.lib, &self.device, &now, op_id, after)?
+        };
+        self.invalidate_index();
+        let raw_id: Option<ulid::Ulid> = target.sources.first().and_then(|s| s.parse().ok());
+        let q = self.queue();
+        let state = match outcome {
+            UndoOutcome::Reverted(id) => UndoState::Done(id),
+            UndoOutcome::NeedsCompensation => {
+                q.enqueue(
+                    JobKind::Compensate,
+                    raw_id,
+                    json!({ "op_id": op_id, "after": after }),
+                    true,
+                )?;
+                UndoState::Queued
+            }
+        };
+        if let (Some(opts), Some(id)) = (refile, raw_id) {
+            q.enqueue(JobKind::Ingest, Some(id), serde_json::to_value(opts)?, true)?;
+        }
+        Ok(state)
+    }
+
+    /// Files an excluded capture again.
+    pub fn include(&self, raw_id: &str) -> Result<()> {
+        let id: ulid::Ulid = raw_id
+            .parse()
+            .map_err(|_| crate::Error::invalid("bad id"))?;
+        let item =
+            raw::find(&self.lib, id)?.ok_or_else(|| crate::Error::invalid("no such capture"))?;
+        if item.meta.status != RawStatus::Excluded {
+            return Ok(());
+        }
+        raw::set_status(&self.lib, &item.path, RawStatus::Pending)?;
+        self.queue()
+            .enqueue(JobKind::Ingest, Some(id), json!({}), true)?;
+        Ok(())
+    }
+
+    pub fn review_cards(&self) -> Result<Vec<crate::review_ops::ReviewCard>> {
+        crate::review_ops::cards(&self.lib)
+    }
+
+    pub fn resolve_review(
+        &self,
+        item_id: &str,
+        resolution: crate::review_ops::Resolution,
+    ) -> Result<String> {
+        let _g = self.sync_lock.lock().unwrap_or_else(|p| p.into_inner());
+        let id = crate::review_ops::resolve(
+            &self.lib,
+            &self.device,
+            &jiff::Zoned::now(),
+            item_id,
+            resolution,
+        )?;
+        self.invalidate_index();
+        Ok(id)
     }
 
     // ─────────────── wiki (§8.3, §4.5) ───────────────
@@ -682,6 +798,7 @@ mod tests {
                 forced_vault: None,
                 replayed_from: None,
                 reverts: None,
+                rejected_claims: vec![],
             },
         )
         .unwrap();

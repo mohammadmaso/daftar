@@ -335,7 +335,7 @@ pub fn links(text: &str) -> Vec<Link> {
 
 // ─────────────────────────── claims ───────────────────────────
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Claim {
     pub id: String,
     pub text: String,

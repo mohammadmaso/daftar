@@ -587,3 +587,58 @@ async fn persian_voice_note_is_filed_with_journal_link_and_claim() {
     );
     assert!(d.read("log/2026-09.md").contains("ingest | health, life"));
 }
+
+/// Scenario 4: the user edits a paragraph in Obsidian on the laptop while the phone files a note
+/// into the same page. No text is lost and no conflict marker is left: the phone's op is replayed on
+/// top of the human edit, which it then treats as human-written.
+#[tokio::test(flavor = "multi_thread")]
+async fn human_edit_and_ingest_on_the_same_page() {
+    let remote = Remote::new();
+    let phone = Device::clone_from(&remote, "pixel-8");
+    let sp = session(&phone);
+    sp.capture_text(
+        "Sara called about the Isfahan trip",
+        None,
+        &zoned("2026-09-23T10:00:00+03:30[Asia/Tehran]"),
+    )
+    .unwrap();
+    run(&sp, &runtime(archivist())).await;
+    assert_eq!(sync(&sp).state, SyncState::Synced);
+
+    let laptop = Device::clone_from(&remote, "laptop");
+    let sl = session(&laptop);
+    let page = "vaults/life/people/sara.md";
+    let edited = laptop.read(page).replace(
+        "about the Isfahan trip",
+        "about the Isfahan trip (we settled on Thursday)",
+    );
+    laptop.write(page, &edited);
+    assert_eq!(sync(&sl).state, SyncState::Synced);
+
+    sp.capture_text(
+        "Sara booked the train tickets",
+        None,
+        &zoned("2026-09-23T15:00:00+03:30[Asia/Tehran]"),
+    )
+    .unwrap();
+    run(&sp, &runtime(archivist())).await;
+    let o = sync(&sp);
+    assert_eq!(o.state, SyncState::Synced, "{o:?}");
+    if !o.replays.is_empty() {
+        run(&sp, &runtime(archivist())).await;
+        assert_eq!(sync(&sp).state, SyncState::Synced);
+    }
+    sync(&sl);
+    for d in [&phone, &laptop] {
+        let text = d.read(page);
+        assert!(
+            text.contains("(we settled on Thursday)"),
+            "human text kept:\n{text}"
+        );
+        assert!(
+            text.contains("booked the train tickets"),
+            "new note filed:\n{text}"
+        );
+        no_conflict_markers(d.root());
+    }
+}

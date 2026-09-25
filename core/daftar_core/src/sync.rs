@@ -839,6 +839,7 @@ fn revert_entry(target: &str, dev: &LocalDevice, now: &Zoned) -> LedgerEntry {
         forced_vault: None,
         replayed_from: None,
         reverts: Some(target.to_owned()),
+        rejected_claims: vec![],
     }
 }
 

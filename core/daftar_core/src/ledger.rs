@@ -23,6 +23,8 @@ pub enum OpType {
     Lint,
     Reflect,
     SaveAnswer,
+    /// The user resolved Review items (confirmed, edited or rejected claims).
+    Review,
 }
 
 impl OpType {
@@ -34,6 +36,7 @@ impl OpType {
             Self::Lint => "lint",
             Self::Reflect => "reflect",
             Self::SaveAnswer => "save-answer",
+            Self::Review => "review",
         }
     }
 }
@@ -84,6 +87,31 @@ pub struct LedgerEntry {
     pub replayed_from: Option<String>,
     #[serde(default)]
     pub reverts: Option<String>,
+    /// Claims the user rejected in Review, kept so the same evidence doesn't re-propose them.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub rejected_claims: Vec<RejectedClaim>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RejectedClaim {
+    pub text: String,
+    pub page: String,
+    /// Raw capture paths the claim cited.
+    pub sources: Vec<String>,
+}
+
+/// Claims rejected earlier that cited `raw_path` (without `.md`), newest last.
+pub fn rejected_for_source(entries: &[LedgerEntry], raw_path_no_ext: &str) -> Vec<RejectedClaim> {
+    entries
+        .iter()
+        .flat_map(|e| e.rejected_claims.iter())
+        .filter(|c| {
+            c.sources
+                .iter()
+                .any(|s| s.trim_end_matches(".md") == raw_path_no_ext)
+        })
+        .cloned()
+        .collect()
 }
 
 impl LedgerEntry {
@@ -248,6 +276,7 @@ mod tests {
             forced_vault: None,
             replayed_from: None,
             reverts: reverts.map(Into::into),
+            rejected_claims: vec![],
         }
     }
 

@@ -509,6 +509,13 @@ pub async fn ingest(
     if let Some(n) = &opts.note {
         user.push_str(&format!("correction from the user (follow it): {n}\n"));
     }
+    let rejected = ledger::rejected_for_source(&ledger::all(lib)?, &raw_no_ext);
+    if !rejected.is_empty() {
+        user.push_str("the user already rejected these claims from this capture; do not propose them again:\n");
+        for c in &rejected {
+            user.push_str(&format!("- {} ({})\n", c.text, c.page));
+        }
+    }
     user.push_str(&format!(
         "cite it as: [[{raw_no_ext}|{label}]]\n\n<capture>\n{}\n</capture>",
         item.body
@@ -596,6 +603,7 @@ pub async fn ingest(
         forced_vault: opts.forced_vault.clone(),
         replayed_from: opts.replayed_from.clone(),
         reverts: None,
+        rejected_claims: vec![],
     };
     let n_pages = created.len() + updated.len();
     let subject = format!(
