@@ -1117,7 +1117,7 @@ class L10nEn extends L10n {
 
   @override
   String get checkWikiFooter =>
-      'Looks for broken links, missing sources and stale claims. It also runs by itself after every few filings.';
+      'Looks for broken links, orphan pages and captures that never got filed. It also runs by itself after every few filings.';
 
   @override
   String get lintClean => 'Nothing needs fixing.';

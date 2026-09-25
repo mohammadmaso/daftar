@@ -1966,7 +1966,7 @@ abstract class L10n {
   /// No description provided for @checkWikiFooter.
   ///
   /// In en, this message translates to:
-  /// **'Looks for broken links, missing sources and stale claims. It also runs by itself after every few filings.'**
+  /// **'Looks for broken links, orphan pages and captures that never got filed. It also runs by itself after every few filings.'**
   String get checkWikiFooter;
 
   /// No description provided for @lintClean.
