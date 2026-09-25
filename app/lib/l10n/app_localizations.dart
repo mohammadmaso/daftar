@@ -1614,6 +1614,258 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'Voice mode needs the microphone.'**
   String get voiceNeedsMic;
+
+  /// No description provided for @mcpServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Outside tools (MCP)'**
+  String get mcpServers;
+
+  /// No description provided for @mcpFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Server settings sync between devices; credentials stay on each device, which signs in once.'**
+  String get mcpFooter;
+
+  /// No description provided for @addMcpServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add server'**
+  String get addMcpServer;
+
+  /// No description provided for @mcpConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Connected · 1 tool} other{Connected · {n} tools}}'**
+  String mcpConnected(int n);
+
+  /// No description provided for @mcpNeedsAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect on this device'**
+  String get mcpNeedsAuth;
+
+  /// No description provided for @mcpDesktopOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Runs a local program; desktop only'**
+  String get mcpDesktopOnly;
+
+  /// No description provided for @mcpDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get mcpDisabled;
+
+  /// No description provided for @mcpChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking…'**
+  String get mcpChecking;
+
+  /// No description provided for @transportHttp.
+  ///
+  /// In en, this message translates to:
+  /// **'Streamable HTTP'**
+  String get transportHttp;
+
+  /// No description provided for @transportSse.
+  ///
+  /// In en, this message translates to:
+  /// **'HTTP + SSE'**
+  String get transportSse;
+
+  /// No description provided for @transportStdio.
+  ///
+  /// In en, this message translates to:
+  /// **'Local program'**
+  String get transportStdio;
+
+  /// No description provided for @stdioMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Local programs only run on desktop.'**
+  String get stdioMobile;
+
+  /// No description provided for @command.
+  ///
+  /// In en, this message translates to:
+  /// **'Command'**
+  String get command;
+
+  /// No description provided for @arguments.
+  ///
+  /// In en, this message translates to:
+  /// **'Arguments, one per line'**
+  String get arguments;
+
+  /// No description provided for @envNames.
+  ///
+  /// In en, this message translates to:
+  /// **'Environment variable names, one per line'**
+  String get envNames;
+
+  /// No description provided for @authNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get authNone;
+
+  /// No description provided for @authBearer.
+  ///
+  /// In en, this message translates to:
+  /// **'Token'**
+  String get authBearer;
+
+  /// No description provided for @authHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Key in a header'**
+  String get authHeader;
+
+  /// No description provided for @authQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Key in the address'**
+  String get authQuery;
+
+  /// No description provided for @authHeaders.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom headers'**
+  String get authHeaders;
+
+  /// No description provided for @authOAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in (OAuth)'**
+  String get authOAuth;
+
+  /// No description provided for @authClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Client credentials'**
+  String get authClient;
+
+  /// No description provided for @authLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Access'**
+  String get authLabel;
+
+  /// No description provided for @authName.
+  ///
+  /// In en, this message translates to:
+  /// **'Header or parameter name'**
+  String get authName;
+
+  /// No description provided for @headerNames.
+  ///
+  /// In en, this message translates to:
+  /// **'Header names, one per line'**
+  String get headerNames;
+
+  /// No description provided for @secretValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Token or key (this device only)'**
+  String get secretValue;
+
+  /// No description provided for @headerValues.
+  ///
+  /// In en, this message translates to:
+  /// **'Header values, “name: value” per line (this device only)'**
+  String get headerValues;
+
+  /// No description provided for @envValues.
+  ///
+  /// In en, this message translates to:
+  /// **'Values, NAME=value per line (this device only)'**
+  String get envValues;
+
+  /// No description provided for @clientId.
+  ///
+  /// In en, this message translates to:
+  /// **'Client id (empty: register automatically)'**
+  String get clientId;
+
+  /// No description provided for @clientSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'Client secret (this device only)'**
+  String get clientSecret;
+
+  /// No description provided for @scopesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Scopes, separated by spaces'**
+  String get scopesLabel;
+
+  /// No description provided for @policyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'When a tool may change something'**
+  String get policyLabel;
+
+  /// No description provided for @policyAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Always ask'**
+  String get policyAsk;
+
+  /// No description provided for @policyReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask unless read-only'**
+  String get policyReadOnly;
+
+  /// No description provided for @policyAllow.
+  ///
+  /// In en, this message translates to:
+  /// **'Always allow'**
+  String get policyAllow;
+
+  /// No description provided for @serverOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get serverOn;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signIn;
+
+  /// No description provided for @signedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected on this device.'**
+  String get signedIn;
+
+  /// No description provided for @toolApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'{server} wants to run {tool}'**
+  String toolApproval(String server, String tool);
+
+  /// No description provided for @allow.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow'**
+  String get allow;
+
+  /// No description provided for @deny.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t allow'**
+  String get deny;
+
+  /// No description provided for @readOnlyTool.
+  ///
+  /// In en, this message translates to:
+  /// **'Only reads'**
+  String get readOnlyTool;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

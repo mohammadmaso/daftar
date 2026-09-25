@@ -559,10 +559,13 @@ name = "daftar_bridge"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "daftar_core",
  "flutter_rust_bridge",
  "jiff",
+ "serde_json",
  "tokio",
+ "tracing",
 ]
 
 [[package]]

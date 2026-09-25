@@ -52,8 +52,21 @@ pub struct AskAnswer {
 pub enum AskEventKind {
     /// Streamed text as it arrives (includes text the model writes between tool calls).
     Delta,
+    /// An outside tool wants to run; answer with `answer_tool_approval` (§10).
+    Approval,
     Done,
     Failed,
+}
+
+/// A tool call waiting for the user's yes or no.
+#[derive(Clone)]
+pub struct ToolApproval {
+    pub request_id: String,
+    pub server_name: String,
+    pub tool: String,
+    /// The arguments as pretty JSON.
+    pub arguments: String,
+    pub read_only: bool,
 }
 
 #[derive(Clone)]
@@ -62,10 +75,22 @@ pub struct AskEvent {
     /// The delta, or the failure sentence.
     pub text: Option<String>,
     pub answer: Option<AskAnswer>,
+    pub approval: Option<ToolApproval>,
+}
+
+/// Credentials of one MCP server on this device (JSON from secure storage).
+pub struct McpSecret {
+    pub server_id: String,
+    pub secrets_json: String,
 }
 
 fn event(kind: AskEventKind, text: Option<String>, answer: Option<AskAnswer>) -> AskEvent {
-    AskEvent { kind, text, answer }
+    AskEvent {
+        kind,
+        text,
+        answer,
+        approval: None,
+    }
 }
 
 fn scope(s: AskScopeDto) -> AskScope {
@@ -86,6 +111,7 @@ impl LibraryHandle {
         image: Option<AskImage>,
         scope_dto: AskScopeDto,
         api_keys: Vec<ApiKey>,
+        mcp_secrets: Vec<McpSecret>,
         sink: StreamSink<AskEvent>,
     ) -> anyhow::Result<()> {
         let s = self.session();
@@ -104,6 +130,35 @@ impl LibraryHandle {
                 answer: t.answer,
             })
             .collect();
+        let scope = scope(scope_dto);
+        // Outside tools are for the real-life scopes; a story stays inside its own pages.
+        let external = if matches!(scope, AskScope::Story(_)) || mcp_secrets.is_empty() {
+            None
+        } else {
+            let approvals = sink.clone();
+            let approver = std::sync::Arc::new(super::mcp::AppApprover {
+                on_request: Box::new(move |id, req| {
+                    let _ = approvals.add(AskEvent {
+                        kind: AskEventKind::Approval,
+                        text: None,
+                        answer: None,
+                        approval: Some(ToolApproval {
+                            request_id: id,
+                            server_name: req.server_name,
+                            tool: req.tool,
+                            arguments: serde_json::to_string_pretty(&req.arguments)
+                                .unwrap_or_default(),
+                            read_only: req.read_only,
+                        }),
+                    });
+                }),
+            });
+            let secrets = mcp_secrets
+                .into_iter()
+                .map(|m| (m.server_id, m.secrets_json))
+                .collect();
+            super::mcp::toolset(s.library(), &secrets, approver).await
+        };
         let delta_sink = sink.clone();
         let on_delta = move |t: &str| {
             let _ = delta_sink.add(event(AskEventKind::Delta, Some(t.to_owned()), None));
@@ -114,8 +169,8 @@ impl LibraryHandle {
                 &history,
                 &question,
                 image.map(|i| (i.media_type, i.bytes)),
-                &scope(scope_dto),
-                None,
+                &scope,
+                external,
                 &Cancel::default(),
                 Some(&on_delta),
             )

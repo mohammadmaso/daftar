@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/credentials.dart';
 import '../../core/errors.dart';
+import '../../core/job_runner.dart';
 import '../../core/library_api.dart';
 import '../../core/library_state.dart';
 
@@ -17,6 +18,7 @@ class AskTurnView {
     this.error,
     this.needsHelp = false,
     this.hadImage = false,
+    this.approvals = const [],
   });
 
   final String question;
@@ -28,11 +30,15 @@ class AskTurnView {
   final bool needsHelp;
   final bool hadImage;
 
+  /// Outside tools waiting for a yes or no (§10).
+  final List<ToolApproval> approvals;
+
   AskTurnView copyWith({
     String? answer,
     bool? done,
     String? error,
     bool? needsHelp,
+    List<ToolApproval>? approvals,
   }) => AskTurnView(
     question: question,
     answer: answer ?? this.answer,
@@ -40,6 +46,7 @@ class AskTurnView {
     error: error ?? this.error,
     needsHelp: needsHelp ?? this.needsHelp,
     hadImage: hadImage,
+    approvals: approvals ?? this.approvals,
   );
 }
 
@@ -79,6 +86,21 @@ class AskThread extends Notifier<AskView> {
     state = AskView(scope: state.scope);
   }
 
+  /// The user's answer to an outside tool's request.
+  void answerApproval(ToolApproval a, bool allowed) {
+    ref.read(providerApiProvider).answerToolApproval(a.requestId, allowed);
+    final turns = [
+      for (final t in state.turns)
+        t.copyWith(
+          approvals: [
+            for (final x in t.approvals)
+              if (x.requestId != a.requestId) x,
+          ],
+        ),
+    ];
+    state = AskView(scope: state.scope, turns: turns);
+  }
+
   Future<void> send(
     String question, {
     Uint8List? image,
@@ -102,9 +124,17 @@ class AskThread extends Notifier<AskView> {
       ],
     );
     final settings = await lib.aiSettings();
-    final keys = await ref
-        .read(credentialStoreProvider)
-        .apiKeys(settings.providers.map((p) => p.id));
+    final creds = ref.read(credentialStoreProvider);
+    final keys = await creds.apiKeys(settings.providers.map((p) => p.id));
+    // Every enabled server takes part; the device adds its own credentials where it has them.
+    final servers = (await lib.mcpServers()).where((m) => m.enabled);
+    final mcp = [
+      for (final m in servers)
+        McpSecret(
+          serverId: m.id,
+          secretsJson: await creds.mcpSecrets(m.id) ?? '{}',
+        ),
+    ];
     // On desktop the Ask panel knows which page is open (§8.2).
     final asked = reading == null
         ? q
@@ -128,6 +158,7 @@ class AskThread extends Notifier<AskView> {
           image: image == null
               ? null
               : AskImage(mediaType: imageType, bytes: image),
+          mcp: mcp,
         )
         .listen(
           (e) {
@@ -143,6 +174,10 @@ class AskThread extends Notifier<AskView> {
                     done: true,
                     needsHelp: a.needsHelp,
                   ),
+                );
+              case AskEventKind.approval:
+                update(
+                  (t) => t.copyWith(approvals: [...t.approvals, e.approval!]),
                 );
               case AskEventKind.failed:
                 update((t) => t.copyWith(done: true, error: e.text ?? ''));

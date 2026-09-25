@@ -921,4 +921,147 @@ class L10nEn extends L10n {
 
   @override
   String get voiceNeedsMic => 'Voice mode needs the microphone.';
+
+  @override
+  String get mcpServers => 'Outside tools (MCP)';
+
+  @override
+  String get mcpFooter =>
+      'Server settings sync between devices; credentials stay on each device, which signs in once.';
+
+  @override
+  String get addMcpServer => 'Add server';
+
+  @override
+  String mcpConnected(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Connected · $nString tools',
+      one: 'Connected · 1 tool',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mcpNeedsAuth => 'Connect on this device';
+
+  @override
+  String get mcpDesktopOnly => 'Runs a local program; desktop only';
+
+  @override
+  String get mcpDisabled => 'Off';
+
+  @override
+  String get mcpChecking => 'Checking…';
+
+  @override
+  String get transportHttp => 'Streamable HTTP';
+
+  @override
+  String get transportSse => 'HTTP + SSE';
+
+  @override
+  String get transportStdio => 'Local program';
+
+  @override
+  String get stdioMobile => 'Local programs only run on desktop.';
+
+  @override
+  String get command => 'Command';
+
+  @override
+  String get arguments => 'Arguments, one per line';
+
+  @override
+  String get envNames => 'Environment variable names, one per line';
+
+  @override
+  String get authNone => 'None';
+
+  @override
+  String get authBearer => 'Token';
+
+  @override
+  String get authHeader => 'Key in a header';
+
+  @override
+  String get authQuery => 'Key in the address';
+
+  @override
+  String get authHeaders => 'Custom headers';
+
+  @override
+  String get authOAuth => 'Sign in (OAuth)';
+
+  @override
+  String get authClient => 'Client credentials';
+
+  @override
+  String get authLabel => 'Access';
+
+  @override
+  String get authName => 'Header or parameter name';
+
+  @override
+  String get headerNames => 'Header names, one per line';
+
+  @override
+  String get secretValue => 'Token or key (this device only)';
+
+  @override
+  String get headerValues =>
+      'Header values, “name: value” per line (this device only)';
+
+  @override
+  String get envValues => 'Values, NAME=value per line (this device only)';
+
+  @override
+  String get clientId => 'Client id (empty: register automatically)';
+
+  @override
+  String get clientSecret => 'Client secret (this device only)';
+
+  @override
+  String get scopesLabel => 'Scopes, separated by spaces';
+
+  @override
+  String get policyLabel => 'When a tool may change something';
+
+  @override
+  String get policyAsk => 'Always ask';
+
+  @override
+  String get policyReadOnly => 'Ask unless read-only';
+
+  @override
+  String get policyAllow => 'Always allow';
+
+  @override
+  String get serverOn => 'On';
+
+  @override
+  String get signIn => 'Sign in';
+
+  @override
+  String get signedIn => 'Connected on this device.';
+
+  @override
+  String toolApproval(String server, String tool) {
+    return '$server wants to run $tool';
+  }
+
+  @override
+  String get allow => 'Allow';
+
+  @override
+  String get deny => 'Don\'t allow';
+
+  @override
+  String get readOnlyTool => 'Only reads';
 }

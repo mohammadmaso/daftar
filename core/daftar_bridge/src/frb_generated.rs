@@ -41,7 +41,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1180930623;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1913660233;
 
 // Section: executor
 
@@ -188,6 +188,7 @@ fn wire__crate__api__library__LibraryHandle_ask_impl(
             let api_image = <Option<crate::api::ask::AskImage>>::sse_decode(&mut deserializer);
             let api_scope_dto = <crate::api::ask::AskScopeDto>::sse_decode(&mut deserializer);
             let api_api_keys = <Vec<crate::api::ai::ApiKey>>::sse_decode(&mut deserializer);
+            let api_mcp_secrets = <Vec<crate::api::ask::McpSecret>>::sse_decode(&mut deserializer);
             let api_sink = <StreamSink<
                 crate::api::ask::AskEvent,
                 flutter_rust_bridge::for_generated::SseCodec,
@@ -220,6 +221,7 @@ fn wire__crate__api__library__LibraryHandle_ask_impl(
                             api_image,
                             api_scope_dto,
                             api_api_keys,
+                            api_mcp_secrets,
                             api_sink,
                         )
                         .await?;
@@ -738,6 +740,306 @@ fn wire__crate__api__library__LibraryHandle_local_graph_impl(
         },
     )
 }
+fn wire__crate__api__library__LibraryHandle_mcp_check_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "LibraryHandle_mcp_check",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<LibraryHandle>,
+            >>::sse_decode(&mut deserializer);
+            let api_id = <String>::sse_decode(&mut deserializer);
+            let api_secrets_json = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::library::LibraryHandle::mcp_check(
+                            &*api_that_guard,
+                            api_id,
+                            api_secrets_json,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__library__LibraryHandle_mcp_oauth_begin_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "LibraryHandle_mcp_oauth_begin",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<LibraryHandle>,
+            >>::sse_decode(&mut deserializer);
+            let api_id = <String>::sse_decode(&mut deserializer);
+            let api_secrets_json = <String>::sse_decode(&mut deserializer);
+            let api_redirect_uri = <Option<String>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::library::LibraryHandle::mcp_oauth_begin(
+                            &*api_that_guard,
+                            api_id,
+                            api_secrets_json,
+                            api_redirect_uri,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__library__LibraryHandle_mcp_oauth_complete_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "LibraryHandle_mcp_oauth_complete",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<LibraryHandle>,
+            >>::sse_decode(&mut deserializer);
+            let api_flow_id = <String>::sse_decode(&mut deserializer);
+            let api_callback_url = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::library::LibraryHandle::mcp_oauth_complete(
+                            &*api_that_guard,
+                            api_flow_id,
+                            api_callback_url,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__library__LibraryHandle_mcp_oauth_wait_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "LibraryHandle_mcp_oauth_wait",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<LibraryHandle>,
+            >>::sse_decode(&mut deserializer);
+            let api_flow_id = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::library::LibraryHandle::mcp_oauth_wait(
+                            &*api_that_guard,
+                            api_flow_id,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__library__LibraryHandle_mcp_servers_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "LibraryHandle_mcp_servers",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<LibraryHandle>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok =
+                            crate::api::library::LibraryHandle::mcp_servers(&*api_that_guard)?;
+                        std::result::Result::Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__library__LibraryHandle_move_to_vault_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -1147,6 +1449,61 @@ fn wire__crate__api__library__LibraryHandle_refresh_index_impl(
                         let api_that_guard = api_that_guard.unwrap();
                         let output_ok =
                             crate::api::library::LibraryHandle::refresh_index(&*api_that_guard)?;
+                        std::result::Result::Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__library__LibraryHandle_remove_mcp_server_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "LibraryHandle_remove_mcp_server",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<LibraryHandle>,
+            >>::sse_decode(&mut deserializer);
+            let api_id = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::library::LibraryHandle::remove_mcp_server(
+                            &*api_that_guard,
+                            api_id,
+                        )?;
                         std::result::Result::Ok(output_ok)
                     })(),
                 )
@@ -1659,6 +2016,61 @@ fn wire__crate__api__library__LibraryHandle_save_draft_impl(
                             api_story,
                             api_title,
                             api_text,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__library__LibraryHandle_save_mcp_server_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "LibraryHandle_save_mcp_server",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<LibraryHandle>,
+            >>::sse_decode(&mut deserializer);
+            let api_server = <crate::api::mcp::McpServer>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::library::LibraryHandle::save_mcp_server(
+                            &*api_that_guard,
+                            api_server,
                         )?;
                         std::result::Result::Ok(output_ok)
                     })(),
@@ -2554,6 +2966,39 @@ fn wire__crate__api__voice__VoiceHandle_set_muted_impl(
         },
     )
 }
+fn wire__crate__api__mcp__answer_tool_approval_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "answer_tool_approval",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_request_id = <String>::sse_decode(&mut deserializer);
+            let api_allowed = <bool>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>({
+                    crate::api::mcp::answer_tool_approval(api_request_id, api_allowed);
+                })?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
 fn wire__crate__api__ai__capability_warning_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -2900,6 +3345,35 @@ fn wire__crate__api__ai__list_models_impl(
         },
     )
 }
+fn wire__crate__api__mcp__mcp_stdio_supported_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "mcp_stdio_supported",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>(crate::api::mcp::mcp_stdio_supported())?;
+                std::result::Result::Ok(output_ok)
+            })())
+        },
+    )
+}
 
 // Section: related_funcs
 
@@ -3074,10 +3548,12 @@ impl SseDecode for crate::api::ask::AskEvent {
         let mut var_kind = <crate::api::ask::AskEventKind>::sse_decode(deserializer);
         let mut var_text = <Option<String>>::sse_decode(deserializer);
         let mut var_answer = <Option<crate::api::ask::AskAnswer>>::sse_decode(deserializer);
+        let mut var_approval = <Option<crate::api::ask::ToolApproval>>::sse_decode(deserializer);
         return crate::api::ask::AskEvent {
             kind: var_kind,
             text: var_text,
             answer: var_answer,
+            approval: var_approval,
         };
     }
 }
@@ -3088,8 +3564,9 @@ impl SseDecode for crate::api::ask::AskEventKind {
         let mut inner = <i32>::sse_decode(deserializer);
         return match inner {
             0 => crate::api::ask::AskEventKind::Delta,
-            1 => crate::api::ask::AskEventKind::Done,
-            2 => crate::api::ask::AskEventKind::Failed,
+            1 => crate::api::ask::AskEventKind::Approval,
+            2 => crate::api::ask::AskEventKind::Done,
+            3 => crate::api::ask::AskEventKind::Failed,
             _ => unreachable!("Invalid variant for AskEventKind: {}", inner),
         };
     }
@@ -3614,6 +4091,42 @@ impl SseDecode for Vec<crate::api::ai::JobOutcome> {
     }
 }
 
+impl SseDecode for Vec<crate::api::ask::McpSecret> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::ask::McpSecret>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::mcp::McpServer> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::mcp::McpServer>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::mcp::McpToolInfo> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::mcp::McpToolInfo>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::audit::Operation> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -3758,6 +4271,138 @@ impl SseDecode for crate::api::wiki::LocalGraph {
     }
 }
 
+impl SseDecode for crate::api::mcp::McpAuthKind {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::mcp::McpAuthKind::None,
+            1 => crate::api::mcp::McpAuthKind::Bearer,
+            2 => crate::api::mcp::McpAuthKind::ApiKeyHeader,
+            3 => crate::api::mcp::McpAuthKind::ApiKeyQuery,
+            4 => crate::api::mcp::McpAuthKind::Headers,
+            5 => crate::api::mcp::McpAuthKind::OAuth,
+            6 => crate::api::mcp::McpAuthKind::ClientCredentials,
+            _ => unreachable!("Invalid variant for McpAuthKind: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for crate::api::mcp::McpPolicy {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::mcp::McpPolicy::AskEveryTime,
+            1 => crate::api::mcp::McpPolicy::AutoReadOnly,
+            2 => crate::api::mcp::McpPolicy::AlwaysAllow,
+            _ => unreachable!("Invalid variant for McpPolicy: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for crate::api::ask::McpSecret {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_serverId = <String>::sse_decode(deserializer);
+        let mut var_secretsJson = <String>::sse_decode(deserializer);
+        return crate::api::ask::McpSecret {
+            server_id: var_serverId,
+            secrets_json: var_secretsJson,
+        };
+    }
+}
+
+impl SseDecode for crate::api::mcp::McpServer {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_id = <String>::sse_decode(deserializer);
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_transport = <crate::api::mcp::McpTransportKind>::sse_decode(deserializer);
+        let mut var_target = <String>::sse_decode(deserializer);
+        let mut var_args = <Vec<String>>::sse_decode(deserializer);
+        let mut var_envNames = <Vec<String>>::sse_decode(deserializer);
+        let mut var_auth = <crate::api::mcp::McpAuthKind>::sse_decode(deserializer);
+        let mut var_authNames = <Vec<String>>::sse_decode(deserializer);
+        let mut var_clientId = <String>::sse_decode(deserializer);
+        let mut var_scopes = <Vec<String>>::sse_decode(deserializer);
+        let mut var_policy = <crate::api::mcp::McpPolicy>::sse_decode(deserializer);
+        let mut var_enabled = <bool>::sse_decode(deserializer);
+        return crate::api::mcp::McpServer {
+            id: var_id,
+            name: var_name,
+            transport: var_transport,
+            target: var_target,
+            args: var_args,
+            env_names: var_envNames,
+            auth: var_auth,
+            auth_names: var_authNames,
+            client_id: var_clientId,
+            scopes: var_scopes,
+            policy: var_policy,
+            enabled: var_enabled,
+        };
+    }
+}
+
+impl SseDecode for crate::api::mcp::McpStatus {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_kind = <crate::api::mcp::McpStatusKind>::sse_decode(deserializer);
+        let mut var_message = <Option<String>>::sse_decode(deserializer);
+        let mut var_tools = <Vec<crate::api::mcp::McpToolInfo>>::sse_decode(deserializer);
+        let mut var_updatedSecrets = <Option<String>>::sse_decode(deserializer);
+        return crate::api::mcp::McpStatus {
+            kind: var_kind,
+            message: var_message,
+            tools: var_tools,
+            updated_secrets: var_updatedSecrets,
+        };
+    }
+}
+
+impl SseDecode for crate::api::mcp::McpStatusKind {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::mcp::McpStatusKind::Connected,
+            1 => crate::api::mcp::McpStatusKind::NeedsAuth,
+            2 => crate::api::mcp::McpStatusKind::DesktopOnly,
+            3 => crate::api::mcp::McpStatusKind::Error,
+            4 => crate::api::mcp::McpStatusKind::Disabled,
+            _ => unreachable!("Invalid variant for McpStatusKind: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for crate::api::mcp::McpToolInfo {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_description = <String>::sse_decode(deserializer);
+        let mut var_readOnly = <bool>::sse_decode(deserializer);
+        return crate::api::mcp::McpToolInfo {
+            name: var_name,
+            description: var_description,
+            read_only: var_readOnly,
+        };
+    }
+}
+
+impl SseDecode for crate::api::mcp::McpTransportKind {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::mcp::McpTransportKind::StreamableHttp,
+            1 => crate::api::mcp::McpTransportKind::Sse,
+            2 => crate::api::mcp::McpTransportKind::Stdio,
+            _ => unreachable!("Invalid variant for McpTransportKind: {}", inner),
+        };
+    }
+}
+
 impl SseDecode for crate::api::ai::ModelRole {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -3774,6 +4419,18 @@ impl SseDecode for crate::api::ai::ModelRole {
             8 => crate::api::ai::ModelRole::Tts,
             9 => crate::api::ai::ModelRole::Embedding,
             _ => unreachable!("Invalid variant for ModelRole: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for crate::api::mcp::OAuthStart {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_flowId = <String>::sse_decode(deserializer);
+        let mut var_authUrl = <String>::sse_decode(deserializer);
+        return crate::api::mcp::OAuthStart {
+            flow_id: var_flowId,
+            auth_url: var_authUrl,
         };
     }
 }
@@ -3927,6 +4584,17 @@ impl SseDecode for Option<crate::api::ai::ModelRole> {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
             return Some(<crate::api::ai::ModelRole>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::api::ask::ToolApproval> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::ask::ToolApproval>::sse_decode(deserializer));
         } else {
             return None;
         }
@@ -4243,6 +4911,24 @@ impl SseDecode for crate::api::library::SyncState {
     }
 }
 
+impl SseDecode for crate::api::ask::ToolApproval {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_requestId = <String>::sse_decode(deserializer);
+        let mut var_serverName = <String>::sse_decode(deserializer);
+        let mut var_tool = <String>::sse_decode(deserializer);
+        let mut var_arguments = <String>::sse_decode(deserializer);
+        let mut var_readOnly = <bool>::sse_decode(deserializer);
+        return crate::api::ask::ToolApproval {
+            request_id: var_requestId,
+            server_name: var_serverName,
+            tool: var_tool,
+            arguments: var_arguments,
+            read_only: var_readOnly,
+        };
+    }
+}
+
 impl SseDecode for u32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -4477,162 +5163,204 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        13 => wire__crate__api__library__LibraryHandle_move_to_vault_impl(
+        13 => wire__crate__api__library__LibraryHandle_mcp_check_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        14 => wire__crate__api__library__LibraryHandle_open_impl(port, ptr, rust_vec_len, data_len),
-        15 => wire__crate__api__library__LibraryHandle_operation_impl(
+        14 => wire__crate__api__library__LibraryHandle_mcp_oauth_begin_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        16 => wire__crate__api__library__LibraryHandle_operation_diff_impl(
+        15 => wire__crate__api__library__LibraryHandle_mcp_oauth_complete_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        17 => wire__crate__api__library__LibraryHandle_page_impl(port, ptr, rust_vec_len, data_len),
-        18 => wire__crate__api__library__LibraryHandle_rebuild_index_impl(
+        16 => wire__crate__api__library__LibraryHandle_mcp_oauth_wait_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        19 => wire__crate__api__library__LibraryHandle_recent_pages_impl(
+        17 => wire__crate__api__library__LibraryHandle_mcp_servers_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        20 => wire__crate__api__library__LibraryHandle_refresh_index_impl(
+        18 => wire__crate__api__library__LibraryHandle_move_to_vault_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        21 => wire__crate__api__library__LibraryHandle_remove_provider_impl(
+        19 => wire__crate__api__library__LibraryHandle_open_impl(port, ptr, rust_vec_len, data_len),
+        20 => wire__crate__api__library__LibraryHandle_operation_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        22 => wire__crate__api__library__LibraryHandle_rerun_with_note_impl(
+        21 => wire__crate__api__library__LibraryHandle_operation_diff_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        23 => wire__crate__api__library__LibraryHandle_resolve_link_impl(
+        22 => wire__crate__api__library__LibraryHandle_page_impl(port, ptr, rust_vec_len, data_len),
+        23 => wire__crate__api__library__LibraryHandle_rebuild_index_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        24 => wire__crate__api__library__LibraryHandle_resolve_review_impl(
+        24 => wire__crate__api__library__LibraryHandle_recent_pages_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        25 => wire__crate__api__library__LibraryHandle_retry_capture_impl(
+        25 => wire__crate__api__library__LibraryHandle_refresh_index_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        26 => wire__crate__api__library__LibraryHandle_review_cards_impl(
+        26 => wire__crate__api__library__LibraryHandle_remove_mcp_server_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        27 => wire__crate__api__library__LibraryHandle_run_jobs_impl(
+        27 => wire__crate__api__library__LibraryHandle_remove_provider_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        28 => wire__crate__api__library__LibraryHandle_save_answer_impl(
+        28 => wire__crate__api__library__LibraryHandle_rerun_with_note_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        29 => wire__crate__api__library__LibraryHandle_save_draft_impl(
+        29 => wire__crate__api__library__LibraryHandle_resolve_link_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        30 => wire__crate__api__library__LibraryHandle_save_page_impl(
+        30 => wire__crate__api__library__LibraryHandle_resolve_review_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        31 => wire__crate__api__library__LibraryHandle_save_provider_impl(
+        31 => wire__crate__api__library__LibraryHandle_retry_capture_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        32 => {
+        32 => wire__crate__api__library__LibraryHandle_review_cards_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        33 => wire__crate__api__library__LibraryHandle_run_jobs_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        34 => wire__crate__api__library__LibraryHandle_save_answer_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        35 => wire__crate__api__library__LibraryHandle_save_draft_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        36 => wire__crate__api__library__LibraryHandle_save_mcp_server_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        37 => wire__crate__api__library__LibraryHandle_save_page_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        38 => wire__crate__api__library__LibraryHandle_save_provider_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        39 => {
             wire__crate__api__library__LibraryHandle_search_impl(port, ptr, rust_vec_len, data_len)
         }
-        33 => wire__crate__api__library__LibraryHandle_set_remote_impl(
+        40 => wire__crate__api__library__LibraryHandle_set_remote_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        34 => wire__crate__api__library__LibraryHandle_set_role_impl(
+        41 => wire__crate__api__library__LibraryHandle_set_role_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        35 => wire__crate__api__library__LibraryHandle_start_voice_impl(
+        42 => wire__crate__api__library__LibraryHandle_start_voice_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        36 => {
+        43 => {
             wire__crate__api__library__LibraryHandle_status_impl(port, ptr, rust_vec_len, data_len)
         }
-        37 => wire__crate__api__library__LibraryHandle_sync_impl(port, ptr, rust_vec_len, data_len),
-        38 => wire__crate__api__library__LibraryHandle_test_role_impl(
+        44 => wire__crate__api__library__LibraryHandle_sync_impl(port, ptr, rust_vec_len, data_len),
+        45 => wire__crate__api__library__LibraryHandle_test_role_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        39 => wire__crate__api__library__LibraryHandle_undo_impl(port, ptr, rust_vec_len, data_len),
-        40 => {
+        46 => wire__crate__api__library__LibraryHandle_undo_impl(port, ptr, rust_vec_len, data_len),
+        47 => {
             wire__crate__api__library__LibraryHandle_vaults_impl(port, ptr, rust_vec_len, data_len)
         }
-        41 => wire__crate__api__voice__VoiceHandle_end_impl(port, ptr, rust_vec_len, data_len),
-        42 => wire__crate__api__voice__VoiceHandle_events_impl(port, ptr, rust_vec_len, data_len),
-        43 => wire__crate__api__voice__VoiceHandle_feed_impl(port, ptr, rust_vec_len, data_len),
-        44 => wire__crate__api__voice__VoiceHandle_playback_finished_impl(
+        48 => wire__crate__api__voice__VoiceHandle_end_impl(port, ptr, rust_vec_len, data_len),
+        49 => wire__crate__api__voice__VoiceHandle_events_impl(port, ptr, rust_vec_len, data_len),
+        50 => wire__crate__api__voice__VoiceHandle_feed_impl(port, ptr, rust_vec_len, data_len),
+        51 => wire__crate__api__voice__VoiceHandle_playback_finished_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        45 => {
+        52 => {
             wire__crate__api__voice__VoiceHandle_set_muted_impl(port, ptr, rust_vec_len, data_len)
         }
-        47 => wire__crate__api__library__clone_library_impl(port, ptr, rust_vec_len, data_len),
-        50 => wire__crate__api__library__generate_ssh_key_impl(port, ptr, rust_vec_len, data_len),
-        52 => wire__crate__api__info__init_app_impl(port, ptr, rust_vec_len, data_len),
-        53 => wire__crate__api__library__init_library_impl(port, ptr, rust_vec_len, data_len),
-        55 => wire__crate__api__ai__list_models_impl(port, ptr, rust_vec_len, data_len),
+        55 => wire__crate__api__library__clone_library_impl(port, ptr, rust_vec_len, data_len),
+        58 => wire__crate__api__library__generate_ssh_key_impl(port, ptr, rust_vec_len, data_len),
+        60 => wire__crate__api__info__init_app_impl(port, ptr, rust_vec_len, data_len),
+        61 => wire__crate__api__library__init_library_impl(port, ptr, rust_vec_len, data_len),
+        63 => wire__crate__api__ai__list_models_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4645,11 +5373,13 @@ fn pde_ffi_dispatcher_sync_impl(
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        46 => wire__crate__api__ai__capability_warning_impl(ptr, rust_vec_len, data_len),
-        48 => wire__crate__api__info__core_info_impl(ptr, rust_vec_len, data_len),
-        49 => wire__crate__api__ai__default_base_url_impl(ptr, rust_vec_len, data_len),
-        51 => wire__crate__api__ask__helplines_impl(ptr, rust_vec_len, data_len),
-        54 => wire__crate__api__library__library_ready_impl(ptr, rust_vec_len, data_len),
+        53 => wire__crate__api__mcp__answer_tool_approval_impl(ptr, rust_vec_len, data_len),
+        54 => wire__crate__api__ai__capability_warning_impl(ptr, rust_vec_len, data_len),
+        56 => wire__crate__api__info__core_info_impl(ptr, rust_vec_len, data_len),
+        57 => wire__crate__api__ai__default_base_url_impl(ptr, rust_vec_len, data_len),
+        59 => wire__crate__api__ask__helplines_impl(ptr, rust_vec_len, data_len),
+        62 => wire__crate__api__library__library_ready_impl(ptr, rust_vec_len, data_len),
+        64 => wire__crate__api__mcp__mcp_stdio_supported_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4788,6 +5518,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::ask::AskEvent {
             self.kind.into_into_dart().into_dart(),
             self.text.into_into_dart().into_dart(),
             self.answer.into_into_dart().into_dart(),
+            self.approval.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -4803,8 +5534,9 @@ impl flutter_rust_bridge::IntoDart for crate::api::ask::AskEventKind {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
             Self::Delta => 0.into_dart(),
-            Self::Done => 1.into_dart(),
-            Self::Failed => 2.into_dart(),
+            Self::Approval => 1.into_dart(),
+            Self::Done => 2.into_dart(),
+            Self::Failed => 3.into_dart(),
             _ => unreachable!(),
         }
     }
@@ -5278,6 +6010,171 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::wiki::LocalGraph>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::mcp::McpAuthKind {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::None => 0.into_dart(),
+            Self::Bearer => 1.into_dart(),
+            Self::ApiKeyHeader => 2.into_dart(),
+            Self::ApiKeyQuery => 3.into_dart(),
+            Self::Headers => 4.into_dart(),
+            Self::OAuth => 5.into_dart(),
+            Self::ClientCredentials => 6.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::mcp::McpAuthKind {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::mcp::McpAuthKind>
+    for crate::api::mcp::McpAuthKind
+{
+    fn into_into_dart(self) -> crate::api::mcp::McpAuthKind {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::mcp::McpPolicy {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::AskEveryTime => 0.into_dart(),
+            Self::AutoReadOnly => 1.into_dart(),
+            Self::AlwaysAllow => 2.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::mcp::McpPolicy {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::mcp::McpPolicy> for crate::api::mcp::McpPolicy {
+    fn into_into_dart(self) -> crate::api::mcp::McpPolicy {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::ask::McpSecret {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.server_id.into_into_dart().into_dart(),
+            self.secrets_json.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::ask::McpSecret {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::ask::McpSecret> for crate::api::ask::McpSecret {
+    fn into_into_dart(self) -> crate::api::ask::McpSecret {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::mcp::McpServer {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.id.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+            self.transport.into_into_dart().into_dart(),
+            self.target.into_into_dart().into_dart(),
+            self.args.into_into_dart().into_dart(),
+            self.env_names.into_into_dart().into_dart(),
+            self.auth.into_into_dart().into_dart(),
+            self.auth_names.into_into_dart().into_dart(),
+            self.client_id.into_into_dart().into_dart(),
+            self.scopes.into_into_dart().into_dart(),
+            self.policy.into_into_dart().into_dart(),
+            self.enabled.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::mcp::McpServer {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::mcp::McpServer> for crate::api::mcp::McpServer {
+    fn into_into_dart(self) -> crate::api::mcp::McpServer {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::mcp::McpStatus {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.kind.into_into_dart().into_dart(),
+            self.message.into_into_dart().into_dart(),
+            self.tools.into_into_dart().into_dart(),
+            self.updated_secrets.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::mcp::McpStatus {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::mcp::McpStatus> for crate::api::mcp::McpStatus {
+    fn into_into_dart(self) -> crate::api::mcp::McpStatus {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::mcp::McpStatusKind {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Connected => 0.into_dart(),
+            Self::NeedsAuth => 1.into_dart(),
+            Self::DesktopOnly => 2.into_dart(),
+            Self::Error => 3.into_dart(),
+            Self::Disabled => 4.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::mcp::McpStatusKind
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::mcp::McpStatusKind>
+    for crate::api::mcp::McpStatusKind
+{
+    fn into_into_dart(self) -> crate::api::mcp::McpStatusKind {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::mcp::McpToolInfo {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.description.into_into_dart().into_dart(),
+            self.read_only.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::mcp::McpToolInfo {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::mcp::McpToolInfo>
+    for crate::api::mcp::McpToolInfo
+{
+    fn into_into_dart(self) -> crate::api::mcp::McpToolInfo {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::mcp::McpTransportKind {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::StreamableHttp => 0.into_dart(),
+            Self::Sse => 1.into_dart(),
+            Self::Stdio => 2.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::mcp::McpTransportKind
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::mcp::McpTransportKind>
+    for crate::api::mcp::McpTransportKind
+{
+    fn into_into_dart(self) -> crate::api::mcp::McpTransportKind {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::ai::ModelRole {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
@@ -5298,6 +6195,24 @@ impl flutter_rust_bridge::IntoDart for crate::api::ai::ModelRole {
 impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::ai::ModelRole {}
 impl flutter_rust_bridge::IntoIntoDart<crate::api::ai::ModelRole> for crate::api::ai::ModelRole {
     fn into_into_dart(self) -> crate::api::ai::ModelRole {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::mcp::OAuthStart {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.flow_id.into_into_dart().into_dart(),
+            self.auth_url.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::mcp::OAuthStart {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::mcp::OAuthStart>
+    for crate::api::mcp::OAuthStart
+{
+    fn into_into_dart(self) -> crate::api::mcp::OAuthStart {
         self
     }
 }
@@ -5748,6 +6663,27 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::library::SyncState>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::ask::ToolApproval {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.request_id.into_into_dart().into_dart(),
+            self.server_name.into_into_dart().into_dart(),
+            self.tool.into_into_dart().into_dart(),
+            self.arguments.into_into_dart().into_dart(),
+            self.read_only.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::ask::ToolApproval {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::ask::ToolApproval>
+    for crate::api::ask::ToolApproval
+{
+    fn into_into_dart(self) -> crate::api::ask::ToolApproval {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::audit::UndoResult {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
@@ -6035,6 +6971,7 @@ impl SseEncode for crate::api::ask::AskEvent {
         <crate::api::ask::AskEventKind>::sse_encode(self.kind, serializer);
         <Option<String>>::sse_encode(self.text, serializer);
         <Option<crate::api::ask::AskAnswer>>::sse_encode(self.answer, serializer);
+        <Option<crate::api::ask::ToolApproval>>::sse_encode(self.approval, serializer);
     }
 }
 
@@ -6044,8 +6981,9 @@ impl SseEncode for crate::api::ask::AskEventKind {
         <i32>::sse_encode(
             match self {
                 crate::api::ask::AskEventKind::Delta => 0,
-                crate::api::ask::AskEventKind::Done => 1,
-                crate::api::ask::AskEventKind::Failed => 2,
+                crate::api::ask::AskEventKind::Approval => 1,
+                crate::api::ask::AskEventKind::Done => 2,
+                crate::api::ask::AskEventKind::Failed => 3,
                 _ => {
                     unimplemented!("");
                 }
@@ -6492,6 +7430,36 @@ impl SseEncode for Vec<crate::api::ai::JobOutcome> {
     }
 }
 
+impl SseEncode for Vec<crate::api::ask::McpSecret> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::ask::McpSecret>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::mcp::McpServer> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::mcp::McpServer>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::mcp::McpToolInfo> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::mcp::McpToolInfo>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::audit::Operation> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -6608,6 +7576,125 @@ impl SseEncode for crate::api::wiki::LocalGraph {
     }
 }
 
+impl SseEncode for crate::api::mcp::McpAuthKind {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::mcp::McpAuthKind::None => 0,
+                crate::api::mcp::McpAuthKind::Bearer => 1,
+                crate::api::mcp::McpAuthKind::ApiKeyHeader => 2,
+                crate::api::mcp::McpAuthKind::ApiKeyQuery => 3,
+                crate::api::mcp::McpAuthKind::Headers => 4,
+                crate::api::mcp::McpAuthKind::OAuth => 5,
+                crate::api::mcp::McpAuthKind::ClientCredentials => 6,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::api::mcp::McpPolicy {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::mcp::McpPolicy::AskEveryTime => 0,
+                crate::api::mcp::McpPolicy::AutoReadOnly => 1,
+                crate::api::mcp::McpPolicy::AlwaysAllow => 2,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::api::ask::McpSecret {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.server_id, serializer);
+        <String>::sse_encode(self.secrets_json, serializer);
+    }
+}
+
+impl SseEncode for crate::api::mcp::McpServer {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.id, serializer);
+        <String>::sse_encode(self.name, serializer);
+        <crate::api::mcp::McpTransportKind>::sse_encode(self.transport, serializer);
+        <String>::sse_encode(self.target, serializer);
+        <Vec<String>>::sse_encode(self.args, serializer);
+        <Vec<String>>::sse_encode(self.env_names, serializer);
+        <crate::api::mcp::McpAuthKind>::sse_encode(self.auth, serializer);
+        <Vec<String>>::sse_encode(self.auth_names, serializer);
+        <String>::sse_encode(self.client_id, serializer);
+        <Vec<String>>::sse_encode(self.scopes, serializer);
+        <crate::api::mcp::McpPolicy>::sse_encode(self.policy, serializer);
+        <bool>::sse_encode(self.enabled, serializer);
+    }
+}
+
+impl SseEncode for crate::api::mcp::McpStatus {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <crate::api::mcp::McpStatusKind>::sse_encode(self.kind, serializer);
+        <Option<String>>::sse_encode(self.message, serializer);
+        <Vec<crate::api::mcp::McpToolInfo>>::sse_encode(self.tools, serializer);
+        <Option<String>>::sse_encode(self.updated_secrets, serializer);
+    }
+}
+
+impl SseEncode for crate::api::mcp::McpStatusKind {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::mcp::McpStatusKind::Connected => 0,
+                crate::api::mcp::McpStatusKind::NeedsAuth => 1,
+                crate::api::mcp::McpStatusKind::DesktopOnly => 2,
+                crate::api::mcp::McpStatusKind::Error => 3,
+                crate::api::mcp::McpStatusKind::Disabled => 4,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::api::mcp::McpToolInfo {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <String>::sse_encode(self.description, serializer);
+        <bool>::sse_encode(self.read_only, serializer);
+    }
+}
+
+impl SseEncode for crate::api::mcp::McpTransportKind {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::mcp::McpTransportKind::StreamableHttp => 0,
+                crate::api::mcp::McpTransportKind::Sse => 1,
+                crate::api::mcp::McpTransportKind::Stdio => 2,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
 impl SseEncode for crate::api::ai::ModelRole {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -6629,6 +7716,14 @@ impl SseEncode for crate::api::ai::ModelRole {
             },
             serializer,
         );
+    }
+}
+
+impl SseEncode for crate::api::mcp::OAuthStart {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.flow_id, serializer);
+        <String>::sse_encode(self.auth_url, serializer);
     }
 }
 
@@ -6755,6 +7850,16 @@ impl SseEncode for Option<crate::api::ai::ModelRole> {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <crate::api::ai::ModelRole>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::api::ask::ToolApproval> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::ask::ToolApproval>::sse_encode(value, serializer);
         }
     }
 }
@@ -7010,6 +8115,17 @@ impl SseEncode for crate::api::library::SyncState {
             },
             serializer,
         );
+    }
+}
+
+impl SseEncode for crate::api::ask::ToolApproval {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.request_id, serializer);
+        <String>::sse_encode(self.server_name, serializer);
+        <String>::sse_encode(self.tool, serializer);
+        <String>::sse_encode(self.arguments, serializer);
+        <bool>::sse_encode(self.read_only, serializer);
     }
 }
 

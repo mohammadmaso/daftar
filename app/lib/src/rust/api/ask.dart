@@ -7,7 +7,7 @@ import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These functions are ignored because they are not marked as `pub`: `event`, `scope`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`
 
 /// Help to show on the "Talk to someone" card (§4.7), for an ISO country code ("" = international).
 List<Helpline> helplines({required String country}) =>
@@ -84,11 +84,13 @@ class AskEvent {
   /// The delta, or the failure sentence.
   final String? text;
   final AskAnswer? answer;
+  final ToolApproval? approval;
 
-  const AskEvent({required this.kind, this.text, this.answer});
+  const AskEvent({required this.kind, this.text, this.answer, this.approval});
 
   @override
-  int get hashCode => kind.hashCode ^ text.hashCode ^ answer.hashCode;
+  int get hashCode =>
+      kind.hashCode ^ text.hashCode ^ answer.hashCode ^ approval.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -97,12 +99,16 @@ class AskEvent {
           runtimeType == other.runtimeType &&
           kind == other.kind &&
           text == other.text &&
-          answer == other.answer;
+          answer == other.answer &&
+          approval == other.approval;
 }
 
 enum AskEventKind {
   /// Streamed text as it arrives (includes text the model writes between tool calls).
   delta,
+
+  /// An outside tool wants to run; answer with `answer_tool_approval` (§10).
+  approval,
   done,
   failed,
 }
@@ -191,4 +197,61 @@ class Helpline {
           nameFa == other.nameFa &&
           phone == other.phone &&
           url == other.url;
+}
+
+/// Credentials of one MCP server on this device (JSON from secure storage).
+class McpSecret {
+  final String serverId;
+  final String secretsJson;
+
+  const McpSecret({required this.serverId, required this.secretsJson});
+
+  @override
+  int get hashCode => serverId.hashCode ^ secretsJson.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is McpSecret &&
+          runtimeType == other.runtimeType &&
+          serverId == other.serverId &&
+          secretsJson == other.secretsJson;
+}
+
+/// A tool call waiting for the user's yes or no.
+class ToolApproval {
+  final String requestId;
+  final String serverName;
+  final String tool;
+
+  /// The arguments as pretty JSON.
+  final String arguments;
+  final bool readOnly;
+
+  const ToolApproval({
+    required this.requestId,
+    required this.serverName,
+    required this.tool,
+    required this.arguments,
+    required this.readOnly,
+  });
+
+  @override
+  int get hashCode =>
+      requestId.hashCode ^
+      serverName.hashCode ^
+      tool.hashCode ^
+      arguments.hashCode ^
+      readOnly.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ToolApproval &&
+          runtimeType == other.runtimeType &&
+          requestId == other.requestId &&
+          serverName == other.serverName &&
+          tool == other.tool &&
+          arguments == other.arguments &&
+          readOnly == other.readOnly;
 }

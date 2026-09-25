@@ -8,6 +8,7 @@ import 'api/ask.dart';
 import 'api/audit.dart';
 import 'api/info.dart';
 import 'api/library.dart';
+import 'api/mcp.dart';
 import 'api/voice.dart';
 import 'api/wiki.dart';
 import 'dart:async';
@@ -72,7 +73,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -1180930623;
+  int get rustContentHash => -1913660233;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -101,6 +102,7 @@ abstract class RustLibApi extends BaseApi {
     AskImage? image,
     required AskScopeDto scopeDto,
     required List<ApiKey> apiKeys,
+    required List<McpSecret> mcpSecrets,
   });
 
   Future<String> crateApiLibraryLibraryHandleCapturePhoto({
@@ -155,6 +157,34 @@ abstract class RustLibApi extends BaseApi {
     required int depth,
   });
 
+  Future<McpStatus> crateApiLibraryLibraryHandleMcpCheck({
+    required LibraryHandle that,
+    required String id,
+    required String secretsJson,
+  });
+
+  Future<OAuthStart> crateApiLibraryLibraryHandleMcpOauthBegin({
+    required LibraryHandle that,
+    required String id,
+    required String secretsJson,
+    String? redirectUri,
+  });
+
+  Future<String> crateApiLibraryLibraryHandleMcpOauthComplete({
+    required LibraryHandle that,
+    required String flowId,
+    required String callbackUrl,
+  });
+
+  Future<String> crateApiLibraryLibraryHandleMcpOauthWait({
+    required LibraryHandle that,
+    required String flowId,
+  });
+
+  Future<List<McpServer>> crateApiLibraryLibraryHandleMcpServers({
+    required LibraryHandle that,
+  });
+
   Future<UndoResult> crateApiLibraryLibraryHandleMoveToVault({
     required LibraryHandle that,
     required String opId,
@@ -192,6 +222,11 @@ abstract class RustLibApi extends BaseApi {
 
   Future<int> crateApiLibraryLibraryHandleRefreshIndex({
     required LibraryHandle that,
+  });
+
+  Future<void> crateApiLibraryLibraryHandleRemoveMcpServer({
+    required LibraryHandle that,
+    required String id,
   });
 
   Future<void> crateApiLibraryLibraryHandleRemoveProvider({
@@ -244,6 +279,11 @@ abstract class RustLibApi extends BaseApi {
     required String story,
     required String title,
     required String text,
+  });
+
+  Future<String> crateApiLibraryLibraryHandleSaveMcpServer({
+    required LibraryHandle that,
+    required McpServer server,
   });
 
   Future<SaveResult> crateApiLibraryLibraryHandleSavePage({
@@ -327,6 +367,11 @@ abstract class RustLibApi extends BaseApi {
     required bool muted,
   });
 
+  void crateApiMcpAnswerToolApproval({
+    required String requestId,
+    required bool allowed,
+  });
+
   CapabilityWarning? crateApiAiCapabilityWarning({
     required ModelRole role,
     required String model,
@@ -363,6 +408,8 @@ abstract class RustLibApi extends BaseApi {
     required AiProvider provider,
     String? apiKey,
   });
+
+  bool crateApiMcpMcpStdioSupported();
 
   RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_LibraryHandle;
@@ -474,6 +521,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     AskImage? image,
     required AskScopeDto scopeDto,
     required List<ApiKey> apiKeys,
+    required List<McpSecret> mcpSecrets,
   }) {
     final sink = RustStreamSink<AskEvent>();
     unawaited(
@@ -490,6 +538,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             sse_encode_opt_box_autoadd_ask_image(image, serializer);
             sse_encode_box_autoadd_ask_scope_dto(scopeDto, serializer);
             sse_encode_list_api_key(apiKeys, serializer);
+            sse_encode_list_mcp_secret(mcpSecrets, serializer);
             sse_encode_StreamSink_ask_event_Sse(sink, serializer);
             pdeCallFfi(
               generalizedFrbRustBinding,
@@ -503,7 +552,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             decodeErrorData: sse_decode_AnyhowException,
           ),
           constMeta: kCrateApiLibraryLibraryHandleAskConstMeta,
-          argValues: [that, history, question, image, scopeDto, apiKeys, sink],
+          argValues: [
+            that,
+            history,
+            question,
+            image,
+            scopeDto,
+            apiKeys,
+            mcpSecrets,
+            sink,
+          ],
           apiImpl: this,
         ),
       ),
@@ -521,6 +579,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           "image",
           "scopeDto",
           "apiKeys",
+          "mcpSecrets",
           "sink",
         ],
       );
@@ -882,6 +941,202 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<McpStatus> crateApiLibraryLibraryHandleMcpCheck({
+    required LibraryHandle that,
+    required String id,
+    required String secretsJson,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          sse_encode_String(id, serializer);
+          sse_encode_String(secretsJson, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 13,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_mcp_status,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiLibraryLibraryHandleMcpCheckConstMeta,
+        argValues: [that, id, secretsJson],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandleMcpCheckConstMeta =>
+      const TaskConstMeta(
+        debugName: "LibraryHandle_mcp_check",
+        argNames: ["that", "id", "secretsJson"],
+      );
+
+  @override
+  Future<OAuthStart> crateApiLibraryLibraryHandleMcpOauthBegin({
+    required LibraryHandle that,
+    required String id,
+    required String secretsJson,
+    String? redirectUri,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          sse_encode_String(id, serializer);
+          sse_encode_String(secretsJson, serializer);
+          sse_encode_opt_String(redirectUri, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 14,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_o_auth_start,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiLibraryLibraryHandleMcpOauthBeginConstMeta,
+        argValues: [that, id, secretsJson, redirectUri],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandleMcpOauthBeginConstMeta =>
+      const TaskConstMeta(
+        debugName: "LibraryHandle_mcp_oauth_begin",
+        argNames: ["that", "id", "secretsJson", "redirectUri"],
+      );
+
+  @override
+  Future<String> crateApiLibraryLibraryHandleMcpOauthComplete({
+    required LibraryHandle that,
+    required String flowId,
+    required String callbackUrl,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          sse_encode_String(flowId, serializer);
+          sse_encode_String(callbackUrl, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 15,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiLibraryLibraryHandleMcpOauthCompleteConstMeta,
+        argValues: [that, flowId, callbackUrl],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandleMcpOauthCompleteConstMeta =>
+      const TaskConstMeta(
+        debugName: "LibraryHandle_mcp_oauth_complete",
+        argNames: ["that", "flowId", "callbackUrl"],
+      );
+
+  @override
+  Future<String> crateApiLibraryLibraryHandleMcpOauthWait({
+    required LibraryHandle that,
+    required String flowId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          sse_encode_String(flowId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 16,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiLibraryLibraryHandleMcpOauthWaitConstMeta,
+        argValues: [that, flowId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandleMcpOauthWaitConstMeta =>
+      const TaskConstMeta(
+        debugName: "LibraryHandle_mcp_oauth_wait",
+        argNames: ["that", "flowId"],
+      );
+
+  @override
+  Future<List<McpServer>> crateApiLibraryLibraryHandleMcpServers({
+    required LibraryHandle that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 17,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_mcp_server,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiLibraryLibraryHandleMcpServersConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandleMcpServersConstMeta =>
+      const TaskConstMeta(
+        debugName: "LibraryHandle_mcp_servers",
+        argNames: ["that"],
+      );
+
+  @override
   Future<UndoResult> crateApiLibraryLibraryHandleMoveToVault({
     required LibraryHandle that,
     required String opId,
@@ -900,7 +1155,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 13,
+            funcId: 18,
             port: port_,
           );
         },
@@ -933,7 +1188,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 14,
+            funcId: 19,
             port: port_,
           );
         },
@@ -969,7 +1224,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 15,
+            funcId: 20,
             port: port_,
           );
         },
@@ -1007,7 +1262,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 16,
+            funcId: 21,
             port: port_,
           );
         },
@@ -1045,7 +1300,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 17,
+            funcId: 22,
             port: port_,
           );
         },
@@ -1081,7 +1336,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 18,
+            funcId: 23,
             port: port_,
           );
         },
@@ -1121,7 +1376,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 19,
+            funcId: 24,
             port: port_,
           );
         },
@@ -1157,7 +1412,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 20,
+            funcId: 25,
             port: port_,
           );
         },
@@ -1179,6 +1434,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<void> crateApiLibraryLibraryHandleRemoveMcpServer({
+    required LibraryHandle that,
+    required String id,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          sse_encode_String(id, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 26,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiLibraryLibraryHandleRemoveMcpServerConstMeta,
+        argValues: [that, id],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandleRemoveMcpServerConstMeta =>
+      const TaskConstMeta(
+        debugName: "LibraryHandle_remove_mcp_server",
+        argNames: ["that", "id"],
+      );
+
+  @override
   Future<void> crateApiLibraryLibraryHandleRemoveProvider({
     required LibraryHandle that,
     required String id,
@@ -1195,7 +1488,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 21,
+            funcId: 27,
             port: port_,
           );
         },
@@ -1235,7 +1528,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 22,
+            funcId: 28,
             port: port_,
           );
         },
@@ -1273,7 +1566,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 23,
+            funcId: 29,
             port: port_,
           );
         },
@@ -1315,7 +1608,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 24,
+            funcId: 30,
             port: port_,
           );
         },
@@ -1353,7 +1646,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 25,
+            funcId: 31,
             port: port_,
           );
         },
@@ -1389,7 +1682,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 26,
+            funcId: 32,
             port: port_,
           );
         },
@@ -1429,7 +1722,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 27,
+            funcId: 33,
             port: port_,
           );
         },
@@ -1471,7 +1764,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 28,
+            funcId: 34,
             port: port_,
           );
         },
@@ -1513,7 +1806,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 29,
+            funcId: 35,
             port: port_,
           );
         },
@@ -1532,6 +1825,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(
         debugName: "LibraryHandle_save_draft",
         argNames: ["that", "story", "title", "text"],
+      );
+
+  @override
+  Future<String> crateApiLibraryLibraryHandleSaveMcpServer({
+    required LibraryHandle that,
+    required McpServer server,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          sse_encode_box_autoadd_mcp_server(server, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 36,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiLibraryLibraryHandleSaveMcpServerConstMeta,
+        argValues: [that, server],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandleSaveMcpServerConstMeta =>
+      const TaskConstMeta(
+        debugName: "LibraryHandle_save_mcp_server",
+        argNames: ["that", "server"],
       );
 
   @override
@@ -1555,7 +1886,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 30,
+            funcId: 37,
             port: port_,
           );
         },
@@ -1593,7 +1924,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 31,
+            funcId: 38,
             port: port_,
           );
         },
@@ -1635,7 +1966,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 32,
+            funcId: 39,
             port: port_,
           );
         },
@@ -1673,7 +2004,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 33,
+            funcId: 40,
             port: port_,
           );
         },
@@ -1715,7 +2046,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 34,
+            funcId: 41,
             port: port_,
           );
         },
@@ -1755,7 +2086,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 35,
+            funcId: 42,
             port: port_,
           );
         },
@@ -1792,7 +2123,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 36,
+            funcId: 43,
             port: port_,
           );
         },
@@ -1830,7 +2161,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 37,
+            funcId: 44,
             port: port_,
           );
         },
@@ -1870,7 +2201,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 38,
+            funcId: 45,
             port: port_,
           );
         },
@@ -1908,7 +2239,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 39,
+            funcId: 46,
             port: port_,
           );
         },
@@ -1944,7 +2275,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 40,
+            funcId: 47,
             port: port_,
           );
         },
@@ -1978,7 +2309,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 41,
+            funcId: 48,
             port: port_,
           );
         },
@@ -2014,7 +2345,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 42,
+              funcId: 49,
               port: port_,
             );
           },
@@ -2054,7 +2385,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 43,
+            funcId: 50,
             port: port_,
           );
         },
@@ -2090,7 +2421,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 44,
+            funcId: 51,
             port: port_,
           );
         },
@@ -2128,7 +2459,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 45,
+            funcId: 52,
             port: port_,
           );
         },
@@ -2150,6 +2481,36 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  void crateApiMcpAnswerToolApproval({
+    required String requestId,
+    required bool allowed,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(requestId, serializer);
+          sse_encode_bool(allowed, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 53)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiMcpAnswerToolApprovalConstMeta,
+        argValues: [requestId, allowed],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiMcpAnswerToolApprovalConstMeta =>
+      const TaskConstMeta(
+        debugName: "answer_tool_approval",
+        argNames: ["requestId", "allowed"],
+      );
+
+  @override
   CapabilityWarning? crateApiAiCapabilityWarning({
     required ModelRole role,
     required String model,
@@ -2160,7 +2521,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_model_role(role, serializer);
           sse_encode_String(model, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 46)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 54)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_opt_box_autoadd_capability_warning,
@@ -2201,7 +2562,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 47,
+            funcId: 55,
             port: port_,
           );
         },
@@ -2228,7 +2589,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 48)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 56)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_core_info,
@@ -2251,7 +2612,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_provider_kind_dto(kind, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 49)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 57)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -2277,7 +2638,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 50,
+            funcId: 58,
             port: port_,
           );
         },
@@ -2302,7 +2663,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(country, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 51)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 59)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_helpline,
@@ -2327,7 +2688,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 52,
+            funcId: 60,
             port: port_,
           );
         },
@@ -2361,7 +2722,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 53,
+            funcId: 61,
             port: port_,
           );
         },
@@ -2388,7 +2749,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(root, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 54)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 62)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_bool,
@@ -2418,7 +2779,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 55,
+            funcId: 63,
             port: port_,
           );
         },
@@ -2437,6 +2798,28 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     debugName: "list_models",
     argNames: ["provider", "apiKey"],
   );
+
+  @override
+  bool crateApiMcpMcpStdioSupported() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 64)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bool,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiMcpMcpStdioSupportedConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiMcpMcpStdioSupportedConstMeta =>
+      const TaskConstMeta(debugName: "mcp_stdio_supported", argNames: []);
 
   RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_LibraryHandle => wire
@@ -2608,12 +2991,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   AskEvent dco_decode_ask_event(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 3)
-      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
     return AskEvent(
       kind: dco_decode_ask_event_kind(arr[0]),
       text: dco_decode_opt_String(arr[1]),
       answer: dco_decode_opt_box_autoadd_ask_answer(arr[2]),
+      approval: dco_decode_opt_box_autoadd_tool_approval(arr[3]),
     );
   }
 
@@ -2746,9 +3130,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  McpServer dco_decode_box_autoadd_mcp_server(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_mcp_server(raw);
+  }
+
+  @protected
   ModelRole dco_decode_box_autoadd_model_role(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_model_role(raw);
+  }
+
+  @protected
+  ToolApproval dco_decode_box_autoadd_tool_approval(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_tool_approval(raw);
   }
 
   @protected
@@ -3050,6 +3446,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<McpSecret> dco_decode_list_mcp_secret(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_mcp_secret).toList();
+  }
+
+  @protected
+  List<McpServer> dco_decode_list_mcp_server(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_mcp_server).toList();
+  }
+
+  @protected
+  List<McpToolInfo> dco_decode_list_mcp_tool_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_mcp_tool_info).toList();
+  }
+
+  @protected
   List<Operation> dco_decode_list_operation(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_operation).toList();
@@ -3146,9 +3560,106 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  McpAuthKind dco_decode_mcp_auth_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return McpAuthKind.values[raw as int];
+  }
+
+  @protected
+  McpPolicy dco_decode_mcp_policy(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return McpPolicy.values[raw as int];
+  }
+
+  @protected
+  McpSecret dco_decode_mcp_secret(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return McpSecret(
+      serverId: dco_decode_String(arr[0]),
+      secretsJson: dco_decode_String(arr[1]),
+    );
+  }
+
+  @protected
+  McpServer dco_decode_mcp_server(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 12)
+      throw Exception('unexpected arr length: expect 12 but see ${arr.length}');
+    return McpServer(
+      id: dco_decode_String(arr[0]),
+      name: dco_decode_String(arr[1]),
+      transport: dco_decode_mcp_transport_kind(arr[2]),
+      target: dco_decode_String(arr[3]),
+      args: dco_decode_list_String(arr[4]),
+      envNames: dco_decode_list_String(arr[5]),
+      auth: dco_decode_mcp_auth_kind(arr[6]),
+      authNames: dco_decode_list_String(arr[7]),
+      clientId: dco_decode_String(arr[8]),
+      scopes: dco_decode_list_String(arr[9]),
+      policy: dco_decode_mcp_policy(arr[10]),
+      enabled: dco_decode_bool(arr[11]),
+    );
+  }
+
+  @protected
+  McpStatus dco_decode_mcp_status(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return McpStatus(
+      kind: dco_decode_mcp_status_kind(arr[0]),
+      message: dco_decode_opt_String(arr[1]),
+      tools: dco_decode_list_mcp_tool_info(arr[2]),
+      updatedSecrets: dco_decode_opt_String(arr[3]),
+    );
+  }
+
+  @protected
+  McpStatusKind dco_decode_mcp_status_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return McpStatusKind.values[raw as int];
+  }
+
+  @protected
+  McpToolInfo dco_decode_mcp_tool_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return McpToolInfo(
+      name: dco_decode_String(arr[0]),
+      description: dco_decode_String(arr[1]),
+      readOnly: dco_decode_bool(arr[2]),
+    );
+  }
+
+  @protected
+  McpTransportKind dco_decode_mcp_transport_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return McpTransportKind.values[raw as int];
+  }
+
+  @protected
   ModelRole dco_decode_model_role(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return ModelRole.values[raw as int];
+  }
+
+  @protected
+  OAuthStart dco_decode_o_auth_start(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return OAuthStart(
+      flowId: dco_decode_String(arr[0]),
+      authUrl: dco_decode_String(arr[1]),
+    );
   }
 
   @protected
@@ -3235,6 +3746,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ModelRole? dco_decode_opt_box_autoadd_model_role(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_model_role(raw);
+  }
+
+  @protected
+  ToolApproval? dco_decode_opt_box_autoadd_tool_approval(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_tool_approval(raw);
   }
 
   @protected
@@ -3457,6 +3974,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   SyncState dco_decode_sync_state(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return SyncState.values[raw as int];
+  }
+
+  @protected
+  ToolApproval dco_decode_tool_approval(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return ToolApproval(
+      requestId: dco_decode_String(arr[0]),
+      serverName: dco_decode_String(arr[1]),
+      tool: dco_decode_String(arr[2]),
+      arguments: dco_decode_String(arr[3]),
+      readOnly: dco_decode_bool(arr[4]),
+    );
   }
 
   @protected
@@ -3748,7 +4280,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_kind = sse_decode_ask_event_kind(deserializer);
     var var_text = sse_decode_opt_String(deserializer);
     var var_answer = sse_decode_opt_box_autoadd_ask_answer(deserializer);
-    return AskEvent(kind: var_kind, text: var_text, answer: var_answer);
+    var var_approval = sse_decode_opt_box_autoadd_tool_approval(deserializer);
+    return AskEvent(
+      kind: var_kind,
+      text: var_text,
+      answer: var_answer,
+      approval: var_approval,
+    );
   }
 
   @protected
@@ -3876,9 +4414,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  McpServer sse_decode_box_autoadd_mcp_server(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_mcp_server(deserializer));
+  }
+
+  @protected
   ModelRole sse_decode_box_autoadd_model_role(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_model_role(deserializer));
+  }
+
+  @protected
+  ToolApproval sse_decode_box_autoadd_tool_approval(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_tool_approval(deserializer));
   }
 
   @protected
@@ -4267,6 +4819,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<McpSecret> sse_decode_list_mcp_secret(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <McpSecret>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_mcp_secret(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<McpServer> sse_decode_list_mcp_server(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <McpServer>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_mcp_server(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<McpToolInfo> sse_decode_list_mcp_tool_info(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <McpToolInfo>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_mcp_tool_info(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<Operation> sse_decode_list_operation(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -4409,10 +4999,113 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  McpAuthKind sse_decode_mcp_auth_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return McpAuthKind.values[inner];
+  }
+
+  @protected
+  McpPolicy sse_decode_mcp_policy(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return McpPolicy.values[inner];
+  }
+
+  @protected
+  McpSecret sse_decode_mcp_secret(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_serverId = sse_decode_String(deserializer);
+    var var_secretsJson = sse_decode_String(deserializer);
+    return McpSecret(serverId: var_serverId, secretsJson: var_secretsJson);
+  }
+
+  @protected
+  McpServer sse_decode_mcp_server(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_name = sse_decode_String(deserializer);
+    var var_transport = sse_decode_mcp_transport_kind(deserializer);
+    var var_target = sse_decode_String(deserializer);
+    var var_args = sse_decode_list_String(deserializer);
+    var var_envNames = sse_decode_list_String(deserializer);
+    var var_auth = sse_decode_mcp_auth_kind(deserializer);
+    var var_authNames = sse_decode_list_String(deserializer);
+    var var_clientId = sse_decode_String(deserializer);
+    var var_scopes = sse_decode_list_String(deserializer);
+    var var_policy = sse_decode_mcp_policy(deserializer);
+    var var_enabled = sse_decode_bool(deserializer);
+    return McpServer(
+      id: var_id,
+      name: var_name,
+      transport: var_transport,
+      target: var_target,
+      args: var_args,
+      envNames: var_envNames,
+      auth: var_auth,
+      authNames: var_authNames,
+      clientId: var_clientId,
+      scopes: var_scopes,
+      policy: var_policy,
+      enabled: var_enabled,
+    );
+  }
+
+  @protected
+  McpStatus sse_decode_mcp_status(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_kind = sse_decode_mcp_status_kind(deserializer);
+    var var_message = sse_decode_opt_String(deserializer);
+    var var_tools = sse_decode_list_mcp_tool_info(deserializer);
+    var var_updatedSecrets = sse_decode_opt_String(deserializer);
+    return McpStatus(
+      kind: var_kind,
+      message: var_message,
+      tools: var_tools,
+      updatedSecrets: var_updatedSecrets,
+    );
+  }
+
+  @protected
+  McpStatusKind sse_decode_mcp_status_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return McpStatusKind.values[inner];
+  }
+
+  @protected
+  McpToolInfo sse_decode_mcp_tool_info(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_description = sse_decode_String(deserializer);
+    var var_readOnly = sse_decode_bool(deserializer);
+    return McpToolInfo(
+      name: var_name,
+      description: var_description,
+      readOnly: var_readOnly,
+    );
+  }
+
+  @protected
+  McpTransportKind sse_decode_mcp_transport_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return McpTransportKind.values[inner];
+  }
+
+  @protected
   ModelRole sse_decode_model_role(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
     return ModelRole.values[inner];
+  }
+
+  @protected
+  OAuthStart sse_decode_o_auth_start(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_flowId = sse_decode_String(deserializer);
+    var var_authUrl = sse_decode_String(deserializer);
+    return OAuthStart(flowId: var_flowId, authUrl: var_authUrl);
   }
 
   @protected
@@ -4560,6 +5253,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_box_autoadd_model_role(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  ToolApproval? sse_decode_opt_box_autoadd_tool_approval(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_tool_approval(deserializer));
     } else {
       return null;
     }
@@ -4810,6 +5516,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
     return SyncState.values[inner];
+  }
+
+  @protected
+  ToolApproval sse_decode_tool_approval(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_requestId = sse_decode_String(deserializer);
+    var var_serverName = sse_decode_String(deserializer);
+    var var_tool = sse_decode_String(deserializer);
+    var var_arguments = sse_decode_String(deserializer);
+    var var_readOnly = sse_decode_bool(deserializer);
+    return ToolApproval(
+      requestId: var_requestId,
+      serverName: var_serverName,
+      tool: var_tool,
+      arguments: var_arguments,
+      readOnly: var_readOnly,
+    );
   }
 
   @protected
@@ -5127,6 +5850,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_ask_event_kind(self.kind, serializer);
     sse_encode_opt_String(self.text, serializer);
     sse_encode_opt_box_autoadd_ask_answer(self.answer, serializer);
+    sse_encode_opt_box_autoadd_tool_approval(self.approval, serializer);
   }
 
   @protected
@@ -5256,12 +5980,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_mcp_server(
+    McpServer self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_mcp_server(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_model_role(
     ModelRole self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_model_role(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_tool_approval(
+    ToolApproval self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_tool_approval(self, serializer);
   }
 
   @protected
@@ -5580,6 +6322,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_mcp_secret(
+    List<McpSecret> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_mcp_secret(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_mcp_server(
+    List<McpServer> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_mcp_server(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_mcp_tool_info(
+    List<McpToolInfo> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_mcp_tool_info(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_operation(
     List<Operation> self,
     SseSerializer serializer,
@@ -5731,9 +6509,87 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_mcp_auth_kind(McpAuthKind self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_mcp_policy(McpPolicy self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_mcp_secret(McpSecret self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.serverId, serializer);
+    sse_encode_String(self.secretsJson, serializer);
+  }
+
+  @protected
+  void sse_encode_mcp_server(McpServer self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.name, serializer);
+    sse_encode_mcp_transport_kind(self.transport, serializer);
+    sse_encode_String(self.target, serializer);
+    sse_encode_list_String(self.args, serializer);
+    sse_encode_list_String(self.envNames, serializer);
+    sse_encode_mcp_auth_kind(self.auth, serializer);
+    sse_encode_list_String(self.authNames, serializer);
+    sse_encode_String(self.clientId, serializer);
+    sse_encode_list_String(self.scopes, serializer);
+    sse_encode_mcp_policy(self.policy, serializer);
+    sse_encode_bool(self.enabled, serializer);
+  }
+
+  @protected
+  void sse_encode_mcp_status(McpStatus self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_mcp_status_kind(self.kind, serializer);
+    sse_encode_opt_String(self.message, serializer);
+    sse_encode_list_mcp_tool_info(self.tools, serializer);
+    sse_encode_opt_String(self.updatedSecrets, serializer);
+  }
+
+  @protected
+  void sse_encode_mcp_status_kind(
+    McpStatusKind self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_mcp_tool_info(McpToolInfo self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.description, serializer);
+    sse_encode_bool(self.readOnly, serializer);
+  }
+
+  @protected
+  void sse_encode_mcp_transport_kind(
+    McpTransportKind self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
   void sse_encode_model_role(ModelRole self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_o_auth_start(OAuthStart self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.flowId, serializer);
+    sse_encode_String(self.authUrl, serializer);
   }
 
   @protected
@@ -5862,6 +6718,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_box_autoadd_model_role(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_tool_approval(
+    ToolApproval? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_tool_approval(self, serializer);
     }
   }
 
@@ -6048,6 +6917,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_tool_approval(ToolApproval self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.requestId, serializer);
+    sse_encode_String(self.serverName, serializer);
+    sse_encode_String(self.tool, serializer);
+    sse_encode_String(self.arguments, serializer);
+    sse_encode_bool(self.readOnly, serializer);
+  }
+
+  @protected
   void sse_encode_u_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint32(self);
@@ -6189,6 +7068,7 @@ class LibraryHandleImpl extends RustOpaque implements LibraryHandle {
     AskImage? image,
     required AskScopeDto scopeDto,
     required List<ApiKey> apiKeys,
+    required List<McpSecret> mcpSecrets,
   }) => RustLib.instance.api.crateApiLibraryLibraryHandleAsk(
     that: this,
     history: history,
@@ -6196,6 +7076,7 @@ class LibraryHandleImpl extends RustOpaque implements LibraryHandle {
     image: image,
     scopeDto: scopeDto,
     apiKeys: apiKeys,
+    mcpSecrets: mcpSecrets,
   );
 
   Future<String> capturePhoto({
@@ -6256,6 +7137,48 @@ class LibraryHandleImpl extends RustOpaque implements LibraryHandle {
         depth: depth,
       );
 
+  /// Connects once to report status and tools (§10 server list).
+  Future<McpStatus> mcpCheck({
+    required String id,
+    required String secretsJson,
+  }) => RustLib.instance.api.crateApiLibraryLibraryHandleMcpCheck(
+    that: this,
+    id: id,
+    secretsJson: secretsJson,
+  );
+
+  /// Starts OAuth (§10). With no `redirect_uri` (desktop) a loopback listener on 127.0.0.1 is
+  /// used; call `mcp_oauth_wait`. On mobile pass `daftar://oauth/callback` and hand the redirect
+  /// to `mcp_oauth_complete`. The app opens `auth_url` in the system browser.
+  Future<OAuthStart> mcpOauthBegin({
+    required String id,
+    required String secretsJson,
+    String? redirectUri,
+  }) => RustLib.instance.api.crateApiLibraryLibraryHandleMcpOauthBegin(
+    that: this,
+    id: id,
+    secretsJson: secretsJson,
+    redirectUri: redirectUri,
+  );
+
+  /// Finishes OAuth with the redirect URL; returns the new secrets JSON for this server.
+  Future<String> mcpOauthComplete({
+    required String flowId,
+    required String callbackUrl,
+  }) => RustLib.instance.api.crateApiLibraryLibraryHandleMcpOauthComplete(
+    that: this,
+    flowId: flowId,
+    callbackUrl: callbackUrl,
+  );
+
+  /// Desktop: waits for the browser to come back to the loopback listener. Returns the new
+  /// secrets JSON for this server.
+  Future<String> mcpOauthWait({required String flowId}) => RustLib.instance.api
+      .crateApiLibraryLibraryHandleMcpOauthWait(that: this, flowId: flowId);
+
+  Future<List<McpServer>> mcpServers() =>
+      RustLib.instance.api.crateApiLibraryLibraryHandleMcpServers(that: this);
+
   Future<UndoResult> moveToVault({
     required String opId,
     required String vault,
@@ -6290,6 +7213,9 @@ class LibraryHandleImpl extends RustOpaque implements LibraryHandle {
   /// Picks up files changed outside the app (on resume and after sync).
   Future<int> refreshIndex() =>
       RustLib.instance.api.crateApiLibraryLibraryHandleRefreshIndex(that: this);
+
+  Future<void> removeMcpServer({required String id}) => RustLib.instance.api
+      .crateApiLibraryLibraryHandleRemoveMcpServer(that: this, id: id);
 
   /// Removes a provider and the roles that used it. The app deletes its key from secure storage.
   Future<void> removeProvider({required String id}) => RustLib.instance.api
@@ -6360,6 +7286,12 @@ class LibraryHandleImpl extends RustOpaque implements LibraryHandle {
     title: title,
     text: text,
   );
+
+  /// Adds or updates a server; returns its id.
+  Future<String> saveMcpServer({required McpServer server}) => RustLib
+      .instance
+      .api
+      .crateApiLibraryLibraryHandleSaveMcpServer(that: this, server: server);
 
   /// Saves an edit as one human commit; fails if the page changed since `base_hash`.
   Future<SaveResult> savePage({

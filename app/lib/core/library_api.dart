@@ -4,6 +4,7 @@ import '../src/rust/api/ai.dart' as ai;
 import '../src/rust/api/ask.dart' as ak;
 import '../src/rust/api/audit.dart' as au;
 import '../src/rust/api/library.dart' as rs;
+import '../src/rust/api/mcp.dart' as mc;
 import '../src/rust/api/voice.dart' as vo;
 import '../src/rust/api/wiki.dart' as wk;
 
@@ -32,7 +33,9 @@ export '../src/rust/api/ask.dart'
         AskScopeDto,
         AskScopeKind,
         AskTurn,
-        Helpline;
+        Helpline,
+        McpSecret,
+        ToolApproval;
 export '../src/rust/api/audit.dart'
     show
         CardKind,
@@ -60,6 +63,16 @@ export '../src/rust/api/library.dart'
         SyncResult,
         SyncState,
         Vault;
+export '../src/rust/api/mcp.dart'
+    show
+        McpAuthKind,
+        McpPolicy,
+        McpServer,
+        McpStatus,
+        McpStatusKind,
+        McpToolInfo,
+        McpTransportKind,
+        OAuthStart;
 export '../src/rust/api/voice.dart'
     show VoiceEventDto, VoiceEventKind, VoiceOptions, VoiceStateDto;
 export '../src/rust/api/wiki.dart'
@@ -136,6 +149,7 @@ abstract class LibraryApi {
     ak.AskScopeDto scope,
     List<ai.ApiKey> keys, {
     ak.AskImage? image,
+    List<ak.McpSecret> mcp = const [],
   });
   Future<String> saveAnswer(
     String question,
@@ -149,6 +163,19 @@ abstract class LibraryApi {
     vo.VoiceOptions options,
     List<ai.ApiKey> keys,
   );
+
+  // MCP servers (§10).
+  Future<List<mc.McpServer>> mcpServers();
+  Future<String> saveMcpServer(mc.McpServer server);
+  Future<void> removeMcpServer(String id);
+  Future<mc.McpStatus> mcpCheck(String id, String secretsJson);
+  Future<mc.OAuthStart> mcpOauthBegin(
+    String id,
+    String secretsJson, {
+    String? redirectUri,
+  });
+  Future<String> mcpOauthWait(String flowId);
+  Future<String> mcpOauthComplete(String flowId, String callbackUrl);
 }
 
 /// A running voice conversation: microphone PCM in, events (captions, audio, state) out.
@@ -188,6 +215,8 @@ abstract class ProviderApi {
   String defaultBaseUrl(ai.ProviderKindDto kind);
   ai.CapabilityWarning? capabilityWarning(ai.ModelRole role, String model);
   List<ak.Helpline> helplines(String country);
+  bool get stdioSupported;
+  void answerToolApproval(String requestId, bool allowed);
 }
 
 class RustProviderApi implements ProviderApi {
@@ -207,6 +236,13 @@ class RustProviderApi implements ProviderApi {
 
   @override
   List<ak.Helpline> helplines(String country) => ak.helplines(country: country);
+
+  @override
+  bool get stdioSupported => mc.mcpStdioSupported();
+
+  @override
+  void answerToolApproval(String requestId, bool allowed) =>
+      mc.answerToolApproval(requestId: requestId, allowed: allowed);
 }
 
 /// Library creation and lookup (before a library is open).
@@ -411,12 +447,14 @@ class RustLibraryApi implements LibraryApi {
     ak.AskScopeDto scope,
     List<ai.ApiKey> keys, {
     ak.AskImage? image,
+    List<ak.McpSecret> mcp = const [],
   }) => _h.ask(
     history: history,
     question: question,
     image: image,
     scopeDto: scope,
     apiKeys: keys,
+    mcpSecrets: mcp,
   );
 
   @override
@@ -435,4 +473,36 @@ class RustLibraryApi implements LibraryApi {
     vo.VoiceOptions options,
     List<ai.ApiKey> keys,
   ) async => _RustVoice(await _h.startVoice(options: options, apiKeys: keys));
+
+  @override
+  Future<List<mc.McpServer>> mcpServers() => _h.mcpServers();
+
+  @override
+  Future<String> saveMcpServer(mc.McpServer server) =>
+      _h.saveMcpServer(server: server);
+
+  @override
+  Future<void> removeMcpServer(String id) => _h.removeMcpServer(id: id);
+
+  @override
+  Future<mc.McpStatus> mcpCheck(String id, String secretsJson) =>
+      _h.mcpCheck(id: id, secretsJson: secretsJson);
+
+  @override
+  Future<mc.OAuthStart> mcpOauthBegin(
+    String id,
+    String secretsJson, {
+    String? redirectUri,
+  }) => _h.mcpOauthBegin(
+    id: id,
+    secretsJson: secretsJson,
+    redirectUri: redirectUri,
+  );
+
+  @override
+  Future<String> mcpOauthWait(String flowId) => _h.mcpOauthWait(flowId: flowId);
+
+  @override
+  Future<String> mcpOauthComplete(String flowId, String callbackUrl) =>
+      _h.mcpOauthComplete(flowId: flowId, callbackUrl: callbackUrl);
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:daftar/core/library_api.dart';
+import 'package:daftar/core/oauth_browser.dart';
 import 'package:daftar/core/recorder.dart';
 import 'package:daftar/core/voice_io.dart';
 
@@ -396,7 +397,12 @@ class FakeLibrary implements LibraryApi {
     AskScopeDto scope,
     List<ApiKey> keys, {
     AskImage? image,
+    List<McpSecret> mcp = const [],
   }) async* {
+    lastMcp = mcp;
+    for (final a in nextApprovals) {
+      yield AskEvent(kind: AskEventKind.approval, approval: a);
+    }
     questions.add((question, scope, history, image != null));
     for (final d in nextDeltas) {
       yield AskEvent(kind: AskEventKind.delta, text: d);
@@ -422,6 +428,80 @@ class FakeLibrary implements LibraryApi {
   Future<String> saveDraft(String story, String title, String text) async {
     drafts.add((story, title, text));
     return 'vaults/stories/$story/drafts/x.md';
+  }
+
+  // ── MCP ──
+  final mcp = <McpServer>[];
+  List<McpSecret> lastMcp = const [];
+  List<ToolApproval> nextApprovals = const [];
+  McpStatus nextStatus = const McpStatus(
+    kind: McpStatusKind.needsAuth,
+    tools: [],
+  );
+  final checks = <(String, String)>[];
+  final oauth = <String>[];
+
+  @override
+  Future<List<McpServer>> mcpServers() async => List.of(mcp);
+
+  @override
+  Future<String> saveMcpServer(McpServer server) async {
+    final id = server.id.isEmpty
+        ? server.name.toLowerCase().replaceAll(' ', '-')
+        : server.id;
+    mcp.removeWhere((m) => m.id == id);
+    mcp.add(
+      McpServer(
+        id: id,
+        name: server.name,
+        transport: server.transport,
+        target: server.target,
+        args: server.args,
+        envNames: server.envNames,
+        auth: server.auth,
+        authNames: server.authNames,
+        clientId: server.clientId,
+        scopes: server.scopes,
+        policy: server.policy,
+        enabled: server.enabled,
+      ),
+    );
+    return id;
+  }
+
+  @override
+  Future<void> removeMcpServer(String id) async =>
+      mcp.removeWhere((m) => m.id == id);
+
+  @override
+  Future<McpStatus> mcpCheck(String id, String secretsJson) async {
+    checks.add((id, secretsJson));
+    return nextStatus;
+  }
+
+  @override
+  Future<OAuthStart> mcpOauthBegin(
+    String id,
+    String secretsJson, {
+    String? redirectUri,
+  }) async {
+    oauth.add('begin:$id:${redirectUri ?? 'loopback'}');
+    return const OAuthStart(
+      flowId: 'flow-1',
+      authUrl: 'https://auth.example.com/authorize?x=1',
+    );
+  }
+
+  @override
+  Future<String> mcpOauthWait(String flowId) async {
+    oauth.add('wait:$flowId');
+    return '{"oauth":{"client_id":"c1"}}';
+  }
+
+  @override
+  Future<String> mcpOauthComplete(String flowId, String callbackUrl) async {
+    oauth.add('complete:$flowId:$callbackUrl');
+    return '{"oauth":{"client_id":"c1"}}';
   }
 
   // ── Voice ──
@@ -543,6 +623,15 @@ class FakeProviderApi implements ProviderApi {
       'https://generativelanguage.googleapis.com/v1beta',
   };
 
+  final approvals = <(String, bool)>[];
+
+  @override
+  bool get stdioSupported => true;
+
+  @override
+  void answerToolApproval(String requestId, bool allowed) =>
+      approvals.add((requestId, allowed));
+
   @override
   List<Helpline> helplines(String country) => [
     if (country == 'IR')
@@ -652,4 +741,20 @@ class FakeAwake implements ScreenAwake {
   bool on = false;
   @override
   Future<void> set(bool v) async => on = v;
+}
+
+class FakeBrowser implements OAuthBrowser {
+  FakeBrowser({this.usesLoopback = true});
+  @override
+  final bool usesLoopback;
+  final opened = <String>[];
+
+  @override
+  String get mobileRedirect => 'daftar://oauth/callback';
+
+  @override
+  Future<String?> open(String url) async {
+    opened.add(url);
+    return usesLoopback ? null : 'daftar://oauth/callback?code=abc&state=s';
+  }
 }

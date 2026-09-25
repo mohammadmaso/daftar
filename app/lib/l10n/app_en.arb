@@ -455,5 +455,65 @@
   "captions": "Captions",
   "voiceNoted": "Noted.",
   "voiceSaved": "Conversation saved; it will be filed.",
-  "voiceNeedsMic": "Voice mode needs the microphone."
+  "voiceNeedsMic": "Voice mode needs the microphone.",
+  "mcpServers": "Outside tools (MCP)",
+  "mcpFooter": "Server settings sync between devices; credentials stay on each device, which signs in once.",
+  "addMcpServer": "Add server",
+  "mcpConnected": "{n, plural, =1{Connected · 1 tool} other{Connected · {n} tools}}",
+  "@mcpConnected": {
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "mcpNeedsAuth": "Connect on this device",
+  "mcpDesktopOnly": "Runs a local program; desktop only",
+  "mcpDisabled": "Off",
+  "mcpChecking": "Checking…",
+  "transportHttp": "Streamable HTTP",
+  "transportSse": "HTTP + SSE",
+  "transportStdio": "Local program",
+  "stdioMobile": "Local programs only run on desktop.",
+  "command": "Command",
+  "arguments": "Arguments, one per line",
+  "envNames": "Environment variable names, one per line",
+  "authNone": "None",
+  "authBearer": "Token",
+  "authHeader": "Key in a header",
+  "authQuery": "Key in the address",
+  "authHeaders": "Custom headers",
+  "authOAuth": "Sign in (OAuth)",
+  "authClient": "Client credentials",
+  "authLabel": "Access",
+  "authName": "Header or parameter name",
+  "headerNames": "Header names, one per line",
+  "secretValue": "Token or key (this device only)",
+  "headerValues": "Header values, “name: value” per line (this device only)",
+  "envValues": "Values, NAME=value per line (this device only)",
+  "clientId": "Client id (empty: register automatically)",
+  "clientSecret": "Client secret (this device only)",
+  "scopesLabel": "Scopes, separated by spaces",
+  "policyLabel": "When a tool may change something",
+  "policyAsk": "Always ask",
+  "policyReadOnly": "Ask unless read-only",
+  "policyAllow": "Always allow",
+  "serverOn": "On",
+  "signIn": "Sign in",
+  "signedIn": "Connected on this device.",
+  "toolApproval": "{server} wants to run {tool}",
+  "@toolApproval": {
+    "placeholders": {
+      "server": {
+        "type": "String"
+      },
+      "tool": {
+        "type": "String"
+      }
+    }
+  },
+  "allow": "Allow",
+  "deny": "Don't allow",
+  "readOnlyTool": "Only reads"
 }

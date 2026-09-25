@@ -7,6 +7,7 @@ import '../frb_generated.dart';
 import 'ai.dart';
 import 'ask.dart';
 import 'audit.dart';
+import 'mcp.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'voice.dart';
 import 'wiki.dart';
@@ -63,6 +64,7 @@ abstract class LibraryHandle implements RustOpaqueInterface {
     AskImage? image,
     required AskScopeDto scopeDto,
     required List<ApiKey> apiKeys,
+    required List<McpSecret> mcpSecrets,
   });
 
   Future<String> capturePhoto({
@@ -94,6 +96,30 @@ abstract class LibraryHandle implements RustOpaqueInterface {
 
   Future<LocalGraph> localGraph({required String path, required int depth});
 
+  /// Connects once to report status and tools (§10 server list).
+  Future<McpStatus> mcpCheck({required String id, required String secretsJson});
+
+  /// Starts OAuth (§10). With no `redirect_uri` (desktop) a loopback listener on 127.0.0.1 is
+  /// used; call `mcp_oauth_wait`. On mobile pass `daftar://oauth/callback` and hand the redirect
+  /// to `mcp_oauth_complete`. The app opens `auth_url` in the system browser.
+  Future<OAuthStart> mcpOauthBegin({
+    required String id,
+    required String secretsJson,
+    String? redirectUri,
+  });
+
+  /// Finishes OAuth with the redirect URL; returns the new secrets JSON for this server.
+  Future<String> mcpOauthComplete({
+    required String flowId,
+    required String callbackUrl,
+  });
+
+  /// Desktop: waits for the browser to come back to the loopback listener. Returns the new
+  /// secrets JSON for this server.
+  Future<String> mcpOauthWait({required String flowId});
+
+  Future<List<McpServer>> mcpServers();
+
   Future<UndoResult> moveToVault({required String opId, required String vault});
 
   static Future<LibraryHandle> open({required String root}) =>
@@ -112,6 +138,8 @@ abstract class LibraryHandle implements RustOpaqueInterface {
 
   /// Picks up files changed outside the app (on resume and after sync).
   Future<int> refreshIndex();
+
+  Future<void> removeMcpServer({required String id});
 
   /// Removes a provider and the roles that used it. The app deletes its key from secure storage.
   Future<void> removeProvider({required String id});
@@ -155,6 +183,9 @@ abstract class LibraryHandle implements RustOpaqueInterface {
     required String title,
     required String text,
   });
+
+  /// Adds or updates a server; returns its id.
+  Future<String> saveMcpServer({required McpServer server});
 
   /// Saves an edit as one human commit; fails if the page changed since `base_hash`.
   Future<SaveResult> savePage({

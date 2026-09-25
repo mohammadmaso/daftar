@@ -409,6 +409,11 @@ class _Turn extends ConsumerWidget {
                 note: (m) => showNote(context, m),
               ),
             ),
+          for (final a in turn.approvals)
+            Padding(
+              padding: const EdgeInsets.only(top: Space.x3),
+              child: _ApprovalCard(approval: a),
+            ),
           if (turn.needsHelp) ...[
             const SizedBox(height: Space.x3),
             const TalkToSomeoneCard(),
@@ -433,6 +438,67 @@ class _Turn extends ConsumerWidget {
                 ],
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+/// §10: an outside tool asks before it runs (unless its server's policy allows it).
+class _ApprovalCard extends ConsumerWidget {
+  const _ApprovalCard({required this.approval});
+  final ToolApproval approval;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = L10n.of(context);
+    final p = context.palette;
+    return DSurface(
+      padding: const EdgeInsets.all(Space.x4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            l.toolApproval(approval.serverName, approval.tool),
+            style: context.type.bodyStrong,
+          ),
+          if (approval.readOnly)
+            Text(
+              l.readOnlyTool,
+              style: context.type.caption.copyWith(color: p.inkMuted),
+            ),
+          const SizedBox(height: Space.x2),
+          Container(
+            padding: const EdgeInsets.all(Space.x2),
+            decoration: BoxDecoration(
+              color: p.sunken,
+              borderRadius: BorderRadius.circular(Radii.small),
+            ),
+            child: Text(
+              approval.arguments,
+              textDirection: TextDirection.ltr,
+              style: TypeScale.mono.copyWith(fontSize: 12.5, color: p.ink),
+            ),
+          ),
+          const SizedBox(height: Space.x3),
+          Wrap(
+            spacing: Space.x2,
+            children: [
+              DButton(
+                label: l.allow,
+                onPressed: () => ref
+                    .read(askProvider.notifier)
+                    .answerApproval(approval, true),
+              ),
+              DButton(
+                label: l.deny,
+                variant: DButtonVariant.secondary,
+                onPressed: () => ref
+                    .read(askProvider.notifier)
+                    .answerApproval(approval, false),
+              ),
+            ],
+          ),
         ],
       ),
     );

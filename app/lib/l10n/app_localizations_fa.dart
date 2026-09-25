@@ -916,4 +916,146 @@ class L10nFa extends L10n {
 
   @override
   String get voiceNeedsMic => 'حالت صوتی به میکروفون نیاز دارد.';
+
+  @override
+  String get mcpServers => 'ابزارهای بیرونی (MCP)';
+
+  @override
+  String get mcpFooter =>
+      'تنظیمات سرورها بین دستگاه‌ها همگام می‌شوند؛ اعتبارنامه‌ها روی هر دستگاه می‌مانند و هر دستگاه یک بار وارد می‌شود.';
+
+  @override
+  String get addMcpServer => 'افزودن سرور';
+
+  @override
+  String mcpConnected(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'وصل · $nString ابزار',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mcpNeedsAuth => 'روی این دستگاه وصل شوید';
+
+  @override
+  String get mcpDesktopOnly => 'برنامه‌ی محلی؛ فقط در رایانه';
+
+  @override
+  String get mcpDisabled => 'خاموش';
+
+  @override
+  String get mcpChecking => 'در حال بررسی…';
+
+  @override
+  String get transportHttp => 'Streamable HTTP';
+
+  @override
+  String get transportSse => 'HTTP + SSE';
+
+  @override
+  String get transportStdio => 'برنامه‌ی محلی';
+
+  @override
+  String get stdioMobile => 'برنامه‌های محلی فقط روی رایانه اجرا می‌شوند.';
+
+  @override
+  String get command => 'فرمان';
+
+  @override
+  String get arguments => 'آرگومان‌ها، هر خط یکی';
+
+  @override
+  String get envNames => 'نام متغیرهای محیطی، هر خط یکی';
+
+  @override
+  String get authNone => 'هیچ';
+
+  @override
+  String get authBearer => 'توکن';
+
+  @override
+  String get authHeader => 'کلید در سرآیند';
+
+  @override
+  String get authQuery => 'کلید در نشانی';
+
+  @override
+  String get authHeaders => 'سرآیندهای دلخواه';
+
+  @override
+  String get authOAuth => 'ورود (OAuth)';
+
+  @override
+  String get authClient => 'اعتبار کلاینت';
+
+  @override
+  String get authLabel => 'دسترسی';
+
+  @override
+  String get authName => 'نام سرآیند یا پارامتر';
+
+  @override
+  String get headerNames => 'نام سرآیندها، هر خط یکی';
+
+  @override
+  String get secretValue => 'توکن یا کلید (فقط این دستگاه)';
+
+  @override
+  String get headerValues =>
+      'مقدار سرآیندها، «نام: مقدار» در هر خط (فقط این دستگاه)';
+
+  @override
+  String get envValues => 'مقدارها، NAME=value در هر خط (فقط این دستگاه)';
+
+  @override
+  String get clientId => 'شناسه‌ی کلاینت (خالی: ثبت خودکار)';
+
+  @override
+  String get clientSecret => 'رمز کلاینت (فقط این دستگاه)';
+
+  @override
+  String get scopesLabel => 'دامنه‌ها، با فاصله';
+
+  @override
+  String get policyLabel => 'وقتی ابزاری ممکن است چیزی را تغییر دهد';
+
+  @override
+  String get policyAsk => 'همیشه بپرس';
+
+  @override
+  String get policyReadOnly => 'بپرس مگر فقط‌خواندنی';
+
+  @override
+  String get policyAllow => 'همیشه اجازه بده';
+
+  @override
+  String get serverOn => 'روشن';
+
+  @override
+  String get signIn => 'ورود';
+
+  @override
+  String get signedIn => 'روی این دستگاه وصل شد.';
+
+  @override
+  String toolApproval(String server, String tool) {
+    return '$server می‌خواهد $tool را اجرا کند';
+  }
+
+  @override
+  String get allow => 'اجازه بده';
+
+  @override
+  String get deny => 'اجازه نده';
+
+  @override
+  String get readOnlyTool => 'فقط می‌خواند';
 }

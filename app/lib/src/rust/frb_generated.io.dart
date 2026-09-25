@@ -8,6 +8,7 @@ import 'api/ask.dart';
 import 'api/audit.dart';
 import 'api/info.dart';
 import 'api/library.dart';
+import 'api/mcp.dart';
 import 'api/voice.dart';
 import 'api/wiki.dart';
 import 'dart:async';
@@ -152,7 +153,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Filing dco_decode_box_autoadd_filing(dynamic raw);
 
   @protected
+  McpServer dco_decode_box_autoadd_mcp_server(dynamic raw);
+
+  @protected
   ModelRole dco_decode_box_autoadd_model_role(dynamic raw);
+
+  @protected
+  ToolApproval dco_decode_box_autoadd_tool_approval(dynamic raw);
 
   @protected
   VoiceOptions dco_decode_box_autoadd_voice_options(dynamic raw);
@@ -260,6 +267,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<JobOutcome> dco_decode_list_job_outcome(dynamic raw);
 
   @protected
+  List<McpSecret> dco_decode_list_mcp_secret(dynamic raw);
+
+  @protected
+  List<McpServer> dco_decode_list_mcp_server(dynamic raw);
+
+  @protected
+  List<McpToolInfo> dco_decode_list_mcp_tool_info(dynamic raw);
+
+  @protected
   List<Operation> dco_decode_list_operation(dynamic raw);
 
   @protected
@@ -302,7 +318,34 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LocalGraph dco_decode_local_graph(dynamic raw);
 
   @protected
+  McpAuthKind dco_decode_mcp_auth_kind(dynamic raw);
+
+  @protected
+  McpPolicy dco_decode_mcp_policy(dynamic raw);
+
+  @protected
+  McpSecret dco_decode_mcp_secret(dynamic raw);
+
+  @protected
+  McpServer dco_decode_mcp_server(dynamic raw);
+
+  @protected
+  McpStatus dco_decode_mcp_status(dynamic raw);
+
+  @protected
+  McpStatusKind dco_decode_mcp_status_kind(dynamic raw);
+
+  @protected
+  McpToolInfo dco_decode_mcp_tool_info(dynamic raw);
+
+  @protected
+  McpTransportKind dco_decode_mcp_transport_kind(dynamic raw);
+
+  @protected
   ModelRole dco_decode_model_role(dynamic raw);
+
+  @protected
+  OAuthStart dco_decode_o_auth_start(dynamic raw);
 
   @protected
   OpKind dco_decode_op_kind(dynamic raw);
@@ -333,6 +376,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ModelRole? dco_decode_opt_box_autoadd_model_role(dynamic raw);
+
+  @protected
+  ToolApproval? dco_decode_opt_box_autoadd_tool_approval(dynamic raw);
 
   @protected
   VoiceStateDto? dco_decode_opt_box_autoadd_voice_state_dto(dynamic raw);
@@ -393,6 +439,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SyncState dco_decode_sync_state(dynamic raw);
+
+  @protected
+  ToolApproval dco_decode_tool_approval(dynamic raw);
 
   @protected
   int dco_decode_u_32(dynamic raw);
@@ -556,7 +605,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Filing sse_decode_box_autoadd_filing(SseDeserializer deserializer);
 
   @protected
+  McpServer sse_decode_box_autoadd_mcp_server(SseDeserializer deserializer);
+
+  @protected
   ModelRole sse_decode_box_autoadd_model_role(SseDeserializer deserializer);
+
+  @protected
+  ToolApproval sse_decode_box_autoadd_tool_approval(
+    SseDeserializer deserializer,
+  );
 
   @protected
   VoiceOptions sse_decode_box_autoadd_voice_options(
@@ -670,6 +727,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<JobOutcome> sse_decode_list_job_outcome(SseDeserializer deserializer);
 
   @protected
+  List<McpSecret> sse_decode_list_mcp_secret(SseDeserializer deserializer);
+
+  @protected
+  List<McpServer> sse_decode_list_mcp_server(SseDeserializer deserializer);
+
+  @protected
+  List<McpToolInfo> sse_decode_list_mcp_tool_info(SseDeserializer deserializer);
+
+  @protected
   List<Operation> sse_decode_list_operation(SseDeserializer deserializer);
 
   @protected
@@ -714,7 +780,34 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   LocalGraph sse_decode_local_graph(SseDeserializer deserializer);
 
   @protected
+  McpAuthKind sse_decode_mcp_auth_kind(SseDeserializer deserializer);
+
+  @protected
+  McpPolicy sse_decode_mcp_policy(SseDeserializer deserializer);
+
+  @protected
+  McpSecret sse_decode_mcp_secret(SseDeserializer deserializer);
+
+  @protected
+  McpServer sse_decode_mcp_server(SseDeserializer deserializer);
+
+  @protected
+  McpStatus sse_decode_mcp_status(SseDeserializer deserializer);
+
+  @protected
+  McpStatusKind sse_decode_mcp_status_kind(SseDeserializer deserializer);
+
+  @protected
+  McpToolInfo sse_decode_mcp_tool_info(SseDeserializer deserializer);
+
+  @protected
+  McpTransportKind sse_decode_mcp_transport_kind(SseDeserializer deserializer);
+
+  @protected
   ModelRole sse_decode_model_role(SseDeserializer deserializer);
+
+  @protected
+  OAuthStart sse_decode_o_auth_start(SseDeserializer deserializer);
 
   @protected
   OpKind sse_decode_op_kind(SseDeserializer deserializer);
@@ -751,6 +844,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ModelRole? sse_decode_opt_box_autoadd_model_role(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ToolApproval? sse_decode_opt_box_autoadd_tool_approval(
     SseDeserializer deserializer,
   );
 
@@ -815,6 +913,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SyncState sse_decode_sync_state(SseDeserializer deserializer);
+
+  @protected
+  ToolApproval sse_decode_tool_approval(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_32(SseDeserializer deserializer);
@@ -1006,8 +1107,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_filing(Filing self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_mcp_server(
+    McpServer self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_model_role(
     ModelRole self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_tool_approval(
+    ToolApproval self,
     SseSerializer serializer,
   );
 
@@ -1147,6 +1260,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_mcp_secret(
+    List<McpSecret> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_mcp_server(
+    List<McpServer> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_mcp_tool_info(
+    List<McpToolInfo> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_operation(
     List<Operation> self,
     SseSerializer serializer,
@@ -1216,7 +1347,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_local_graph(LocalGraph self, SseSerializer serializer);
 
   @protected
+  void sse_encode_mcp_auth_kind(McpAuthKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_mcp_policy(McpPolicy self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_mcp_secret(McpSecret self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_mcp_server(McpServer self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_mcp_status(McpStatus self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_mcp_status_kind(McpStatusKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_mcp_tool_info(McpToolInfo self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_mcp_transport_kind(
+    McpTransportKind self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_model_role(ModelRole self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_o_auth_start(OAuthStart self, SseSerializer serializer);
 
   @protected
   void sse_encode_op_kind(OpKind self, SseSerializer serializer);
@@ -1263,6 +1424,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_model_role(
     ModelRole? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_tool_approval(
+    ToolApproval? self,
     SseSerializer serializer,
   );
 
@@ -1334,6 +1501,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_sync_state(SyncState self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_tool_approval(ToolApproval self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_32(int self, SseSerializer serializer);
