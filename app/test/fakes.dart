@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:daftar/core/library_api.dart';
+import 'package:daftar/core/notifications.dart';
 import 'package:daftar/core/oauth_browser.dart';
 import 'package:daftar/core/recorder.dart';
 import 'package:daftar/core/voice_io.dart';
@@ -504,6 +505,47 @@ class FakeLibrary implements LibraryApi {
     return '{"oauth":{"client_id":"c1"}}';
   }
 
+  // ── Reflect ──
+  ReflectPrefs prefs = const ReflectPrefs(
+    daily: true,
+    dailyTime: '21:30',
+    weekly: true,
+    weeklyDay: 5,
+    notifications: true,
+    helplineCountry: '',
+  );
+  int scheduled = 0;
+  int lints = 0;
+  ReflectSignals signals = const ReflectSignals(
+    notifications: [],
+    needsHelp: false,
+  );
+
+  @override
+  Future<ReflectPrefs> reflectPrefs() async => prefs;
+
+  @override
+  Future<void> setReflectPrefs(ReflectPrefs p) async => prefs = p;
+
+  @override
+  Future<int> scheduleDue() async {
+    scheduled++;
+    return 0;
+  }
+
+  @override
+  Future<ReflectSignals> takeReflectSignals() async {
+    final s = signals;
+    signals = const ReflectSignals(notifications: [], needsHelp: false);
+    return s;
+  }
+
+  @override
+  Future<LintSummary> lintNow() async {
+    lints++;
+    return const LintSummary(findings: 3, newCards: 1);
+  }
+
   // ── Voice ──
   FakeVoice? voice;
 
@@ -757,4 +799,24 @@ class FakeBrowser implements OAuthBrowser {
     opened.add(url);
     return usesLoopback ? null : 'daftar://oauth/callback?code=abc&state=s';
   }
+}
+
+class FakeNotifications implements SystemNotifications {
+  final shown = <String>[];
+  var asked = 0;
+  var granted = true;
+
+  @override
+  Future<bool> requestPermission({required String openLabel}) async {
+    asked++;
+    return granted;
+  }
+
+  @override
+  Future<void> show(
+    String title,
+    String body, {
+    required String channel,
+    required String openLabel,
+  }) async => shown.add(body);
 }

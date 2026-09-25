@@ -1,5 +1,7 @@
 import 'package:daftar/app/app.dart';
 import 'package:daftar/core/library_api.dart';
+import 'package:daftar/features/settings/reflect_settings.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../fakes.dart';
@@ -86,6 +88,38 @@ void main() {
         await expectLater(
           find.byType(DaftarApp),
           matchesGoldenFile('goldens/today_${tag}_phone.png'),
+        );
+      });
+
+      testWidgets('settings reflect · $tag · phone', (tester) async {
+        await pumpApp(tester, prefs: prefs, location: '/settings');
+        await scrollTo(tester, find.byType(ReflectSection));
+        // The section's top at the top of the screen, so all of it shows.
+        await Scrollable.ensureVisible(
+          tester.element(find.byType(ReflectSection)),
+        );
+        await tester.pumpAndSettle();
+        await expectLater(
+          find.byType(DaftarApp),
+          matchesGoldenFile('goldens/settings_reflect_${tag}_phone.png'),
+        );
+      });
+
+      testWidgets('today help card · $tag · phone', (tester) async {
+        final lib = FakeLibrary(captures: _day())
+          ..nextRun = const RunSummary(
+            jobs: [JobOutcome(kind: JobKindDto.other, state: JobStateDto.done)],
+            pending: false,
+          )
+          ..signals = const ReflectSignals(notifications: [], needsHelp: true);
+        await pumpApp(
+          tester,
+          prefs: prefs,
+          setup: FakeSetup(library: lib),
+        );
+        await expectLater(
+          find.byType(DaftarApp),
+          matchesGoldenFile('goldens/today_help_${tag}_phone.png'),
         );
       });
 

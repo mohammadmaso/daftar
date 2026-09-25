@@ -5,6 +5,7 @@ import '../src/rust/api/ask.dart' as ak;
 import '../src/rust/api/audit.dart' as au;
 import '../src/rust/api/library.dart' as rs;
 import '../src/rust/api/mcp.dart' as mc;
+import '../src/rust/api/reflect.dart' as rf;
 import '../src/rust/api/voice.dart' as vo;
 import '../src/rust/api/wiki.dart' as wk;
 
@@ -73,6 +74,8 @@ export '../src/rust/api/mcp.dart'
         McpToolInfo,
         McpTransportKind,
         OAuthStart;
+export '../src/rust/api/reflect.dart'
+    show LintSummary, ReflectPrefs, ReflectSignals;
 export '../src/rust/api/voice.dart'
     show VoiceEventDto, VoiceEventKind, VoiceOptions, VoiceStateDto;
 export '../src/rust/api/wiki.dart'
@@ -176,6 +179,17 @@ abstract class LibraryApi {
   });
   Future<String> mcpOauthWait(String flowId);
   Future<String> mcpOauthComplete(String flowId, String callbackUrl);
+
+  // Reflect and lint (§4.6, §6.5).
+  Future<rf.ReflectPrefs> reflectPrefs();
+  Future<void> setReflectPrefs(rf.ReflectPrefs prefs);
+
+  /// Queues reflections and lint that are due now; returns how many jobs were added.
+  Future<int> scheduleDue();
+
+  /// Notifications and the crisis flag left by the jobs that just ran.
+  Future<rf.ReflectSignals> takeReflectSignals();
+  Future<rf.LintSummary> lintNow();
 }
 
 /// A running voice conversation: microphone PCM in, events (captions, audio, state) out.
@@ -505,4 +519,20 @@ class RustLibraryApi implements LibraryApi {
   @override
   Future<String> mcpOauthComplete(String flowId, String callbackUrl) =>
       _h.mcpOauthComplete(flowId: flowId, callbackUrl: callbackUrl);
+
+  @override
+  Future<rf.ReflectPrefs> reflectPrefs() => _h.reflectPrefs();
+
+  @override
+  Future<void> setReflectPrefs(rf.ReflectPrefs prefs) =>
+      _h.setReflectPrefs(prefs: prefs);
+
+  @override
+  Future<int> scheduleDue() => _h.scheduleDue();
+
+  @override
+  Future<rf.ReflectSignals> takeReflectSignals() => _h.takeReflectSignals();
+
+  @override
+  Future<rf.LintSummary> lintNow() => _h.lintNow();
 }

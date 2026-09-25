@@ -17,6 +17,7 @@ import '../capture/today_screen.dart' show SyncBadge;
 import '../onboarding/onboarding_screen.dart';
 import 'ai_settings.dart';
 import 'mcp_settings.dart';
+import 'reflect_settings.dart';
 
 final repoStatusProvider = FutureProvider<RepoStatus?>((ref) async {
   ref.watch(revisionProvider);
@@ -51,6 +52,7 @@ class SettingsScreen extends ConsumerWidget {
         const AiSettingsSections(),
         const _RepositorySection(),
         const McpSection(),
+        const ReflectSection(),
         DSection(
           title: l.appearance,
           footer: l.textSizeFooter,

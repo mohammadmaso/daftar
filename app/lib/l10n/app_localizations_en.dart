@@ -1064,4 +1064,102 @@ class L10nEn extends L10n {
 
   @override
   String get readOnlyTool => 'Only reads';
+
+  @override
+  String get reflectSection => 'Reflect';
+
+  @override
+  String get reflectFooter =>
+      'Reflections are written from your own captures and filed to Journal. A notification never says what a hard day was about.';
+
+  @override
+  String get dailyReflection => 'Daily reflection';
+
+  @override
+  String get reflectTime => 'Time';
+
+  @override
+  String get weeklyReview => 'Weekly review';
+
+  @override
+  String get reflectDay => 'Day';
+
+  @override
+  String get reflectNotifications => 'Notifications';
+
+  @override
+  String get notificationsBlocked =>
+      'Notifications are turned off for this app in system settings.';
+
+  @override
+  String get helplineCountry => 'Helpline country';
+
+  @override
+  String get helplineInternational => 'International';
+
+  @override
+  String get countryIR => 'Iran';
+
+  @override
+  String get countryUS => 'United States';
+
+  @override
+  String get countryGB => 'United Kingdom';
+
+  @override
+  String get countryDE => 'Germany';
+
+  @override
+  String get countryCA => 'Canada';
+
+  @override
+  String get checkWikiNow => 'Check the wiki now';
+
+  @override
+  String get checkWikiFooter =>
+      'Looks for broken links, missing sources and stale claims. It also runs by itself after every few filings.';
+
+  @override
+  String get lintClean => 'Nothing needs fixing.';
+
+  @override
+  String lintFound(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString things to look at',
+      one: '1 thing to look at',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lintNewCards(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString new in Review',
+      one: '1 new in Review',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reflectChannel => 'Reflections';
+
+  @override
+  String get open => 'Open';
+
+  @override
+  String get close => 'Close';
 }

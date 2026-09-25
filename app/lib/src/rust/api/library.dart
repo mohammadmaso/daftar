@@ -9,6 +9,7 @@ import 'ask.dart';
 import 'audit.dart';
 import 'mcp.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'reflect.dart';
 import 'voice.dart';
 import 'wiki.dart';
 
@@ -91,6 +92,9 @@ abstract class LibraryHandle implements RustOpaqueInterface {
   /// Files an excluded capture again.
   Future<void> includeCapture({required String rawId});
 
+  /// Settings › Check the wiki now (code checks only; model checks run with the jobs).
+  Future<LintSummary> lintNow();
+
   /// One level of the page tree, e.g. `vaults/life` or `vaults/life/people`.
   Future<Listing> listDir({required String dir});
 
@@ -135,6 +139,8 @@ abstract class LibraryHandle implements RustOpaqueInterface {
   Future<int> rebuildIndex();
 
   Future<List<PageSummary>> recentPages({String? vault, required int limit});
+
+  Future<ReflectPrefs> reflectPrefs();
 
   /// Picks up files changed outside the app (on resume and after sync).
   Future<int> refreshIndex();
@@ -197,11 +203,16 @@ abstract class LibraryHandle implements RustOpaqueInterface {
   /// Adds or updates a provider; returns its id (new providers get one).
   Future<String> saveProvider({required AiProvider provider});
 
+  /// Queues what is due now (reflections, and lint when enough was filed). Returns how many jobs.
+  Future<int> scheduleDue();
+
   Future<List<SearchHit>> search({
     required String query,
     required List<String> vaults,
     required int limit,
   });
+
+  Future<void> setReflectPrefs({required ReflectPrefs prefs});
 
   Future<void> setRemote({required String url});
 
@@ -220,6 +231,8 @@ abstract class LibraryHandle implements RustOpaqueInterface {
   Future<RepoStatus> status();
 
   Future<SyncResult> sync_({required Auth auth});
+
+  Future<ReflectSignals> takeReflectSignals();
 
   /// The Test button: one real minimal call for the role as configured, with its latency.
   /// A failure is an outcome, not an error, so the app can show it next to the role.

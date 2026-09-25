@@ -1058,4 +1058,100 @@ class L10nFa extends L10n {
 
   @override
   String get readOnlyTool => 'فقط می‌خواند';
+
+  @override
+  String get reflectSection => 'بازتاب';
+
+  @override
+  String get reflectFooter =>
+      'بازتاب‌ها از یادداشت‌های خودت نوشته می‌شوند و در دفتر روزانه ثبت می‌شوند. اعلان هیچ‌وقت نمی‌گوید یک روز سخت درباره‌ی چه بود.';
+
+  @override
+  String get dailyReflection => 'بازتاب روزانه';
+
+  @override
+  String get reflectTime => 'ساعت';
+
+  @override
+  String get weeklyReview => 'مرور هفتگی';
+
+  @override
+  String get reflectDay => 'روز';
+
+  @override
+  String get reflectNotifications => 'اعلان‌ها';
+
+  @override
+  String get notificationsBlocked =>
+      'اعلان‌های این برنامه در تنظیمات دستگاه خاموش است.';
+
+  @override
+  String get helplineCountry => 'کشور خط کمک';
+
+  @override
+  String get helplineInternational => 'بین‌المللی';
+
+  @override
+  String get countryIR => 'ایران';
+
+  @override
+  String get countryUS => 'آمریکا';
+
+  @override
+  String get countryGB => 'بریتانیا';
+
+  @override
+  String get countryDE => 'آلمان';
+
+  @override
+  String get countryCA => 'کانادا';
+
+  @override
+  String get checkWikiNow => 'همین حالا ویکی را بررسی کن';
+
+  @override
+  String get checkWikiFooter =>
+      'پیوندهای شکسته، منبع‌های گم‌شده و ادعاهای کهنه را پیدا می‌کند. بعد از چند بار ثبت، خودش هم اجرا می‌شود.';
+
+  @override
+  String get lintClean => 'چیزی برای درست کردن نیست.';
+
+  @override
+  String lintFound(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString مورد برای نگاه کردن',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String lintNewCards(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString مورد تازه در مرور',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reflectChannel => 'بازتاب‌ها';
+
+  @override
+  String get open => 'باز کن';
+
+  @override
+  String get close => 'بستن';
 }

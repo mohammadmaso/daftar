@@ -1866,6 +1866,144 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'Only reads'**
   String get readOnlyTool;
+
+  /// No description provided for @reflectSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflect'**
+  String get reflectSection;
+
+  /// No description provided for @reflectFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflections are written from your own captures and filed to Journal. A notification never says what a hard day was about.'**
+  String get reflectFooter;
+
+  /// No description provided for @dailyReflection.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily reflection'**
+  String get dailyReflection;
+
+  /// No description provided for @reflectTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get reflectTime;
+
+  /// No description provided for @weeklyReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly review'**
+  String get weeklyReview;
+
+  /// No description provided for @reflectDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get reflectDay;
+
+  /// No description provided for @reflectNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get reflectNotifications;
+
+  /// No description provided for @notificationsBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are turned off for this app in system settings.'**
+  String get notificationsBlocked;
+
+  /// No description provided for @helplineCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Helpline country'**
+  String get helplineCountry;
+
+  /// No description provided for @helplineInternational.
+  ///
+  /// In en, this message translates to:
+  /// **'International'**
+  String get helplineInternational;
+
+  /// No description provided for @countryIR.
+  ///
+  /// In en, this message translates to:
+  /// **'Iran'**
+  String get countryIR;
+
+  /// No description provided for @countryUS.
+  ///
+  /// In en, this message translates to:
+  /// **'United States'**
+  String get countryUS;
+
+  /// No description provided for @countryGB.
+  ///
+  /// In en, this message translates to:
+  /// **'United Kingdom'**
+  String get countryGB;
+
+  /// No description provided for @countryDE.
+  ///
+  /// In en, this message translates to:
+  /// **'Germany'**
+  String get countryDE;
+
+  /// No description provided for @countryCA.
+  ///
+  /// In en, this message translates to:
+  /// **'Canada'**
+  String get countryCA;
+
+  /// No description provided for @checkWikiNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the wiki now'**
+  String get checkWikiNow;
+
+  /// No description provided for @checkWikiFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Looks for broken links, missing sources and stale claims. It also runs by itself after every few filings.'**
+  String get checkWikiFooter;
+
+  /// No description provided for @lintClean.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing needs fixing.'**
+  String get lintClean;
+
+  /// No description provided for @lintFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 thing to look at} other{{n} things to look at}}'**
+  String lintFound(int n);
+
+  /// No description provided for @lintNewCards.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 new in Review} other{{n} new in Review}}'**
+  String lintNewCards(int n);
+
+  /// No description provided for @reflectChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflections'**
+  String get reflectChannel;
+
+  /// No description provided for @open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get open;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

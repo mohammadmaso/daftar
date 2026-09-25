@@ -9,6 +9,7 @@ import '../../core/job_runner.dart';
 import '../../core/library_state.dart';
 import '../../design/design.dart';
 import '../../l10n/app_localizations.dart';
+import '../ask/ask_screen.dart' show TalkToSomeoneCard;
 import '../review/review_screen.dart' show reviewCardsProvider;
 import '../settings/ai_settings.dart' show roleName;
 import '../shell/home_shell.dart' show kWideLayout;
@@ -88,6 +89,18 @@ class TodayScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+                if (ref.watch(helpCardProvider))
+                  Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      Space.x3,
+                      Space.x2,
+                      Space.x3,
+                      Space.x2,
+                    ),
+                    child: TalkToSomeoneCard(
+                      onClose: ref.read(helpCardProvider.notifier).close,
+                    ),
+                  ),
                 Expanded(
                   child: RefreshIndicator(
                     color: p.accent,

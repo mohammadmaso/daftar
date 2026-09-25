@@ -12,6 +12,7 @@ import 'api/audit.dart';
 import 'api/info.dart';
 import 'api/library.dart';
 import 'api/mcp.dart';
+import 'api/reflect.dart';
 import 'api/voice.dart';
 import 'api/wiki.dart';
 import 'dart:async';
@@ -161,6 +162,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ModelRole dco_decode_box_autoadd_model_role(dynamic raw);
 
   @protected
+  ReflectPrefs dco_decode_box_autoadd_reflect_prefs(dynamic raw);
+
+  @protected
   ToolApproval dco_decode_box_autoadd_tool_approval(dynamic raw);
 
   @protected
@@ -228,6 +232,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   JobStateDto dco_decode_job_state_dto(dynamic raw);
+
+  @protected
+  LintSummary dco_decode_lint_summary(dynamic raw);
 
   @protected
   List<String> dco_decode_list_String(dynamic raw);
@@ -405,6 +412,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   RawKind dco_decode_raw_kind(dynamic raw);
+
+  @protected
+  ReflectPrefs dco_decode_reflect_prefs(dynamic raw);
+
+  @protected
+  ReflectSignals dco_decode_reflect_signals(dynamic raw);
 
   @protected
   RepoStatus dco_decode_repo_status(dynamic raw);
@@ -613,6 +626,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ModelRole sse_decode_box_autoadd_model_role(SseDeserializer deserializer);
 
   @protected
+  ReflectPrefs sse_decode_box_autoadd_reflect_prefs(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ToolApproval sse_decode_box_autoadd_tool_approval(
     SseDeserializer deserializer,
   );
@@ -686,6 +704,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   JobStateDto sse_decode_job_state_dto(SseDeserializer deserializer);
+
+  @protected
+  LintSummary sse_decode_lint_summary(SseDeserializer deserializer);
 
   @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer);
@@ -879,6 +900,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   RawKind sse_decode_raw_kind(SseDeserializer deserializer);
+
+  @protected
+  ReflectPrefs sse_decode_reflect_prefs(SseDeserializer deserializer);
+
+  @protected
+  ReflectSignals sse_decode_reflect_signals(SseDeserializer deserializer);
 
   @protected
   RepoStatus sse_decode_repo_status(SseDeserializer deserializer);
@@ -1121,6 +1148,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_reflect_prefs(
+    ReflectPrefs self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_tool_approval(
     ToolApproval self,
     SseSerializer serializer,
@@ -1200,6 +1233,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_job_state_dto(JobStateDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_lint_summary(LintSummary self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer);
@@ -1467,6 +1503,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_raw_kind(RawKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_reflect_prefs(ReflectPrefs self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_reflect_signals(
+    ReflectSignals self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_repo_status(RepoStatus self, SseSerializer serializer);

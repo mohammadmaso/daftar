@@ -10,6 +10,7 @@ import '../../core/errors.dart';
 import '../../core/job_runner.dart';
 import '../../core/library_api.dart';
 import '../../core/library_state.dart';
+import '../../core/reflect_state.dart';
 import '../../design/design.dart';
 import '../../l10n/app_localizations.dart';
 import '../wiki/markdown_view.dart';
@@ -507,7 +508,10 @@ class _ApprovalCard extends ConsumerWidget {
 
 /// §4.7: warm, prominent, never flippant. Professional help and a crisis line.
 class TalkToSomeoneCard extends ConsumerWidget {
-  const TalkToSomeoneCard({super.key});
+  const TalkToSomeoneCard({super.key, this.onClose});
+
+  /// On Today the card can be put away; in Ask it stays with the answer.
+  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -529,9 +533,22 @@ class TalkToSomeoneCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              l.talkToSomeone,
-              style: context.type.heading.copyWith(color: p.accent),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l.talkToSomeone,
+                    style: context.type.heading.copyWith(color: p.accent),
+                  ),
+                ),
+                if (onClose != null)
+                  DIconButton(
+                    icon: DIcons.close,
+                    semanticLabel: l.close,
+                    color: p.inkMuted,
+                    onPressed: onClose,
+                  ),
+              ],
             ),
             const SizedBox(height: Space.x2),
             Text(l.talkToSomeoneBody, style: context.type.body),
@@ -568,6 +585,3 @@ class TalkToSomeoneCard extends ConsumerWidget {
     );
   }
 }
-
-/// The helpline country chosen in Settings › Reflect (empty until M8 settings set it).
-final helplineCountryProvider = FutureProvider<String?>((ref) async => null);

@@ -119,3 +119,7 @@ String shortDate(DateTime d, String languageCode) {
   }
   return DateFormat('d MMM y', languageCode).format(d);
 }
+
+/// Weekday name for an ISO day (1 = Monday … 7 = Sunday).
+String weekdayName(int isoDay, String languageCode) =>
+    DateFormat.EEEE(languageCode).format(DateTime(2024, 1, isoDay));

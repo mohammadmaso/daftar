@@ -4,6 +4,7 @@ import 'package:daftar/app/core.dart';
 import 'package:daftar/core/credentials.dart';
 import 'package:daftar/core/job_runner.dart';
 import 'package:daftar/core/library_state.dart';
+import 'package:daftar/core/notifications.dart';
 import 'package:daftar/core/oauth_browser.dart';
 import 'package:daftar/core/recorder.dart';
 import 'package:daftar/core/voice_io.dart';
@@ -41,6 +42,7 @@ Future<ProviderContainer> pumpApp(
   FakePlayer? player,
   FakeAwake? awake,
   FakeBrowser? browser,
+  FakeNotifications? notifications,
   String? location,
 }) async {
   SharedPreferences.setMockInitialValues(prefs);
@@ -68,6 +70,9 @@ Future<ProviderContainer> pumpApp(
       voicePlayerProvider.overrideWithValue(player ?? FakePlayer()),
       screenAwakeProvider.overrideWithValue(awake ?? FakeAwake()),
       oauthBrowserProvider.overrideWithValue(browser ?? FakeBrowser()),
+      systemNotificationsProvider.overrideWithValue(
+        notifications ?? FakeNotifications(),
+      ),
       voiceRecorderProvider.overrideWithValue(recorder ?? FakeRecorder()),
       clockProvider.overrideWithValue(() => fixedNow),
     ],

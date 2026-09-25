@@ -1,12 +1,19 @@
 import 'dart:async';
 
+import 'dart:ui' show Locale, PlatformDispatcher;
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show basicLocaleListResolution;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../app/appearance.dart';
+import '../app/identity.dart';
+import '../l10n/app_localizations.dart';
 import 'credentials.dart';
 import 'errors.dart';
 import 'library_api.dart';
 import 'library_state.dart';
+import 'notifications.dart';
 
 /// Provider settings for the open library; re-read whenever repository content may have changed.
 final aiSettingsProvider = FutureProvider<AiSettings?>((ref) async {
@@ -32,6 +39,30 @@ class JobRunnerView {
   final String? error;
 }
 
+/// A reflection saw signs of a heavy day (§4.7): Today shows the Talk to someone card until the
+/// person closes it. Kept for this app session only; nothing about it is stored.
+final helpCardProvider = NotifierProvider<HelpCard, bool>(HelpCard.new);
+
+class HelpCard extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void show() => state = true;
+  void close() => state = false;
+}
+
+/// The strings the app would show right now, for work that runs without a widget context.
+L10n currentL10n(Ref ref) {
+  final chosen = ref.read(appearanceProvider).locale;
+  final Locale locale =
+      chosen ??
+      basicLocaleListResolution(
+        PlatformDispatcher.instance.locales,
+        supportedLocales,
+      );
+  return lookupL10n(locale);
+}
+
 final jobRunnerProvider = NotifierProvider<JobRunner, JobRunnerView>(
   JobRunner.new,
 );
@@ -39,28 +70,49 @@ final jobRunnerProvider = NotifierProvider<JobRunner, JobRunnerView>(
 /// Runs the AI job queue (transcribe → describe → ingest) while the app is in the foreground:
 /// after a capture, after a sync brought something in, when settings change, on resume and on a
 /// slow timer while jobs are still pending (retries with backoff live in the core queue).
+/// Reflections and lint are queued when due (§4.6): on open, on resume and every few minutes while
+/// the app stays open, so a 21:30 reflection happens even if the app was left open all evening.
 class JobRunner extends Notifier<JobRunnerView> {
   static const retryEvery = Duration(minutes: 1);
+  static const dueEvery = Duration(minutes: 10);
 
   Timer? _timer;
+  Timer? _due;
   Future<void>? _running;
   bool _again = false;
   bool _active = true;
 
   @override
   JobRunnerView build() {
-    ref.onDispose(() => _timer?.cancel());
+    ref.onDispose(() {
+      _timer?.cancel();
+      _due?.cancel();
+    });
     return const JobRunnerView();
   }
 
   void pause() {
     _active = false;
     _timer?.cancel();
+    _due?.cancel();
   }
 
-  void resume() {
+  /// Starts (or restarts after a pause): queues what is due, then runs the queue.
+  Future<void> resume() async {
     _active = true;
-    kick();
+    _due?.cancel();
+    _due = Timer.periodic(dueEvery, (_) => _scheduleDue());
+    await _scheduleDue();
+  }
+
+  Future<void> _scheduleDue() async {
+    try {
+      final lib = await ref.read(libraryProvider.future);
+      await lib?.scheduleDue();
+    } catch (e) {
+      debugPrint('scheduling reflections failed: ${humanError(e)}');
+    }
+    if (_active) await kick();
   }
 
   /// Asks for a run soon. Concurrent requests collapse into one follow-up run.
@@ -97,6 +149,7 @@ class JobRunner extends Notifier<JobRunnerView> {
       state = JobRunnerView(waitingFor: waiting);
       if (summary.jobs.isNotEmpty) {
         ref.read(revisionProvider.notifier).bump();
+        await _signals(lib);
       }
       if (summary.jobs.any((j) => j.state == JobStateDto.done)) {
         ref.read(syncControllerProvider.notifier).changed();
@@ -106,6 +159,28 @@ class JobRunner extends Notifier<JobRunnerView> {
       }
     } catch (e) {
       state = JobRunnerView(waitingFor: state.waitingFor, error: humanError(e));
+    }
+  }
+
+  /// Posts what the reflections left: neutral notifications and, if needed, the help card.
+  Future<void> _signals(LibraryApi lib) async {
+    final signals = await lib.takeReflectSignals();
+    if (signals.needsHelp) ref.read(helpCardProvider.notifier).show();
+    if (signals.notifications.isEmpty) return;
+    final l = currentL10n(ref);
+    final title = AppIdentity.name(Locale(l.localeName));
+    final notes = ref.read(systemNotificationsProvider);
+    for (final body in signals.notifications) {
+      try {
+        await notes.show(
+          title,
+          body,
+          channel: l.reflectChannel,
+          openLabel: l.open,
+        );
+      } catch (e) {
+        debugPrint('notification failed: ${humanError(e)}');
+      }
     }
   }
 }

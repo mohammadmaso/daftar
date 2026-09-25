@@ -48,7 +48,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _sync.syncNow();
       _sync.startPeriodic();
-      _jobs.kick();
+      _jobs.resume();
     });
   }
 
