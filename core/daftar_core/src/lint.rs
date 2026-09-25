@@ -378,13 +378,15 @@ pub struct LintReport {
 pub async fn run(
     lib: &Library,
     dev: &LocalDevice,
-    queue: &Queue,
+    checked: Vec<Finding>,
     rt: Option<&AiRuntime>,
     judge: &[String],
     now: &Zoned,
     commit_lock: &std::sync::Mutex<()>,
 ) -> std::result::Result<LintReport, OpError> {
-    let mut findings = deterministic(lib, queue, now)?;
+    // `checked` are the deterministic findings (`deterministic`), computed by the caller so no
+    // queue handle is held across the model call.
+    let mut findings = checked;
     let mut usage = Usage::default();
     let mut models = vec![];
     if let (Some(rt), false) = (rt, judge.is_empty()) {

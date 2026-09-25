@@ -234,11 +234,10 @@ class L10nFa extends L10n {
   String get voiceNote => 'یادداشت صوتی';
 
   @override
-  String get voicePending =>
-      'یادداشت صوتی · پس از تنظیم سرویس گفتار، متن می‌شود';
+  String get voicePending => 'یادداشت صوتی · در انتظار تبدیل به متن';
 
   @override
-  String get photoPending => 'عکس · پس از تنظیم سرویس تصویر، توصیف می‌شود';
+  String get photoPending => 'عکس · در انتظار توصیف';
 
   @override
   String get captureRecordLabel => 'برای ضبط نگه دارید، برای نوشتن بزنید';
@@ -293,10 +292,15 @@ class L10nFa extends L10n {
 
   @override
   String syncLocal(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
     String _temp0 = intl.Intl.pluralLogic(
       n,
       locale: localeName,
-      other: '$n تغییر برای همگام‌سازی',
+      other: '$nString تغییر برای همگام‌سازی',
       one: '۱ تغییر برای همگام‌سازی',
     );
     return '$_temp0';
@@ -343,4 +347,205 @@ class L10nFa extends L10n {
   @override
   String get obsidianNote =>
       'این پوشه یک مجموعه‌ی ساده‌ی مارک‌داون است؛ هر زمان خواستید در Obsidian بازش کنید.';
+
+  @override
+  String get providers => 'سرویس‌دهنده‌ها';
+
+  @override
+  String get providersFooter =>
+      'کلیدها فقط در حافظهٔ امن همین دستگاه می‌مانند؛ هر دستگاه یک بار آن‌ها را می‌خواهد.';
+
+  @override
+  String get addProvider => 'افزودن سرویس‌دهنده';
+
+  @override
+  String get editProvider => 'سرویس‌دهنده';
+
+  @override
+  String get providerKindOpenai => 'سازگار با OpenAI';
+
+  @override
+  String get providerKindAnthropic => 'Anthropic';
+
+  @override
+  String get providerKindGemini => 'Gemini';
+
+  @override
+  String get providerName => 'نام';
+
+  @override
+  String get providerNameHint => 'OpenRouter من';
+
+  @override
+  String get baseUrl => 'نشانی';
+
+  @override
+  String get apiKey => 'کلید API';
+
+  @override
+  String get apiKeyKept =>
+      'روی همین دستگاه ذخیره است؛ برای نگه‌داشتن خالی بگذارید';
+
+  @override
+  String get apiKeyMissing => 'کلیدی روی این دستگاه نیست';
+
+  @override
+  String get checkConnection => 'بررسی';
+
+  @override
+  String modelsFound(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'وصل شد · $nString مدل',
+      zero: 'وصل شد؛ فهرست مدل ندارد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get remove => 'حذف';
+
+  @override
+  String get nameRequired => 'برای سرویس‌دهنده نامی بگذارید.';
+
+  @override
+  String get models => 'مدل‌ها';
+
+  @override
+  String get modelsFooter =>
+      'نقش‌هایی که مدل خودشان را ندارند از مدل گفت‌وگو استفاده می‌کنند.';
+
+  @override
+  String get roleRouter => 'مسیریابی';
+
+  @override
+  String get roleIngest => 'بایگانی';
+
+  @override
+  String get roleChat => 'گفت‌وگو';
+
+  @override
+  String get roleVoice => 'گفت‌وگوی صوتی';
+
+  @override
+  String get roleVision => 'عکس‌ها';
+
+  @override
+  String get roleReflect => 'بازتاب';
+
+  @override
+  String get roleLint => 'نگهداری';
+
+  @override
+  String get roleStt => 'گفتار به متن';
+
+  @override
+  String get roleTts => 'متن به گفتار';
+
+  @override
+  String get roleEmbedding => 'بردارها (اختیاری)';
+
+  @override
+  String get roleNotSet => 'تنظیم نشده';
+
+  @override
+  String roleUses(String role) {
+    return 'از $role استفاده می‌کند';
+  }
+
+  @override
+  String get warnNoVision => 'این مدل احتمالاً نمی‌تواند تصویر بخواند.';
+
+  @override
+  String get warnNotStt => 'این به مدل گفتار به متن شبیه نیست.';
+
+  @override
+  String get warnNotTts => 'این به مدل متن به گفتار شبیه نیست.';
+
+  @override
+  String get warnNotEmbedding => 'این به مدل بردارسازی شبیه نیست.';
+
+  @override
+  String get warnNotConversational => 'این مدل نمی‌تواند گفت‌وگو کند.';
+
+  @override
+  String get provider => 'سرویس‌دهنده';
+
+  @override
+  String get model => 'مدل';
+
+  @override
+  String get modelHint => 'نام مدل';
+
+  @override
+  String get modelRequired => 'مدلی انتخاب یا تایپ کنید.';
+
+  @override
+  String get testRole => 'آزمایش';
+
+  @override
+  String get testing => 'در حال آزمایش…';
+
+  @override
+  String testWorks(String ms, String reply) {
+    return 'کار می‌کند · $ms میلی‌ثانیه · $reply';
+  }
+
+  @override
+  String get useChatModel => 'استفاده از مدل گفت‌وگو';
+
+  @override
+  String get addProviderFirst => 'اول یک سرویس‌دهنده اضافه کنید.';
+
+  @override
+  String filedTo(String vaults) {
+    return 'بایگانی شد در $vaults';
+  }
+
+  @override
+  String pagesUpdated(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString صفحه به‌روز شد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String claimsToReview(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString ادعا برای بازبینی',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get listSeparator => '، ';
+
+  @override
+  String filingWaits(String role) {
+    return 'بایگانی منتظر مدل $role است. در تنظیمات تنظیمش کنید.';
+  }
+
+  @override
+  String get retry => 'تلاش دوباره';
 }

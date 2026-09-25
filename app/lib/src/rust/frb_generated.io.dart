@@ -3,8 +3,13 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
+import 'api/ai.dart';
+import 'api/ask.dart';
+import 'api/audit.dart';
 import 'api/info.dart';
 import 'api/library.dart';
+import 'api/voice.dart';
+import 'api/wiki.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' as ffi;
@@ -23,6 +28,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   get rust_arc_decrement_strong_count_LibraryHandlePtr => wire
       ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandlePtr;
 
+  CrossPlatformFinalizerArg
+  get rust_arc_decrement_strong_count_VoiceHandlePtr => wire
+      ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandlePtr;
+
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw);
 
@@ -33,8 +42,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  VoiceHandle
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle(
+    dynamic raw,
+  );
+
+  @protected
   LibraryHandle
   dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+    dynamic raw,
+  );
+
+  @protected
+  VoiceHandle
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle(
     dynamic raw,
   );
 
@@ -45,7 +66,54 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  VoiceHandle
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle(
+    dynamic raw,
+  );
+
+  @protected
+  RustStreamSink<AskEvent> dco_decode_StreamSink_ask_event_Sse(dynamic raw);
+
+  @protected
+  RustStreamSink<VoiceEventDto> dco_decode_StreamSink_voice_event_dto_Sse(
+    dynamic raw,
+  );
+
+  @protected
   String dco_decode_String(dynamic raw);
+
+  @protected
+  AiProvider dco_decode_ai_provider(dynamic raw);
+
+  @protected
+  AiSettings dco_decode_ai_settings(dynamic raw);
+
+  @protected
+  AnswerCitation dco_decode_answer_citation(dynamic raw);
+
+  @protected
+  ApiKey dco_decode_api_key(dynamic raw);
+
+  @protected
+  AskAnswer dco_decode_ask_answer(dynamic raw);
+
+  @protected
+  AskEvent dco_decode_ask_event(dynamic raw);
+
+  @protected
+  AskEventKind dco_decode_ask_event_kind(dynamic raw);
+
+  @protected
+  AskImage dco_decode_ask_image(dynamic raw);
+
+  @protected
+  AskScopeDto dco_decode_ask_scope_dto(dynamic raw);
+
+  @protected
+  AskScopeKind dco_decode_ask_scope_kind(dynamic raw);
+
+  @protected
+  AskTurn dco_decode_ask_turn(dynamic raw);
 
   @protected
   Auth dco_decode_auth(dynamic raw);
@@ -57,22 +125,148 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool dco_decode_bool(dynamic raw);
 
   @protected
+  AiProvider dco_decode_box_autoadd_ai_provider(dynamic raw);
+
+  @protected
+  AskAnswer dco_decode_box_autoadd_ask_answer(dynamic raw);
+
+  @protected
+  AskImage dco_decode_box_autoadd_ask_image(dynamic raw);
+
+  @protected
+  AskScopeDto dco_decode_box_autoadd_ask_scope_dto(dynamic raw);
+
+  @protected
   Auth dco_decode_box_autoadd_auth(dynamic raw);
+
+  @protected
+  CapabilityWarning dco_decode_box_autoadd_capability_warning(dynamic raw);
+
+  @protected
+  ClaimInfo dco_decode_box_autoadd_claim_info(dynamic raw);
+
+  @protected
+  double dco_decode_box_autoadd_f_64(dynamic raw);
+
+  @protected
+  Filing dco_decode_box_autoadd_filing(dynamic raw);
+
+  @protected
+  ModelRole dco_decode_box_autoadd_model_role(dynamic raw);
+
+  @protected
+  VoiceOptions dco_decode_box_autoadd_voice_options(dynamic raw);
+
+  @protected
+  VoiceStateDto dco_decode_box_autoadd_voice_state_dto(dynamic raw);
+
+  @protected
+  CapabilityWarning dco_decode_capability_warning(dynamic raw);
 
   @protected
   Capture dco_decode_capture(dynamic raw);
 
   @protected
+  CardKind dco_decode_card_kind(dynamic raw);
+
+  @protected
+  ClaimInfo dco_decode_claim_info(dynamic raw);
+
+  @protected
   CoreInfo dco_decode_core_info(dynamic raw);
+
+  @protected
+  DiffLine dco_decode_diff_line(dynamic raw);
+
+  @protected
+  DiffLineKind dco_decode_diff_line_kind(dynamic raw);
+
+  @protected
+  double dco_decode_f_32(dynamic raw);
+
+  @protected
+  double dco_decode_f_64(dynamic raw);
+
+  @protected
+  Filing dco_decode_filing(dynamic raw);
+
+  @protected
+  FolderEntry dco_decode_folder_entry(dynamic raw);
+
+  @protected
+  GraphEdge dco_decode_graph_edge(dynamic raw);
+
+  @protected
+  GraphNode dco_decode_graph_node(dynamic raw);
+
+  @protected
+  HttpHeader dco_decode_http_header(dynamic raw);
+
+  @protected
+  int dco_decode_i_16(dynamic raw);
 
   @protected
   int dco_decode_i_32(dynamic raw);
 
   @protected
+  JobKindDto dco_decode_job_kind_dto(dynamic raw);
+
+  @protected
+  JobOutcome dco_decode_job_outcome(dynamic raw);
+
+  @protected
+  JobStateDto dco_decode_job_state_dto(dynamic raw);
+
+  @protected
   List<String> dco_decode_list_String(dynamic raw);
 
   @protected
+  List<AiProvider> dco_decode_list_ai_provider(dynamic raw);
+
+  @protected
+  List<AnswerCitation> dco_decode_list_answer_citation(dynamic raw);
+
+  @protected
+  List<ApiKey> dco_decode_list_api_key(dynamic raw);
+
+  @protected
+  List<AskTurn> dco_decode_list_ask_turn(dynamic raw);
+
+  @protected
   List<Capture> dco_decode_list_capture(dynamic raw);
+
+  @protected
+  List<DiffLine> dco_decode_list_diff_line(dynamic raw);
+
+  @protected
+  List<FolderEntry> dco_decode_list_folder_entry(dynamic raw);
+
+  @protected
+  List<GraphEdge> dco_decode_list_graph_edge(dynamic raw);
+
+  @protected
+  List<GraphNode> dco_decode_list_graph_node(dynamic raw);
+
+  @protected
+  List<HttpHeader> dco_decode_list_http_header(dynamic raw);
+
+  @protected
+  List<JobOutcome> dco_decode_list_job_outcome(dynamic raw);
+
+  @protected
+  List<Operation> dco_decode_list_operation(dynamic raw);
+
+  @protected
+  List<PageDiff> dco_decode_list_page_diff(dynamic raw);
+
+  @protected
+  List<PageSummary> dco_decode_list_page_summary(dynamic raw);
+
+  @protected
+  List<int> dco_decode_list_prim_i_16_loose(dynamic raw);
+
+  @protected
+  Int16List dco_decode_list_prim_i_16_strict(dynamic raw);
 
   @protected
   List<int> dco_decode_list_prim_u_8_loose(dynamic raw);
@@ -81,16 +275,106 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
+  List<ReviewCardDto> dco_decode_list_review_card_dto(dynamic raw);
+
+  @protected
+  List<RoleSetting> dco_decode_list_role_setting(dynamic raw);
+
+  @protected
+  List<RouteTarget> dco_decode_list_route_target(dynamic raw);
+
+  @protected
+  List<SearchHit> dco_decode_list_search_hit(dynamic raw);
+
+  @protected
   List<Vault> dco_decode_list_vault(dynamic raw);
 
   @protected
+  Listing dco_decode_listing(dynamic raw);
+
+  @protected
+  LocalGraph dco_decode_local_graph(dynamic raw);
+
+  @protected
+  ModelRole dco_decode_model_role(dynamic raw);
+
+  @protected
+  OpKind dco_decode_op_kind(dynamic raw);
+
+  @protected
+  Operation dco_decode_operation(dynamic raw);
+
+  @protected
   String? dco_decode_opt_String(dynamic raw);
+
+  @protected
+  AskAnswer? dco_decode_opt_box_autoadd_ask_answer(dynamic raw);
+
+  @protected
+  AskImage? dco_decode_opt_box_autoadd_ask_image(dynamic raw);
+
+  @protected
+  CapabilityWarning? dco_decode_opt_box_autoadd_capability_warning(dynamic raw);
+
+  @protected
+  ClaimInfo? dco_decode_opt_box_autoadd_claim_info(dynamic raw);
+
+  @protected
+  double? dco_decode_opt_box_autoadd_f_64(dynamic raw);
+
+  @protected
+  Filing? dco_decode_opt_box_autoadd_filing(dynamic raw);
+
+  @protected
+  ModelRole? dco_decode_opt_box_autoadd_model_role(dynamic raw);
+
+  @protected
+  VoiceStateDto? dco_decode_opt_box_autoadd_voice_state_dto(dynamic raw);
+
+  @protected
+  Uint8List? dco_decode_opt_list_prim_u_8_strict(dynamic raw);
+
+  @protected
+  PageChange dco_decode_page_change(dynamic raw);
+
+  @protected
+  PageDiff dco_decode_page_diff(dynamic raw);
+
+  @protected
+  PageSummary dco_decode_page_summary(dynamic raw);
+
+  @protected
+  ProbeOutcome dco_decode_probe_outcome(dynamic raw);
+
+  @protected
+  ProviderKindDto dco_decode_provider_kind_dto(dynamic raw);
 
   @protected
   RawKind dco_decode_raw_kind(dynamic raw);
 
   @protected
   RepoStatus dco_decode_repo_status(dynamic raw);
+
+  @protected
+  ReviewAction dco_decode_review_action(dynamic raw);
+
+  @protected
+  ReviewCardDto dco_decode_review_card_dto(dynamic raw);
+
+  @protected
+  RoleSetting dco_decode_role_setting(dynamic raw);
+
+  @protected
+  RouteTarget dco_decode_route_target(dynamic raw);
+
+  @protected
+  RunSummary dco_decode_run_summary(dynamic raw);
+
+  @protected
+  SaveResult dco_decode_save_result(dynamic raw);
+
+  @protected
+  SearchHit dco_decode_search_hit(dynamic raw);
 
   @protected
   SshKeyPair dco_decode_ssh_key_pair(dynamic raw);
@@ -108,7 +392,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int dco_decode_u_32(dynamic raw);
 
   @protected
+  BigInt dco_decode_u_64(dynamic raw);
+
+  @protected
   int dco_decode_u_8(dynamic raw);
+
+  @protected
+  UndoResult dco_decode_undo_result(dynamic raw);
 
   @protected
   void dco_decode_unit(dynamic raw);
@@ -120,11 +410,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Vault dco_decode_vault(dynamic raw);
 
   @protected
+  VoiceEventDto dco_decode_voice_event_dto(dynamic raw);
+
+  @protected
+  VoiceEventKind dco_decode_voice_event_kind(dynamic raw);
+
+  @protected
+  VoiceOptions dco_decode_voice_options(dynamic raw);
+
+  @protected
+  VoiceStateDto dco_decode_voice_state_dto(dynamic raw);
+
+  @protected
+  WikiPage dco_decode_wiki_page(dynamic raw);
+
+  @protected
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
 
   @protected
   LibraryHandle
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  VoiceHandle
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle(
     SseDeserializer deserializer,
   );
 
@@ -135,13 +446,68 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  VoiceHandle
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LibraryHandle
   sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
     SseDeserializer deserializer,
   );
 
   @protected
+  VoiceHandle
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RustStreamSink<AskEvent> sse_decode_StreamSink_ask_event_Sse(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RustStreamSink<VoiceEventDto> sse_decode_StreamSink_voice_event_dto_Sse(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer);
+
+  @protected
+  AiProvider sse_decode_ai_provider(SseDeserializer deserializer);
+
+  @protected
+  AiSettings sse_decode_ai_settings(SseDeserializer deserializer);
+
+  @protected
+  AnswerCitation sse_decode_answer_citation(SseDeserializer deserializer);
+
+  @protected
+  ApiKey sse_decode_api_key(SseDeserializer deserializer);
+
+  @protected
+  AskAnswer sse_decode_ask_answer(SseDeserializer deserializer);
+
+  @protected
+  AskEvent sse_decode_ask_event(SseDeserializer deserializer);
+
+  @protected
+  AskEventKind sse_decode_ask_event_kind(SseDeserializer deserializer);
+
+  @protected
+  AskImage sse_decode_ask_image(SseDeserializer deserializer);
+
+  @protected
+  AskScopeDto sse_decode_ask_scope_dto(SseDeserializer deserializer);
+
+  @protected
+  AskScopeKind sse_decode_ask_scope_kind(SseDeserializer deserializer);
+
+  @protected
+  AskTurn sse_decode_ask_turn(SseDeserializer deserializer);
 
   @protected
   Auth sse_decode_auth(SseDeserializer deserializer);
@@ -153,22 +519,158 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
+  AiProvider sse_decode_box_autoadd_ai_provider(SseDeserializer deserializer);
+
+  @protected
+  AskAnswer sse_decode_box_autoadd_ask_answer(SseDeserializer deserializer);
+
+  @protected
+  AskImage sse_decode_box_autoadd_ask_image(SseDeserializer deserializer);
+
+  @protected
+  AskScopeDto sse_decode_box_autoadd_ask_scope_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   Auth sse_decode_box_autoadd_auth(SseDeserializer deserializer);
+
+  @protected
+  CapabilityWarning sse_decode_box_autoadd_capability_warning(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ClaimInfo sse_decode_box_autoadd_claim_info(SseDeserializer deserializer);
+
+  @protected
+  double sse_decode_box_autoadd_f_64(SseDeserializer deserializer);
+
+  @protected
+  Filing sse_decode_box_autoadd_filing(SseDeserializer deserializer);
+
+  @protected
+  ModelRole sse_decode_box_autoadd_model_role(SseDeserializer deserializer);
+
+  @protected
+  VoiceOptions sse_decode_box_autoadd_voice_options(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  VoiceStateDto sse_decode_box_autoadd_voice_state_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  CapabilityWarning sse_decode_capability_warning(SseDeserializer deserializer);
 
   @protected
   Capture sse_decode_capture(SseDeserializer deserializer);
 
   @protected
+  CardKind sse_decode_card_kind(SseDeserializer deserializer);
+
+  @protected
+  ClaimInfo sse_decode_claim_info(SseDeserializer deserializer);
+
+  @protected
   CoreInfo sse_decode_core_info(SseDeserializer deserializer);
+
+  @protected
+  DiffLine sse_decode_diff_line(SseDeserializer deserializer);
+
+  @protected
+  DiffLineKind sse_decode_diff_line_kind(SseDeserializer deserializer);
+
+  @protected
+  double sse_decode_f_32(SseDeserializer deserializer);
+
+  @protected
+  double sse_decode_f_64(SseDeserializer deserializer);
+
+  @protected
+  Filing sse_decode_filing(SseDeserializer deserializer);
+
+  @protected
+  FolderEntry sse_decode_folder_entry(SseDeserializer deserializer);
+
+  @protected
+  GraphEdge sse_decode_graph_edge(SseDeserializer deserializer);
+
+  @protected
+  GraphNode sse_decode_graph_node(SseDeserializer deserializer);
+
+  @protected
+  HttpHeader sse_decode_http_header(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_i_16(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
 
   @protected
+  JobKindDto sse_decode_job_kind_dto(SseDeserializer deserializer);
+
+  @protected
+  JobOutcome sse_decode_job_outcome(SseDeserializer deserializer);
+
+  @protected
+  JobStateDto sse_decode_job_state_dto(SseDeserializer deserializer);
+
+  @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer);
 
   @protected
+  List<AiProvider> sse_decode_list_ai_provider(SseDeserializer deserializer);
+
+  @protected
+  List<AnswerCitation> sse_decode_list_answer_citation(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<ApiKey> sse_decode_list_api_key(SseDeserializer deserializer);
+
+  @protected
+  List<AskTurn> sse_decode_list_ask_turn(SseDeserializer deserializer);
+
+  @protected
   List<Capture> sse_decode_list_capture(SseDeserializer deserializer);
+
+  @protected
+  List<DiffLine> sse_decode_list_diff_line(SseDeserializer deserializer);
+
+  @protected
+  List<FolderEntry> sse_decode_list_folder_entry(SseDeserializer deserializer);
+
+  @protected
+  List<GraphEdge> sse_decode_list_graph_edge(SseDeserializer deserializer);
+
+  @protected
+  List<GraphNode> sse_decode_list_graph_node(SseDeserializer deserializer);
+
+  @protected
+  List<HttpHeader> sse_decode_list_http_header(SseDeserializer deserializer);
+
+  @protected
+  List<JobOutcome> sse_decode_list_job_outcome(SseDeserializer deserializer);
+
+  @protected
+  List<Operation> sse_decode_list_operation(SseDeserializer deserializer);
+
+  @protected
+  List<PageDiff> sse_decode_list_page_diff(SseDeserializer deserializer);
+
+  @protected
+  List<PageSummary> sse_decode_list_page_summary(SseDeserializer deserializer);
+
+  @protected
+  List<int> sse_decode_list_prim_i_16_loose(SseDeserializer deserializer);
+
+  @protected
+  Int16List sse_decode_list_prim_i_16_strict(SseDeserializer deserializer);
 
   @protected
   List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer);
@@ -177,16 +679,118 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
+  List<ReviewCardDto> sse_decode_list_review_card_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<RoleSetting> sse_decode_list_role_setting(SseDeserializer deserializer);
+
+  @protected
+  List<RouteTarget> sse_decode_list_route_target(SseDeserializer deserializer);
+
+  @protected
+  List<SearchHit> sse_decode_list_search_hit(SseDeserializer deserializer);
+
+  @protected
   List<Vault> sse_decode_list_vault(SseDeserializer deserializer);
 
   @protected
+  Listing sse_decode_listing(SseDeserializer deserializer);
+
+  @protected
+  LocalGraph sse_decode_local_graph(SseDeserializer deserializer);
+
+  @protected
+  ModelRole sse_decode_model_role(SseDeserializer deserializer);
+
+  @protected
+  OpKind sse_decode_op_kind(SseDeserializer deserializer);
+
+  @protected
+  Operation sse_decode_operation(SseDeserializer deserializer);
+
+  @protected
   String? sse_decode_opt_String(SseDeserializer deserializer);
+
+  @protected
+  AskAnswer? sse_decode_opt_box_autoadd_ask_answer(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  AskImage? sse_decode_opt_box_autoadd_ask_image(SseDeserializer deserializer);
+
+  @protected
+  CapabilityWarning? sse_decode_opt_box_autoadd_capability_warning(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  ClaimInfo? sse_decode_opt_box_autoadd_claim_info(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  double? sse_decode_opt_box_autoadd_f_64(SseDeserializer deserializer);
+
+  @protected
+  Filing? sse_decode_opt_box_autoadd_filing(SseDeserializer deserializer);
+
+  @protected
+  ModelRole? sse_decode_opt_box_autoadd_model_role(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  VoiceStateDto? sse_decode_opt_box_autoadd_voice_state_dto(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  Uint8List? sse_decode_opt_list_prim_u_8_strict(SseDeserializer deserializer);
+
+  @protected
+  PageChange sse_decode_page_change(SseDeserializer deserializer);
+
+  @protected
+  PageDiff sse_decode_page_diff(SseDeserializer deserializer);
+
+  @protected
+  PageSummary sse_decode_page_summary(SseDeserializer deserializer);
+
+  @protected
+  ProbeOutcome sse_decode_probe_outcome(SseDeserializer deserializer);
+
+  @protected
+  ProviderKindDto sse_decode_provider_kind_dto(SseDeserializer deserializer);
 
   @protected
   RawKind sse_decode_raw_kind(SseDeserializer deserializer);
 
   @protected
   RepoStatus sse_decode_repo_status(SseDeserializer deserializer);
+
+  @protected
+  ReviewAction sse_decode_review_action(SseDeserializer deserializer);
+
+  @protected
+  ReviewCardDto sse_decode_review_card_dto(SseDeserializer deserializer);
+
+  @protected
+  RoleSetting sse_decode_role_setting(SseDeserializer deserializer);
+
+  @protected
+  RouteTarget sse_decode_route_target(SseDeserializer deserializer);
+
+  @protected
+  RunSummary sse_decode_run_summary(SseDeserializer deserializer);
+
+  @protected
+  SaveResult sse_decode_save_result(SseDeserializer deserializer);
+
+  @protected
+  SearchHit sse_decode_search_hit(SseDeserializer deserializer);
 
   @protected
   SshKeyPair sse_decode_ssh_key_pair(SseDeserializer deserializer);
@@ -204,7 +808,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int sse_decode_u_32(SseDeserializer deserializer);
 
   @protected
+  BigInt sse_decode_u_64(SseDeserializer deserializer);
+
+  @protected
   int sse_decode_u_8(SseDeserializer deserializer);
+
+  @protected
+  UndoResult sse_decode_undo_result(SseDeserializer deserializer);
 
   @protected
   void sse_decode_unit(SseDeserializer deserializer);
@@ -214,6 +824,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Vault sse_decode_vault(SseDeserializer deserializer);
+
+  @protected
+  VoiceEventDto sse_decode_voice_event_dto(SseDeserializer deserializer);
+
+  @protected
+  VoiceEventKind sse_decode_voice_event_kind(SseDeserializer deserializer);
+
+  @protected
+  VoiceOptions sse_decode_voice_options(SseDeserializer deserializer);
+
+  @protected
+  VoiceStateDto sse_decode_voice_state_dto(SseDeserializer deserializer);
+
+  @protected
+  WikiPage sse_decode_wiki_page(SseDeserializer deserializer);
 
   @protected
   void sse_encode_AnyhowException(
@@ -230,8 +855,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle(
+    VoiceHandle self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
   sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
     LibraryHandle self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle(
+    VoiceHandle self,
     SseSerializer serializer,
   );
 
@@ -243,7 +882,62 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle(
+    VoiceHandle self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_StreamSink_ask_event_Sse(
+    RustStreamSink<AskEvent> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_StreamSink_voice_event_dto_Sse(
+    RustStreamSink<VoiceEventDto> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_String(String self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_ai_provider(AiProvider self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_ai_settings(AiSettings self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_answer_citation(
+    AnswerCitation self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_api_key(ApiKey self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_ask_answer(AskAnswer self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_ask_event(AskEvent self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_ask_event_kind(AskEventKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_ask_image(AskImage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_ask_scope_dto(AskScopeDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_ask_scope_kind(AskScopeKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_ask_turn(AskTurn self, SseSerializer serializer);
 
   @protected
   void sse_encode_auth(Auth self, SseSerializer serializer);
@@ -255,22 +949,211 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_ai_provider(
+    AiProvider self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_ask_answer(
+    AskAnswer self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_ask_image(
+    AskImage self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_ask_scope_dto(
+    AskScopeDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_auth(Auth self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_capability_warning(
+    CapabilityWarning self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_claim_info(
+    ClaimInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_f_64(double self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_filing(Filing self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_model_role(
+    ModelRole self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_voice_options(
+    VoiceOptions self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_voice_state_dto(
+    VoiceStateDto self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_capability_warning(
+    CapabilityWarning self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_capture(Capture self, SseSerializer serializer);
 
   @protected
+  void sse_encode_card_kind(CardKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_claim_info(ClaimInfo self, SseSerializer serializer);
+
+  @protected
   void sse_encode_core_info(CoreInfo self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_diff_line(DiffLine self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_diff_line_kind(DiffLineKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_f_32(double self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_f_64(double self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_filing(Filing self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_folder_entry(FolderEntry self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_graph_edge(GraphEdge self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_graph_node(GraphNode self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_http_header(HttpHeader self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_i_16(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
 
   @protected
+  void sse_encode_job_kind_dto(JobKindDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_job_outcome(JobOutcome self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_job_state_dto(JobStateDto self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_ai_provider(
+    List<AiProvider> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_answer_citation(
+    List<AnswerCitation> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_api_key(List<ApiKey> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_ask_turn(List<AskTurn> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_capture(List<Capture> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_diff_line(List<DiffLine> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_folder_entry(
+    List<FolderEntry> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_graph_edge(
+    List<GraphEdge> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_graph_node(
+    List<GraphNode> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_http_header(
+    List<HttpHeader> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_job_outcome(
+    List<JobOutcome> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_operation(
+    List<Operation> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_page_diff(List<PageDiff> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_page_summary(
+    List<PageSummary> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_prim_i_16_loose(
+    List<int> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_prim_i_16_strict(
+    Int16List self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_list_prim_u_8_loose(List<int> self, SseSerializer serializer);
@@ -282,16 +1165,145 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_review_card_dto(
+    List<ReviewCardDto> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_role_setting(
+    List<RoleSetting> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_route_target(
+    List<RouteTarget> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_search_hit(
+    List<SearchHit> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_vault(List<Vault> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_listing(Listing self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_local_graph(LocalGraph self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_model_role(ModelRole self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_op_kind(OpKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_operation(Operation self, SseSerializer serializer);
+
+  @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_ask_answer(
+    AskAnswer? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_ask_image(
+    AskImage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_capability_warning(
+    CapabilityWarning? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_claim_info(
+    ClaimInfo? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_f_64(double? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_filing(
+    Filing? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_model_role(
+    ModelRole? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_voice_state_dto(
+    VoiceStateDto? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_list_prim_u_8_strict(
+    Uint8List? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_page_change(PageChange self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_page_diff(PageDiff self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_page_summary(PageSummary self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_probe_outcome(ProbeOutcome self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_provider_kind_dto(
+    ProviderKindDto self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_raw_kind(RawKind self, SseSerializer serializer);
 
   @protected
   void sse_encode_repo_status(RepoStatus self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_review_action(ReviewAction self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_review_card_dto(ReviewCardDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_role_setting(RoleSetting self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_route_target(RouteTarget self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_run_summary(RunSummary self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_save_result(SaveResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_search_hit(SearchHit self, SseSerializer serializer);
 
   @protected
   void sse_encode_ssh_key_pair(SshKeyPair self, SseSerializer serializer);
@@ -309,7 +1321,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_u_32(int self, SseSerializer serializer);
 
   @protected
+  void sse_encode_u_64(BigInt self, SseSerializer serializer);
+
+  @protected
   void sse_encode_u_8(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_undo_result(UndoResult self, SseSerializer serializer);
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
@@ -319,6 +1337,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_vault(Vault self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_voice_event_dto(VoiceEventDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_voice_event_kind(
+    VoiceEventKind self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_voice_options(VoiceOptions self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_voice_state_dto(VoiceStateDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_wiki_page(WikiPage self, SseSerializer serializer);
 }
 
 // Section: wire_class
@@ -367,5 +1403,39 @@ class RustLibWire implements BaseWire {
       );
   late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle =
       _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandlePtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  void
+  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle(
+      ptr,
+    );
+  }
+
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandlePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+        'frbgen_daftar_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle',
+      );
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle =
+      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandlePtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  void
+  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle(
+      ptr,
+    );
+  }
+
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandlePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+        'frbgen_daftar_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle',
+      );
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandle =
+      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoiceHandlePtr
           .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 }

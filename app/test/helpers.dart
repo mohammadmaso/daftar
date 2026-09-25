@@ -2,6 +2,7 @@ import 'package:daftar/app/app.dart';
 import 'package:daftar/app/appearance.dart';
 import 'package:daftar/app/core.dart';
 import 'package:daftar/core/credentials.dart';
+import 'package:daftar/core/job_runner.dart';
 import 'package:daftar/core/library_state.dart';
 import 'package:daftar/core/recorder.dart';
 import 'package:flutter/widgets.dart';
@@ -32,6 +33,8 @@ Future<ProviderContainer> pumpApp(
   Brightness platformBrightness = Brightness.light,
   FakeSetup? setup,
   FakeRecorder? recorder,
+  FakeProviderApi? providerApi,
+  MemoryCredentialStore? credentials,
   String? location,
 }) async {
   SharedPreferences.setMockInitialValues(prefs);
@@ -48,8 +51,13 @@ Future<ProviderContainer> pumpApp(
       sharedPreferencesProvider.overrideWithValue(sp),
       coreInfoProvider.overrideWithValue(fakeCoreInfo),
       libraryRootProvider.overrideWith((ref) async => '/tmp/daftar-test'),
-      setupApiProvider.overrideWithValue(setup ?? FakeSetup(library: FakeLibrary())),
-      credentialStoreProvider.overrideWithValue(MemoryCredentialStore()),
+      setupApiProvider.overrideWithValue(
+        setup ?? FakeSetup(library: FakeLibrary()),
+      ),
+      credentialStoreProvider.overrideWithValue(
+        credentials ?? MemoryCredentialStore(),
+      ),
+      providerApiProvider.overrideWithValue(providerApi ?? FakeProviderApi()),
       voiceRecorderProvider.overrideWithValue(recorder ?? FakeRecorder()),
       clockProvider.overrideWithValue(() => fixedNow),
     ],
@@ -66,5 +74,27 @@ Future<ProviderContainer> pumpApp(
   return container;
 }
 
-Map<String, Object> prefsFor({required String language, required String theme}) =>
-    {'appearance.language': language, 'appearance.theme': theme};
+Map<String, Object> prefsFor({
+  required String language,
+  required String theme,
+}) => {'appearance.language': language, 'appearance.theme': theme};
+
+/// Scrolls the first scrollable until [finder] is built and visible, like a user would.
+Future<void> scrollTo(WidgetTester tester, Finder finder) async {
+  await tester.scrollUntilVisible(
+    finder,
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
+}
+
+/// Scrolls back up until [finder] is built and visible.
+Future<void> scrollUp(WidgetTester tester, Finder finder) async {
+  await tester.scrollUntilVisible(
+    finder,
+    -200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
+}

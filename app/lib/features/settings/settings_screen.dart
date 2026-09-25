@@ -15,6 +15,7 @@ import '../../design/design.dart';
 import '../../l10n/app_localizations.dart';
 import '../capture/today_screen.dart' show SyncBadge;
 import '../onboarding/onboarding_screen.dart';
+import 'ai_settings.dart';
 
 final repoStatusProvider = FutureProvider<RepoStatus?>((ref) async {
   ref.watch(revisionProvider);
@@ -45,6 +46,8 @@ class SettingsScreen extends ConsumerWidget {
       backLabel: l.back,
       trailing: Monogram(name: AppIdentity.name(locale)),
       children: [
+        // §8.6 order: providers, models, repository, appearance, about.
+        const AiSettingsSections(),
         const _RepositorySection(),
         DSection(
           title: l.appearance,

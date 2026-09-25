@@ -233,12 +233,10 @@ class L10nEn extends L10n {
   String get voiceNote => 'Voice note';
 
   @override
-  String get voicePending =>
-      'Voice note · transcribed when a speech provider is set up';
+  String get voicePending => 'Voice note · waiting to be transcribed';
 
   @override
-  String get photoPending =>
-      'Photo · described when a vision provider is set up';
+  String get photoPending => 'Photo · waiting to be described';
 
   @override
   String get captureRecordLabel => 'Hold to record, tap to type';
@@ -293,10 +291,15 @@ class L10nEn extends L10n {
 
   @override
   String syncLocal(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
     String _temp0 = intl.Intl.pluralLogic(
       n,
       locale: localeName,
-      other: '$n changes to sync',
+      other: '$nString changes to sync',
       one: '1 change to sync',
     );
     return '$_temp0';
@@ -343,4 +346,207 @@ class L10nEn extends L10n {
   @override
   String get obsidianNote =>
       'This folder is a plain Markdown vault; open it in Obsidian any time.';
+
+  @override
+  String get providers => 'Providers';
+
+  @override
+  String get providersFooter =>
+      'Keys stay in this device\'s secure storage; each device asks for them once.';
+
+  @override
+  String get addProvider => 'Add provider';
+
+  @override
+  String get editProvider => 'Provider';
+
+  @override
+  String get providerKindOpenai => 'OpenAI-compatible';
+
+  @override
+  String get providerKindAnthropic => 'Anthropic';
+
+  @override
+  String get providerKindGemini => 'Gemini';
+
+  @override
+  String get providerName => 'Name';
+
+  @override
+  String get providerNameHint => 'My OpenRouter';
+
+  @override
+  String get baseUrl => 'Address';
+
+  @override
+  String get apiKey => 'API key';
+
+  @override
+  String get apiKeyKept => 'Saved on this device; leave empty to keep it';
+
+  @override
+  String get apiKeyMissing => 'No key on this device';
+
+  @override
+  String get checkConnection => 'Check';
+
+  @override
+  String modelsFound(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Connected · $nString models',
+      one: 'Connected · 1 model',
+      zero: 'Connected; no model list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get nameRequired => 'Give the provider a name.';
+
+  @override
+  String get models => 'Models';
+
+  @override
+  String get modelsFooter =>
+      'Roles without a model of their own use the Chat model.';
+
+  @override
+  String get roleRouter => 'Routing';
+
+  @override
+  String get roleIngest => 'Filing';
+
+  @override
+  String get roleChat => 'Chat';
+
+  @override
+  String get roleVoice => 'Voice conversation';
+
+  @override
+  String get roleVision => 'Photos';
+
+  @override
+  String get roleReflect => 'Reflection';
+
+  @override
+  String get roleLint => 'Upkeep';
+
+  @override
+  String get roleStt => 'Speech to text';
+
+  @override
+  String get roleTts => 'Text to speech';
+
+  @override
+  String get roleEmbedding => 'Embeddings (optional)';
+
+  @override
+  String get roleNotSet => 'Not set';
+
+  @override
+  String roleUses(String role) {
+    return 'Uses $role';
+  }
+
+  @override
+  String get warnNoVision => 'This model probably can\'t read images.';
+
+  @override
+  String get warnNotStt => 'This doesn\'t look like a speech-to-text model.';
+
+  @override
+  String get warnNotTts => 'This doesn\'t look like a text-to-speech model.';
+
+  @override
+  String get warnNotEmbedding => 'This doesn\'t look like an embedding model.';
+
+  @override
+  String get warnNotConversational => 'This model can\'t hold a conversation.';
+
+  @override
+  String get provider => 'Provider';
+
+  @override
+  String get model => 'Model';
+
+  @override
+  String get modelHint => 'Model name';
+
+  @override
+  String get modelRequired => 'Choose or type a model.';
+
+  @override
+  String get testRole => 'Test';
+
+  @override
+  String get testing => 'Testing…';
+
+  @override
+  String testWorks(String ms, String reply) {
+    return 'Works · $ms ms · $reply';
+  }
+
+  @override
+  String get useChatModel => 'Use the Chat model';
+
+  @override
+  String get addProviderFirst => 'Add a provider first.';
+
+  @override
+  String filedTo(String vaults) {
+    return 'Filed to $vaults';
+  }
+
+  @override
+  String pagesUpdated(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString pages updated',
+      one: '1 page updated',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String claimsToReview(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString claims to review',
+      one: '1 claim to review',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get listSeparator => ', ';
+
+  @override
+  String filingWaits(String role) {
+    return 'Filing waits for a $role model. Set it up in Settings.';
+  }
+
+  @override
+  String get retry => 'Retry';
 }

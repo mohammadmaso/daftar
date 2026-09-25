@@ -95,8 +95,8 @@
   "stageFiled": "Filed",
   "stageExcluded": "Excluded",
   "voiceNote": "Voice note",
-  "voicePending": "Voice note · transcribed when a speech provider is set up",
-  "photoPending": "Photo · described when a vision provider is set up",
+  "voicePending": "Voice note · waiting to be transcribed",
+  "photoPending": "Photo · waiting to be described",
   "captureRecordLabel": "Hold to record, tap to type",
   "captureCamera": "Take a photo",
   "pinVault": "Choose where the next capture goes",
@@ -124,7 +124,8 @@
   "@syncLocal": {
     "placeholders": {
       "n": {
-        "type": "int"
+        "type": "int",
+        "format": "decimalPattern"
       }
     }
   },
@@ -147,5 +148,111 @@
       }
     }
   },
-  "obsidianNote": "This folder is a plain Markdown vault; open it in Obsidian any time."
+  "obsidianNote": "This folder is a plain Markdown vault; open it in Obsidian any time.",
+  "providers": "Providers",
+  "providersFooter": "Keys stay in this device's secure storage; each device asks for them once.",
+  "addProvider": "Add provider",
+  "editProvider": "Provider",
+  "providerKindOpenai": "OpenAI-compatible",
+  "providerKindAnthropic": "Anthropic",
+  "providerKindGemini": "Gemini",
+  "providerName": "Name",
+  "providerNameHint": "My OpenRouter",
+  "baseUrl": "Address",
+  "apiKey": "API key",
+  "apiKeyKept": "Saved on this device; leave empty to keep it",
+  "apiKeyMissing": "No key on this device",
+  "checkConnection": "Check",
+  "modelsFound": "{n, plural, =0{Connected; no model list} =1{Connected · 1 model} other{Connected · {n} models}}",
+  "@modelsFound": {
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "remove": "Remove",
+  "nameRequired": "Give the provider a name.",
+  "models": "Models",
+  "modelsFooter": "Roles without a model of their own use the Chat model.",
+  "roleRouter": "Routing",
+  "roleIngest": "Filing",
+  "roleChat": "Chat",
+  "roleVoice": "Voice conversation",
+  "roleVision": "Photos",
+  "roleReflect": "Reflection",
+  "roleLint": "Upkeep",
+  "roleStt": "Speech to text",
+  "roleTts": "Text to speech",
+  "roleEmbedding": "Embeddings (optional)",
+  "roleNotSet": "Not set",
+  "roleUses": "Uses {role}",
+  "@roleUses": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "warnNoVision": "This model probably can't read images.",
+  "warnNotStt": "This doesn't look like a speech-to-text model.",
+  "warnNotTts": "This doesn't look like a text-to-speech model.",
+  "warnNotEmbedding": "This doesn't look like an embedding model.",
+  "warnNotConversational": "This model can't hold a conversation.",
+  "provider": "Provider",
+  "model": "Model",
+  "modelHint": "Model name",
+  "modelRequired": "Choose or type a model.",
+  "testRole": "Test",
+  "testing": "Testing…",
+  "testWorks": "Works · {ms} ms · {reply}",
+  "@testWorks": {
+    "placeholders": {
+      "ms": {
+        "type": "String"
+      },
+      "reply": {
+        "type": "String"
+      }
+    }
+  },
+  "useChatModel": "Use the Chat model",
+  "addProviderFirst": "Add a provider first.",
+  "filedTo": "Filed to {vaults}",
+  "@filedTo": {
+    "placeholders": {
+      "vaults": {
+        "type": "String"
+      }
+    }
+  },
+  "pagesUpdated": "{n, plural, =1{1 page updated} other{{n} pages updated}}",
+  "@pagesUpdated": {
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "claimsToReview": "{n, plural, =1{1 claim to review} other{{n} claims to review}}",
+  "@claimsToReview": {
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "listSeparator": ", ",
+  "filingWaits": "Filing waits for a {role} model. Set it up in Settings.",
+  "@filingWaits": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "retry": "Retry"
 }

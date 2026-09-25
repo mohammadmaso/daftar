@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/identity.dart';
+import '../../core/job_runner.dart';
 import '../../core/library_state.dart';
 import '../../design/design.dart';
 import '../../l10n/app_localizations.dart';
@@ -11,7 +12,8 @@ import '../../l10n/app_localizations.dart';
 /// Wide screens get a quiet navigation rail; phones get the destination full-screen.
 const double kWideLayout = 900;
 
-/// Owns app-lifetime behaviour for an open library: sync on foreground and periodically (§5.2).
+/// Owns app-lifetime behaviour for an open library: sync on foreground and periodically (§5.2),
+/// and the AI job runner while the app is in the foreground.
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key, required this.location, required this.child});
   final String location;
@@ -24,27 +26,35 @@ class HomeShell extends ConsumerStatefulWidget {
 class _HomeShellState extends ConsumerState<HomeShell> {
   late final AppLifecycleListener _life;
   late final SyncController _sync;
+  late final JobRunner _jobs;
 
   @override
   void initState() {
     super.initState();
     _sync = ref.read(syncControllerProvider.notifier);
+    _jobs = ref.read(jobRunnerProvider.notifier);
     _life = AppLifecycleListener(
       onResume: () {
         _sync.syncNow();
         _sync.startPeriodic();
+        _jobs.resume();
       },
-      onPause: () => _sync.stopPeriodic(),
+      onPause: () {
+        _sync.stopPeriodic();
+        _jobs.pause();
+      },
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _sync.syncNow();
       _sync.startPeriodic();
+      _jobs.kick();
     });
   }
 
   @override
   void dispose() {
     _sync.stopPeriodic();
+    _jobs.pause();
     _life.dispose();
     super.dispose();
   }

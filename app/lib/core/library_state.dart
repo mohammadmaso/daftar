@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'credentials.dart';
 import 'errors.dart';
+import 'job_runner.dart';
 import 'library_api.dart';
 
 /// Wall clock; overridden in tests for deterministic goldens.
@@ -193,6 +194,10 @@ class SyncController extends Notifier<SyncView> {
       );
       if (r.pulled > 0 || r.changedPaths.isNotEmpty) {
         ref.read(revisionProvider.notifier).bump();
+      }
+      // Pulled captures from other devices, or AI ops dropped for replay (§5.4), need filing.
+      if (r.pulled > 0 || r.replays > 0) {
+        unawaited(ref.read(jobRunnerProvider.notifier).kick());
       }
     } catch (e) {
       state = SyncView(

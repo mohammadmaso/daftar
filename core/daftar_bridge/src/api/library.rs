@@ -59,6 +59,16 @@ pub enum Stage {
     Excluded,
 }
 
+/// What filing did for a capture: "Filed to Life · Health — 4 pages updated, 1 claim to review".
+pub struct Filing {
+    pub op_id: String,
+    pub vaults: Vec<String>,
+    pub pages_created: u32,
+    pub pages_updated: u32,
+    pub claims_to_review: u32,
+    pub to_review: u32,
+}
+
 pub struct Capture {
     pub id: String,
     pub kind: RawKind,
@@ -70,6 +80,7 @@ pub struct Capture {
     pub images: Vec<String>,
     pub stage: Stage,
     pub problem: Option<String>,
+    pub filing: Option<Filing>,
 }
 
 pub enum SyncState {
@@ -191,6 +202,16 @@ pub struct LibraryHandle {
 }
 
 impl LibraryHandle {
+    #[frb(ignore)]
+    pub(crate) fn session(&self) -> &Session {
+        &self.session
+    }
+
+    #[frb(ignore)]
+    pub(crate) fn session_arc(&self) -> Arc<Session> {
+        self.session.clone()
+    }
+
     pub fn open(root: String) -> anyhow::Result<LibraryHandle> {
         Ok(LibraryHandle {
             session: Arc::new(Session::open(root).map_err(err)?),
@@ -261,6 +282,14 @@ impl LibraryHandle {
                     CaptureStage::Excluded => Stage::Excluded,
                 },
                 problem: c.problem,
+                filing: c.filing.map(|f| Filing {
+                    op_id: f.op_id,
+                    vaults: f.vaults,
+                    pages_created: f.pages_created as u32,
+                    pages_updated: f.pages_updated as u32,
+                    claims_to_review: f.claims_to_review as u32,
+                    to_review: f.to_review as u32,
+                }),
             })
             .collect())
     }

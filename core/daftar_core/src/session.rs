@@ -471,11 +471,11 @@ impl Session {
                         let judge: Vec<String> =
                             serde_json::from_value(job.payload["judge"].clone())
                                 .unwrap_or_default();
-                        let q = Queue::open(&self.lib.db_path())?;
+                        let checked = crate::lint::deterministic(&self.lib, &self.queue(), &now)?;
                         let r = crate::lint::run(
                             &self.lib,
                             &self.device,
-                            &q,
+                            checked,
                             Some(rt),
                             &judge,
                             &now,
@@ -637,12 +637,13 @@ impl Session {
 
     /// Deterministic lint now (no model), e.g. from Settings.
     pub fn lint_now(&self) -> Result<crate::lint::LintReport> {
-        let q = Queue::open(&self.lib.db_path())?;
+        let now = jiff::Zoned::now();
+        let checked = crate::lint::deterministic(&self.lib, &self.queue(), &now)?;
         let rt = tokio::runtime::Builder::new_current_thread().build()?;
         rt.block_on(crate::lint::run(
             &self.lib,
             &self.device,
-            &q,
+            checked,
             None,
             &[],
             &jiff::Zoned::now(),

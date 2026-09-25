@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/bidi.dart';
+import '../../core/job_runner.dart';
 import '../../core/library_state.dart';
 import '../../core/recorder.dart';
 import '../../design/design.dart';
@@ -64,6 +65,7 @@ class _CaptureBarState extends ConsumerState<CaptureBar> {
     HapticFeedback.lightImpact();
     ref.read(revisionProvider.notifier).bump();
     ref.read(syncControllerProvider.notifier).changed();
+    ref.read(jobRunnerProvider.notifier).kick();
     if (mounted) showNote(context, message);
   }
 

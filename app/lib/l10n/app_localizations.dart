@@ -526,13 +526,13 @@ abstract class L10n {
   /// No description provided for @voicePending.
   ///
   /// In en, this message translates to:
-  /// **'Voice note · transcribed when a speech provider is set up'**
+  /// **'Voice note · waiting to be transcribed'**
   String get voicePending;
 
   /// No description provided for @photoPending.
   ///
   /// In en, this message translates to:
-  /// **'Photo · described when a vision provider is set up'**
+  /// **'Photo · waiting to be described'**
   String get photoPending;
 
   /// No description provided for @captureRecordLabel.
@@ -714,6 +714,312 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'This folder is a plain Markdown vault; open it in Obsidian any time.'**
   String get obsidianNote;
+
+  /// No description provided for @providers.
+  ///
+  /// In en, this message translates to:
+  /// **'Providers'**
+  String get providers;
+
+  /// No description provided for @providersFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Keys stay in this device\'s secure storage; each device asks for them once.'**
+  String get providersFooter;
+
+  /// No description provided for @addProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Add provider'**
+  String get addProvider;
+
+  /// No description provided for @editProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get editProvider;
+
+  /// No description provided for @providerKindOpenai.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenAI-compatible'**
+  String get providerKindOpenai;
+
+  /// No description provided for @providerKindAnthropic.
+  ///
+  /// In en, this message translates to:
+  /// **'Anthropic'**
+  String get providerKindAnthropic;
+
+  /// No description provided for @providerKindGemini.
+  ///
+  /// In en, this message translates to:
+  /// **'Gemini'**
+  String get providerKindGemini;
+
+  /// No description provided for @providerName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get providerName;
+
+  /// No description provided for @providerNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'My OpenRouter'**
+  String get providerNameHint;
+
+  /// No description provided for @baseUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get baseUrl;
+
+  /// No description provided for @apiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'API key'**
+  String get apiKey;
+
+  /// No description provided for @apiKeyKept.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on this device; leave empty to keep it'**
+  String get apiKeyKept;
+
+  /// No description provided for @apiKeyMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'No key on this device'**
+  String get apiKeyMissing;
+
+  /// No description provided for @checkConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Check'**
+  String get checkConnection;
+
+  /// No description provided for @modelsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =0{Connected; no model list} =1{Connected · 1 model} other{Connected · {n} models}}'**
+  String modelsFound(int n);
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @nameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the provider a name.'**
+  String get nameRequired;
+
+  /// No description provided for @models.
+  ///
+  /// In en, this message translates to:
+  /// **'Models'**
+  String get models;
+
+  /// No description provided for @modelsFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Roles without a model of their own use the Chat model.'**
+  String get modelsFooter;
+
+  /// No description provided for @roleRouter.
+  ///
+  /// In en, this message translates to:
+  /// **'Routing'**
+  String get roleRouter;
+
+  /// No description provided for @roleIngest.
+  ///
+  /// In en, this message translates to:
+  /// **'Filing'**
+  String get roleIngest;
+
+  /// No description provided for @roleChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get roleChat;
+
+  /// No description provided for @roleVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice conversation'**
+  String get roleVoice;
+
+  /// No description provided for @roleVision.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get roleVision;
+
+  /// No description provided for @roleReflect.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflection'**
+  String get roleReflect;
+
+  /// No description provided for @roleLint.
+  ///
+  /// In en, this message translates to:
+  /// **'Upkeep'**
+  String get roleLint;
+
+  /// No description provided for @roleStt.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech to text'**
+  String get roleStt;
+
+  /// No description provided for @roleTts.
+  ///
+  /// In en, this message translates to:
+  /// **'Text to speech'**
+  String get roleTts;
+
+  /// No description provided for @roleEmbedding.
+  ///
+  /// In en, this message translates to:
+  /// **'Embeddings (optional)'**
+  String get roleEmbedding;
+
+  /// No description provided for @roleNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get roleNotSet;
+
+  /// No description provided for @roleUses.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses {role}'**
+  String roleUses(String role);
+
+  /// No description provided for @warnNoVision.
+  ///
+  /// In en, this message translates to:
+  /// **'This model probably can\'t read images.'**
+  String get warnNoVision;
+
+  /// No description provided for @warnNotStt.
+  ///
+  /// In en, this message translates to:
+  /// **'This doesn\'t look like a speech-to-text model.'**
+  String get warnNotStt;
+
+  /// No description provided for @warnNotTts.
+  ///
+  /// In en, this message translates to:
+  /// **'This doesn\'t look like a text-to-speech model.'**
+  String get warnNotTts;
+
+  /// No description provided for @warnNotEmbedding.
+  ///
+  /// In en, this message translates to:
+  /// **'This doesn\'t look like an embedding model.'**
+  String get warnNotEmbedding;
+
+  /// No description provided for @warnNotConversational.
+  ///
+  /// In en, this message translates to:
+  /// **'This model can\'t hold a conversation.'**
+  String get warnNotConversational;
+
+  /// No description provided for @provider.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get provider;
+
+  /// No description provided for @model.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get model;
+
+  /// No description provided for @modelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Model name'**
+  String get modelHint;
+
+  /// No description provided for @modelRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose or type a model.'**
+  String get modelRequired;
+
+  /// No description provided for @testRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Test'**
+  String get testRole;
+
+  /// No description provided for @testing.
+  ///
+  /// In en, this message translates to:
+  /// **'Testing…'**
+  String get testing;
+
+  /// No description provided for @testWorks.
+  ///
+  /// In en, this message translates to:
+  /// **'Works · {ms} ms · {reply}'**
+  String testWorks(String ms, String reply);
+
+  /// No description provided for @useChatModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the Chat model'**
+  String get useChatModel;
+
+  /// No description provided for @addProviderFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a provider first.'**
+  String get addProviderFirst;
+
+  /// No description provided for @filedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Filed to {vaults}'**
+  String filedTo(String vaults);
+
+  /// No description provided for @pagesUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 page updated} other{{n} pages updated}}'**
+  String pagesUpdated(int n);
+
+  /// No description provided for @claimsToReview.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 claim to review} other{{n} claims to review}}'**
+  String claimsToReview(int n);
+
+  /// No description provided for @listSeparator.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get listSeparator;
+
+  /// No description provided for @filingWaits.
+  ///
+  /// In en, this message translates to:
+  /// **'Filing waits for a {role} model. Set it up in Settings.'**
+  String filingWaits(String role);
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

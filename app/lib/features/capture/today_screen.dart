@@ -5,9 +5,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/identity.dart';
 import '../../core/dates.dart';
+import '../../core/job_runner.dart';
 import '../../core/library_state.dart';
 import '../../design/design.dart';
 import '../../l10n/app_localizations.dart';
+import '../settings/ai_settings.dart' show roleName;
 import 'capture_bar.dart';
 import 'capture_item.dart';
 
@@ -38,7 +40,7 @@ class TodayScreen extends ConsumerWidget {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(
+                  padding: const EdgeInsetsDirectional.fromSTEB(
                     Space.x4,
                     Space.x4,
                     Space.x2,
@@ -66,6 +68,7 @@ class TodayScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: Space.x1),
                             const SyncBadge(),
+                            const _FilingWaits(),
                           ],
                         ),
                       ),
@@ -140,6 +143,29 @@ class TodayScreen extends ConsumerWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown when filing is paused because a model role is not set up (never an error).
+class _FilingWaits extends ConsumerWidget {
+  const _FilingWaits();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final role = ref.watch(jobRunnerProvider).waitingFor;
+    if (role == null) return const SizedBox.shrink();
+    final l = L10n.of(context);
+    return Pressable(
+      onPressed: () => context.push('/settings'),
+      radius: Radii.small,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: Space.x1),
+        child: Text(
+          l.filingWaits(roleName(l, role)),
+          style: context.type.caption.copyWith(color: context.palette.pending),
         ),
       ),
     );

@@ -1,12 +1,29 @@
 import 'dart:typed_data';
 
+import '../src/rust/api/ai.dart' as ai;
 import '../src/rust/api/library.dart' as rs;
 
+export '../src/rust/api/ai.dart'
+    show
+        AiProvider,
+        AiSettings,
+        ApiKey,
+        CapabilityWarning,
+        HttpHeader,
+        JobKindDto,
+        JobOutcome,
+        JobStateDto,
+        ModelRole,
+        ProbeOutcome,
+        ProviderKindDto,
+        RoleSetting,
+        RunSummary;
 export '../src/rust/api/library.dart'
     show
         Auth,
         AuthKind,
         Capture,
+        Filing,
         RawKind,
         RepoStatus,
         SshKeyPair,
@@ -26,6 +43,39 @@ abstract class LibraryApi {
   Future<rs.SyncResult> sync(rs.Auth auth);
   Future<void> setRemote(String url);
   Future<List<rs.Vault>> vaults();
+
+  // AI providers and model roles (§9). Keys come from secure storage per call.
+  Future<ai.AiSettings> aiSettings();
+  Future<String> saveProvider(ai.AiProvider provider);
+  Future<void> removeProvider(String id);
+  Future<void> setRole(ai.ModelRole role, String providerId, String model);
+  Future<void> clearRole(ai.ModelRole role);
+  Future<ai.ProbeOutcome> testRole(ai.ModelRole role, List<ai.ApiKey> keys);
+  Future<ai.RunSummary> runJobs(List<ai.ApiKey> keys);
+  Future<void> retryCapture(String id);
+}
+
+/// Provider calls that need no open library.
+abstract class ProviderApi {
+  Future<List<String>> listModels(ai.AiProvider provider, String? apiKey);
+  String defaultBaseUrl(ai.ProviderKindDto kind);
+  ai.CapabilityWarning? capabilityWarning(ai.ModelRole role, String model);
+}
+
+class RustProviderApi implements ProviderApi {
+  const RustProviderApi();
+
+  @override
+  Future<List<String>> listModels(ai.AiProvider provider, String? apiKey) =>
+      ai.listModels(provider: provider, apiKey: apiKey);
+
+  @override
+  String defaultBaseUrl(ai.ProviderKindDto kind) =>
+      ai.defaultBaseUrl(kind: kind);
+
+  @override
+  ai.CapabilityWarning? capabilityWarning(ai.ModelRole role, String model) =>
+      ai.capabilityWarning(role: role, model: model);
 }
 
 /// Library creation and lookup (before a library is open).
@@ -121,4 +171,32 @@ class RustLibraryApi implements LibraryApi {
 
   @override
   Future<List<rs.Vault>> vaults() => _h.vaults();
+
+  @override
+  Future<ai.AiSettings> aiSettings() => _h.aiSettings();
+
+  @override
+  Future<String> saveProvider(ai.AiProvider provider) =>
+      _h.saveProvider(provider: provider);
+
+  @override
+  Future<void> removeProvider(String id) => _h.removeProvider(id: id);
+
+  @override
+  Future<void> setRole(ai.ModelRole role, String providerId, String model) =>
+      _h.setRole(role: role, providerId: providerId, model: model);
+
+  @override
+  Future<void> clearRole(ai.ModelRole role) => _h.clearRole(role: role);
+
+  @override
+  Future<ai.ProbeOutcome> testRole(ai.ModelRole role, List<ai.ApiKey> keys) =>
+      _h.testRole(role: role, apiKeys: keys);
+
+  @override
+  Future<ai.RunSummary> runJobs(List<ai.ApiKey> keys) =>
+      _h.runJobs(apiKeys: keys, online: true);
+
+  @override
+  Future<void> retryCapture(String id) => _h.retryCapture(rawId: id);
 }

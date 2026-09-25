@@ -281,12 +281,16 @@ pub async fn run_case(case: &Case, rt: &AiRuntime, dir: &std::path::Path) -> Res
         }
         "lint" => {
             let judge: Vec<String> = case.pages.iter().map(|p| p.path.clone()).collect();
-            let q = crate::queue::Queue::in_memory()?;
+            let checked = crate::lint::deterministic(
+                &lib,
+                &crate::queue::Queue::in_memory()?,
+                &jiff::Zoned::now(),
+            )?;
             let lock = std::sync::Mutex::new(());
             let r = crate::lint::run(
                 &lib,
                 s.device(),
-                &q,
+                checked,
                 Some(rt),
                 &judge,
                 &jiff::Zoned::now(),
