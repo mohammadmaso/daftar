@@ -2,12 +2,16 @@
 //! none is exposed before it works.
 //!
 //! Credentials come from the environment, never from arguments (they would land in shell history):
-//! `DAFTAR_GIT_TOKEN` (HTTPS) or `DAFTAR_SSH_KEY_FILE` (path to an OpenSSH private key).
+//! `DAFTAR_GIT_TOKEN` (HTTPS) or `DAFTAR_SSH_KEY_FILE` (path to an OpenSSH private key), and
+//! `DAFTAR_API_KEY_<PROVIDER_ID>` for AI providers (id upper-cased, `-` → `_`).
 
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 use anyhow::{Context, bail};
 use clap::{Parser, Subcommand};
+use daftar_core::agent::Cancel;
+use daftar_core::providers::{self, ProviderConfig, Role};
 use daftar_core::session::Session;
 use daftar_core::sync::{self, GitAuth};
 
@@ -66,12 +70,75 @@ enum Command {
     Status { path: PathBuf },
     /// Commit, fetch, integrate and push.
     Sync { path: PathBuf },
+    /// Run queued AI jobs (transcribe, describe, ingest) until the queue is empty or blocked.
+    Jobs { path: PathBuf },
+    /// Manage AI providers in the shared config (keys come from the environment).
+    Provider {
+        path: PathBuf,
+        #[command(subcommand)]
+        action: ProviderAction,
+    },
+    /// Point a model role at a provider and model, or clear it.
+    Role {
+        path: PathBuf,
+        /// router, ingest, chat, voice, vision, reflect, lint, stt, tts, embedding
+        role: String,
+        provider: Option<String>,
+        model: Option<String>,
+        #[arg(long)]
+        clear: bool,
+    },
+    /// Make one real minimal call for a role and report its latency.
+    Test { path: PathBuf, role: String },
     /// Generate an ed25519 key pair; prints the public key, writes the private key to FILE.
     Keygen {
         file: PathBuf,
         #[arg(long, default_value = "daftar")]
         comment: String,
     },
+}
+
+#[derive(Subcommand)]
+enum ProviderAction {
+    /// List providers and model roles.
+    List,
+    /// Add a provider; prints its id.
+    Add {
+        #[arg(long)]
+        name: String,
+        /// openai_compatible, anthropic or gemini
+        #[arg(long, default_value = "openai_compatible")]
+        kind: String,
+        #[arg(long, default_value = "")]
+        base_url: String,
+    },
+    /// Remove a provider and the roles that used it.
+    Remove { id: String },
+}
+
+fn parse_enum<T: serde::de::DeserializeOwned>(s: &str, what: &str) -> anyhow::Result<T> {
+    serde_json::from_value(serde_json::Value::String(s.to_owned()))
+        .with_context(|| format!("unknown {what}: {s}"))
+}
+
+/// Provider API keys from `DAFTAR_API_KEY_<ID>`.
+fn keys_from_env(s: &Session) -> anyhow::Result<HashMap<String, String>> {
+    let cfg = s.library().config()?;
+    Ok(cfg
+        .ai
+        .providers
+        .iter()
+        .filter_map(|p| {
+            let var = format!("DAFTAR_API_KEY_{}", p.id.to_uppercase().replace('-', "_"));
+            std::env::var(var).ok().map(|k| (p.id.clone(), k))
+        })
+        .collect())
+}
+
+fn runtime() -> anyhow::Result<tokio::runtime::Runtime> {
+    Ok(tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?)
 }
 
 fn auth_from_env() -> anyhow::Result<GitAuth> {
@@ -212,6 +279,114 @@ fn main() -> anyhow::Result<()> {
                         .map(|m| format!(" — {m}"))
                         .unwrap_or_default()
                 )
+            })?;
+        }
+        Command::Jobs { path } => {
+            let s = Session::open(path)?;
+            let rt = s.runtime(keys_from_env(&s)?)?;
+            let reports = runtime()?.block_on(s.run_jobs(&rt, true, &Cancel::default()))?;
+            print(json, &reports, |rs| {
+                if rs.is_empty() {
+                    return "nothing to do".into();
+                }
+                rs.iter()
+                    .map(|r| {
+                        format!(
+                            "{:<10} {:<8?} {}",
+                            r.kind.as_str(),
+                            r.state,
+                            r.message.as_deref().unwrap_or("")
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            })?;
+        }
+        Command::Provider { path, action } => {
+            let s = Session::open(path)?;
+            match action {
+                ProviderAction::List => {
+                    let ai = s.library().config()?.ai;
+                    print(json, &ai, |ai| {
+                        let mut out: Vec<String> = ai
+                            .providers
+                            .iter()
+                            .map(|p| format!("{}  {} ({:?}) {}", p.id, p.name, p.kind, p.base_url))
+                            .collect();
+                        for r in Role::ALL {
+                            if let Some(rc) = ai.role(r) {
+                                out.push(format!(
+                                    "{:<10} → {} {}{}",
+                                    r.as_str(),
+                                    rc.provider,
+                                    rc.model,
+                                    if rc.role == r {
+                                        String::new()
+                                    } else {
+                                        format!(" (uses {})", rc.role.as_str())
+                                    }
+                                ));
+                            }
+                        }
+                        out.join("\n")
+                    })?;
+                }
+                ProviderAction::Add {
+                    name,
+                    kind,
+                    base_url,
+                } => {
+                    let cfg = ProviderConfig {
+                        id: String::new(),
+                        name,
+                        kind: parse_enum(&kind, "provider kind")?,
+                        base_url,
+                        extra_headers: Default::default(),
+                        timeout_s: 60,
+                    };
+                    let id = s.library().update_config(|c| c.ai.upsert_provider(cfg))?;
+                    print(json, &id, |id| id.clone())?;
+                }
+                ProviderAction::Remove { id } => {
+                    s.library().update_config(|c| c.ai.remove_provider(&id))?;
+                }
+            }
+        }
+        Command::Role {
+            path,
+            role,
+            provider,
+            model,
+            clear,
+        } => {
+            let s = Session::open(path)?;
+            let role: Role = parse_enum(&role, "role")?;
+            if clear {
+                s.library().update_config(|c| c.ai.clear_role(role))?;
+            } else {
+                let (Some(p), Some(m)) = (provider, model) else {
+                    bail!("give PROVIDER and MODEL, or --clear");
+                };
+                let warning = s.library().update_config(|c| {
+                    if c.ai.provider(&p).is_none() {
+                        bail!("no provider {p}");
+                    }
+                    c.ai.set_role(role, &p, &m);
+                    Ok(providers::capability_warning(role, &m))
+                })??;
+                if let Some(w) = warning {
+                    eprintln!("warning: {w}");
+                }
+            }
+        }
+        Command::Test { path, role } => {
+            let s = Session::open(path)?;
+            let role: Role = parse_enum(&role, "role")?;
+            let rt = s.runtime(keys_from_env(&s)?)?;
+            let (p, rc) = rt.for_role(role)?;
+            let r = runtime()?.block_on(providers::probe(&p, &rc))?;
+            print(json, &r, |r| {
+                format!("ok · {} ms · {}", r.latency_ms, r.detail)
             })?;
         }
         Command::Keygen { file, comment } => {
