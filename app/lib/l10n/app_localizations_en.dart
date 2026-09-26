@@ -1353,4 +1353,87 @@ class L10nEn extends L10n {
 
   @override
   String get coreMcpBadUrl => 'The server address is not a web address.';
+
+  @override
+  String coreVaultNotEmpty(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'This vault still has $nString pages; archive it instead.',
+      one: 'This vault still has 1 page; archive it instead.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get coreVaultBuiltin =>
+      'Life and Stories can be renamed but not removed.';
+
+  @override
+  String get vaultsTitle => 'Vaults';
+
+  @override
+  String get vaultsFooter =>
+      'Vaults sync between devices. The assistant files each capture by what you say belongs in a vault.';
+
+  @override
+  String get addVault => 'Add vault';
+
+  @override
+  String get vaultNameEn => 'Name in English';
+
+  @override
+  String get vaultNameFa => 'Name in Persian';
+
+  @override
+  String get vaultPurpose => 'What belongs here';
+
+  @override
+  String get vaultPurposeHint =>
+      'The assistant files by this. For example: trips, visas, packing lists.';
+
+  @override
+  String get vaultNameRequired => 'Give the vault a name.';
+
+  @override
+  String get vaultPurposeRequired => 'Say what belongs in this vault.';
+
+  @override
+  String get vaultArchive => 'Archive';
+
+  @override
+  String get vaultRestore => 'Restore';
+
+  @override
+  String get vaultArchived => 'Archived';
+
+  @override
+  String vaultPages(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString pages',
+      one: '1 page',
+      zero: 'Empty',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get vaultBuiltinNote =>
+      'Life holds the journal and Stories holds fiction; both can be renamed but not removed.';
+
+  @override
+  String get vaultArchiveNote =>
+      'Archiving hides the vault from the app and the assistant. Its pages stay in your repository, and you can restore it.';
 }

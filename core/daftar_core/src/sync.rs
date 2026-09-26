@@ -310,7 +310,8 @@ pub fn commit_local(lib: &Library, queue: &Queue, dev: &LocalDevice) -> Result<u
             }
         } else if path.starts_with(".daftar/devices/") {
             raw_other.push(path);
-        } else if path == layout::CONFIG_FILE {
+        } else if path == layout::CONFIG_FILE || layout::is_vault_index(&path) {
+            // A vault added, renamed or removed in settings changes its index too.
             settings.push(path);
         } else {
             edits.push(path);

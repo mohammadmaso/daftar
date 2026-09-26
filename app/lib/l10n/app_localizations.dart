@@ -2262,6 +2262,108 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'The server address is not a web address.'**
   String get coreMcpBadUrl;
+
+  /// No description provided for @coreVaultNotEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{This vault still has 1 page; archive it instead.} other{This vault still has {n} pages; archive it instead.}}'**
+  String coreVaultNotEmpty(int n);
+
+  /// No description provided for @coreVaultBuiltin.
+  ///
+  /// In en, this message translates to:
+  /// **'Life and Stories can be renamed but not removed.'**
+  String get coreVaultBuiltin;
+
+  /// No description provided for @vaultsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaults'**
+  String get vaultsTitle;
+
+  /// No description provided for @vaultsFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaults sync between devices. The assistant files each capture by what you say belongs in a vault.'**
+  String get vaultsFooter;
+
+  /// No description provided for @addVault.
+  ///
+  /// In en, this message translates to:
+  /// **'Add vault'**
+  String get addVault;
+
+  /// No description provided for @vaultNameEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Name in English'**
+  String get vaultNameEn;
+
+  /// No description provided for @vaultNameFa.
+  ///
+  /// In en, this message translates to:
+  /// **'Name in Persian'**
+  String get vaultNameFa;
+
+  /// No description provided for @vaultPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'What belongs here'**
+  String get vaultPurpose;
+
+  /// No description provided for @vaultPurposeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The assistant files by this. For example: trips, visas, packing lists.'**
+  String get vaultPurposeHint;
+
+  /// No description provided for @vaultNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the vault a name.'**
+  String get vaultNameRequired;
+
+  /// No description provided for @vaultPurposeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Say what belongs in this vault.'**
+  String get vaultPurposeRequired;
+
+  /// No description provided for @vaultArchive.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive'**
+  String get vaultArchive;
+
+  /// No description provided for @vaultRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get vaultRestore;
+
+  /// No description provided for @vaultArchived.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived'**
+  String get vaultArchived;
+
+  /// No description provided for @vaultPages.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =0{Empty} =1{1 page} other{{n} pages}}'**
+  String vaultPages(int n);
+
+  /// No description provided for @vaultBuiltinNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Life holds the journal and Stories holds fiction; both can be renamed but not removed.'**
+  String get vaultBuiltinNote;
+
+  /// No description provided for @vaultArchiveNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Archiving hides the vault from the app and the assistant. Its pages stay in your repository, and you can restore it.'**
+  String get vaultArchiveNote;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

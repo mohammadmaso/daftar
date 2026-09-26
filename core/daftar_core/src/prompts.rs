@@ -34,6 +34,23 @@ pub fn render(template: &str, vars: &[(&str, &str)]) -> String {
     out
 }
 
+/// The repo's SCHEMA.md for a prompt, followed by the vaults as the user has them now. SCHEMA.md
+/// is written once at init and its vault table goes stale when the user adds, renames or archives
+/// a vault, so the appended list is marked as the one to follow.
+pub fn schema(lib: &crate::library::Library) -> String {
+    let mut out = std::fs::read_to_string(lib.path(crate::layout::SCHEMA_FILE)).unwrap_or_default();
+    if let Ok(config) = lib.config() {
+        out.push_str(&format!(
+            "\n\n## Current vaults (authoritative)\nThe user manages their vaults in the app. This \
+             list replaces the vault table above: write only into these vaults (a vault not listed \
+             is archived or gone), and for a vault the table does not describe, file by its \
+             purpose and choose clear folder names inside it.\n{}\n",
+            config.vaults_for_prompt()
+        ));
+    }
+    out
+}
+
 /// `<!-- prompt: name vN -->` header, recorded in the ledger for reproducibility.
 pub fn version(template: &str) -> &str {
     template
@@ -52,10 +69,32 @@ mod tests {
         assert_eq!(super::render("a {{x}} {{y}}", &[("x", "1")]), "a 1 {{y}}");
         for p in super::ALL {
             assert!(
-                super::version(p).ends_with(" v1"),
+                super::version(p)
+                    .rsplit_once(" v")
+                    .is_some_and(|(_, n)| n.parse::<u32>().is_ok()),
                 "prompt without a version header: {}",
                 super::version(p)
             );
         }
+    }
+
+    #[test]
+    fn schema_carries_the_current_vaults() {
+        let (_tmp, lib) = crate::testutil::lib_in();
+        crate::vaults::add(
+            &lib,
+            crate::config::Bilingual {
+                en: "Travel".into(),
+                fa: "سفر".into(),
+            },
+            "Trips and visas.",
+        )
+        .unwrap();
+        crate::vaults::set_archived(&lib, "work", true).unwrap();
+        let s = super::schema(&lib);
+        let current = s.split("## Current vaults").nth(1).expect("vault section");
+        assert!(current.contains("- `travel` (Travel · سفر): Trips and visas."));
+        assert!(current.contains("`stories`") && current.contains("[fiction"));
+        assert!(!current.contains("`work`"));
     }
 }

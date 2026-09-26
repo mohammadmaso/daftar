@@ -257,7 +257,7 @@ pub async fn daily(
     let captures = raw_bodies(lib, &page.body);
     let crisis = crate::wellbeing::signals_crisis(&captures);
     let (p, rc) = rt.for_role(Role::Reflect)?;
-    let schema = std::fs::read_to_string(lib.path(crate::layout::SCHEMA_FILE)).unwrap_or_default();
+    let schema = prompts::schema(lib);
     let system = prompts::render(
         prompts::REFLECT_DAILY,
         &[
@@ -404,12 +404,8 @@ pub async fn weekly(
     let key = format!("weekly:{week}");
     let (provider, rc) = rt.for_role(Role::Reflect)?;
     let config = lib.config()?;
-    let schema = std::fs::read_to_string(lib.path(crate::layout::SCHEMA_FILE)).unwrap_or_default();
-    let vault_list = config
-        .active_vaults()
-        .map(|v| format!("- `{}`: {}", v.id, v.purpose))
-        .collect::<Vec<_>>()
-        .join("\n");
+    let schema = prompts::schema(lib);
+    let vault_list = config.vaults_for_prompt();
     let system = prompts::render(
         prompts::REFLECT_WEEKLY,
         &[

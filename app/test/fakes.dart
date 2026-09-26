@@ -585,19 +585,105 @@ class FakeLibrary implements LibraryApi {
     List<ApiKey> keys,
   ) async => voice = FakeVoice();
 
-  @override
-  Future<List<Vault>> vaults() async => const [
-    Vault(id: 'life', titleEn: 'Life', titleFa: 'زندگی', fiction: false),
-    Vault(id: 'health', titleEn: 'Health', titleFa: 'سلامت', fiction: false),
-    Vault(id: 'mind', titleEn: 'Mind', titleFa: 'ذهن', fiction: false),
-    Vault(id: 'work', titleEn: 'Work', titleFa: 'کار', fiction: false),
-    Vault(
-      id: 'stories',
-      titleEn: 'Stories',
-      titleFa: 'داستان‌ها',
-      fiction: true,
-    ),
+  // ── Vaults ──
+  List<VaultSettings> vaultList = [
+    _vault('life', 'Life', 'زندگی', 'Journal, people, places.', pages: 3),
+    _vault('health', 'Health', 'سلامت', 'Medical profile.', pages: 1),
+    _vault('mind', 'Mind', 'ذهن', 'Moods, patterns, values.'),
+    _vault('work', 'Work', 'کار', 'Projects, learning.'),
+    _vault('stories', 'Stories', 'داستان‌ها', 'Fiction.', fiction: true),
   ];
+
+  static VaultSettings _vault(
+    String id,
+    String en,
+    String fa,
+    String purpose, {
+    bool archived = false,
+    bool fiction = false,
+    int pages = 0,
+  }) => VaultSettings(
+    id: id,
+    titleEn: en,
+    titleFa: fa,
+    purpose: purpose,
+    archived: archived,
+    fiction: fiction,
+    builtin: id == 'life' || id == 'stories',
+    pages: pages,
+  );
+
+  @override
+  Future<List<Vault>> vaults() async => [
+    for (final v in vaultList)
+      if (!v.archived)
+        Vault(
+          id: v.id,
+          titleEn: v.titleEn,
+          titleFa: v.titleFa,
+          fiction: v.fiction,
+        ),
+  ];
+
+  @override
+  Future<List<VaultSettings>> vaultSettings() async => vaultList;
+
+  @override
+  Future<String> addVault({
+    required String titleEn,
+    required String titleFa,
+    required String purpose,
+  }) async {
+    final id = titleEn.toLowerCase().replaceAll(RegExp('[^a-z0-9]+'), '-');
+    vaultList = [...vaultList, _vault(id, titleEn, titleFa, purpose)];
+    return id;
+  }
+
+  @override
+  Future<void> editVault(
+    String id, {
+    required String titleEn,
+    required String titleFa,
+    required String purpose,
+  }) async {
+    vaultList = [
+      for (final v in vaultList)
+        v.id == id
+            ? _vault(
+                id,
+                titleEn,
+                titleFa,
+                purpose,
+                archived: v.archived,
+                fiction: v.fiction,
+                pages: v.pages,
+              )
+            : v,
+    ];
+  }
+
+  @override
+  Future<void> setVaultArchived(String id, bool archived) async {
+    vaultList = [
+      for (final v in vaultList)
+        v.id == id
+            ? _vault(
+                id,
+                v.titleEn,
+                v.titleFa,
+                v.purpose,
+                archived: archived,
+                fiction: v.fiction,
+                pages: v.pages,
+              )
+            : v,
+    ];
+  }
+
+  @override
+  Future<void> removeVault(String id) async {
+    vaultList = vaultList.where((v) => v.id != id).toList();
+  }
 }
 
 class FakeSetup implements SetupApi {

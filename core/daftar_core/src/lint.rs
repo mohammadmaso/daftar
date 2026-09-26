@@ -293,7 +293,7 @@ pub async fn judged(
 ) -> std::result::Result<(Vec<Finding>, Usage, String), OpError> {
     let (p, rc) = rt.for_role(Role::Lint)?;
     let config = lib.config()?;
-    let schema = std::fs::read_to_string(lib.path(crate::layout::SCHEMA_FILE)).unwrap_or_default();
+    let schema = prompts::schema(lib);
     let mut body = String::new();
     for path in paths {
         if let Ok(t) = std::fs::read_to_string(lib.path(path)) {
@@ -309,14 +309,7 @@ pub async fn judged(
                 now.time_zone().iana_name().unwrap_or("local time"),
             ),
             ("languages", "Persian (fa) and English (en)"),
-            (
-                "vaults",
-                &config
-                    .active_vaults()
-                    .map(|v| format!("- `{}`: {}", v.id, v.purpose))
-                    .collect::<Vec<_>>()
-                    .join("\n"),
-            ),
+            ("vaults", &config.vaults_for_prompt()),
             ("schema", &schema),
             ("pages", &paths.join("\n")),
         ],

@@ -717,5 +717,38 @@
   "coreEditConflict": "This page changed while you were editing. Your text is kept; reopen the page to merge it.",
   "coreSecretInPage": "This page contains what looks like a key or password. Remove it first; secrets never go into the repository.",
   "coreMcpHttps": "Servers must use https (plain http only on this computer).",
-  "coreMcpBadUrl": "The server address is not a web address."
+  "coreMcpBadUrl": "The server address is not a web address.",
+  "coreVaultNotEmpty": "{n, plural, =1{This vault still has 1 page; archive it instead.} other{This vault still has {n} pages; archive it instead.}}",
+  "@coreVaultNotEmpty": {
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "coreVaultBuiltin": "Life and Stories can be renamed but not removed.",
+  "vaultsTitle": "Vaults",
+  "vaultsFooter": "Vaults sync between devices. The assistant files each capture by what you say belongs in a vault.",
+  "addVault": "Add vault",
+  "vaultNameEn": "Name in English",
+  "vaultNameFa": "Name in Persian",
+  "vaultPurpose": "What belongs here",
+  "vaultPurposeHint": "The assistant files by this. For example: trips, visas, packing lists.",
+  "vaultNameRequired": "Give the vault a name.",
+  "vaultPurposeRequired": "Say what belongs in this vault.",
+  "vaultArchive": "Archive",
+  "vaultRestore": "Restore",
+  "vaultArchived": "Archived",
+  "vaultPages": "{n, plural, =0{Empty} =1{1 page} other{{n} pages}}",
+  "@vaultPages": {
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "vaultBuiltinNote": "Life holds the journal and Stories holds fiction; both can be renamed but not removed.",
+  "vaultArchiveNote": "Archiving hides the vault from the app and the assistant. Its pages stay in your repository, and you can restore it."
 }

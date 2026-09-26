@@ -90,6 +90,19 @@ final List<_Rule> _rules = [
   ),
   (RegExp(r'^MCP servers must use https'), (l, _) => l.coreMcpHttps),
   (RegExp(r'^The server address is not a URL\.$'), (l, _) => l.coreMcpBadUrl),
+  (
+    RegExp(r'^This vault still has (\d+) pages?; archive it instead\.$'),
+    (l, m) => l.coreVaultNotEmpty(int.parse(m[1]!)),
+  ),
+  (
+    RegExp(r'^Life and Stories can be renamed but not removed\.$'),
+    (l, _) => l.coreVaultBuiltin,
+  ),
+  (RegExp(r'^A vault needs a name\.$'), (l, _) => l.vaultNameRequired),
+  (
+    RegExp(r'^Say what belongs in the vault;'),
+    (l, _) => l.vaultPurposeRequired,
+  ),
 ];
 
 /// [raw] in the app's language, when the core sentence is known.

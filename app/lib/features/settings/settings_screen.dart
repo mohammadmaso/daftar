@@ -18,6 +18,7 @@ import '../onboarding/onboarding_screen.dart';
 import 'ai_settings.dart';
 import 'mcp_settings.dart';
 import 'reflect_settings.dart';
+import 'vault_settings.dart';
 
 final repoStatusProvider = FutureProvider<RepoStatus?>((ref) async {
   ref.watch(revisionProvider);
@@ -51,6 +52,7 @@ class SettingsScreen extends ConsumerWidget {
         // §8.6 order: providers, models, repository, appearance, about.
         const AiSettingsSections(),
         const _RepositorySection(),
+        const VaultSection(),
         const McpSection(),
         const ReflectSection(),
         DSection(

@@ -4,7 +4,47 @@
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
-use crate::REPO_SCHEMA_VERSION;
+use crate::{Error, REPO_SCHEMA_VERSION, Result};
+
+/// The vault that holds the journal, weekly reviews and anything no other vault fits.
+pub const JOURNAL_VAULT: &str = "life";
+/// The vault that holds fiction, one folder per story, isolated from facts about the user.
+pub const FICTION_VAULT: &str = "stories";
+
+const BUILTIN_VAULT: &str = "Life and Stories can be renamed but not removed.";
+
+/// Vaults the code gives a role to. They can be renamed and re-described but never archived or
+/// removed; every other vault, the default ones included, is the user's to change.
+pub fn is_builtin_vault(id: &str) -> bool {
+    id == JOURNAL_VAULT || id == FICTION_VAULT
+}
+
+fn clean_title(t: Bilingual) -> Result<Bilingual> {
+    let en = t.en.trim().to_owned();
+    let fa = t.fa.trim().to_owned();
+    if en.is_empty() && fa.is_empty() {
+        return Err(Error::invalid("A vault needs a name."));
+    }
+    // One language is enough; the other falls back to it.
+    Ok(Bilingual {
+        en: if en.is_empty() {
+            fa.clone()
+        } else {
+            en.clone()
+        },
+        fa: if fa.is_empty() { en } else { fa },
+    })
+}
+
+fn clean_purpose(p: &str) -> Result<String> {
+    let p = p.split_whitespace().collect::<Vec<_>>().join(" ");
+    if p.is_empty() {
+        return Err(Error::invalid(
+            "Say what belongs in the vault; the assistant files by it.",
+        ));
+    }
+    Ok(p)
+}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Bilingual {
@@ -82,21 +122,21 @@ impl Default for Config {
                     "health",
                     "Health",
                     "سلامت",
-                    "Medical profile: conditions, medications, labs, visits, symptoms.",
+                    "Medical profile: conditions, medications, labs, visits, symptoms, sleep, doctors, test results.",
                     false,
                 ),
                 vault(
                     "mind",
                     "Mind",
                     "ذهن",
-                    "Psychological self-model: moods, patterns, values.",
+                    "Psychological self-model: moods, emotional states, recurring thoughts, patterns, values.",
                     false,
                 ),
                 vault(
                     "work",
                     "Work",
                     "کار",
-                    "Projects, learning, professional notes.",
+                    "Projects, learning, professional matters.",
                     false,
                 ),
                 vault(
@@ -123,6 +163,94 @@ impl Config {
 
     pub fn vault(&self, id: &str) -> Option<&VaultConfig> {
         self.vaults.iter().find(|v| v.id == id)
+    }
+
+    /// A vault that exists and is not archived: the only kind the assistant may write into.
+    pub fn active_vault(&self, id: &str) -> Option<&VaultConfig> {
+        self.vault(id).filter(|v| !v.archived)
+    }
+
+    /// The current vaults as the assistant sees them in every prompt. This list, not the vault
+    /// table in SCHEMA.md, is authoritative: the user adds, renames and archives vaults.
+    pub fn vaults_for_prompt(&self) -> String {
+        self.active_vaults()
+            .map(|v| {
+                let mut line = format!(
+                    "- `{}` ({} · {}): {}",
+                    v.id, v.title.en, v.title.fa, v.purpose
+                );
+                if v.fiction {
+                    line.push_str(" [fiction: never about the user]");
+                }
+                line
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
+    /// Adds a vault made by the user and returns its id: a slug of the English title, unique
+    /// among all vaults (archived ones included, so an archived vault's folder is never reused).
+    pub fn add_vault(&mut self, title: Bilingual, purpose: &str) -> Result<String> {
+        let title = clean_title(title)?;
+        let purpose = clean_purpose(purpose)?;
+        let mut base: String = crate::ids::kebab_slug(&title.en).chars().take(32).collect();
+        while base.ends_with('-') {
+            base.pop();
+        }
+        if base.is_empty() {
+            base = "vault".into();
+        }
+        let mut id = base.clone();
+        let mut n = 2;
+        while self.vault(&id).is_some() {
+            id = format!("{base}-{n}");
+            n += 1;
+        }
+        self.vaults.push(VaultConfig {
+            id: id.clone(),
+            title,
+            purpose,
+            archived: false,
+            fiction: false,
+        });
+        Ok(id)
+    }
+
+    /// Renames a vault or changes what belongs in it. The id (its folder) never changes, so
+    /// links into the vault stay valid.
+    pub fn edit_vault(&mut self, id: &str, title: Bilingual, purpose: &str) -> Result<()> {
+        let title = clean_title(title)?;
+        let purpose = clean_purpose(purpose)?;
+        let v = self.vault_mut(id)?;
+        v.title = title;
+        v.purpose = purpose;
+        Ok(())
+    }
+
+    /// Archiving hides a vault from the app and the assistant; its pages stay in the repo.
+    pub fn set_vault_archived(&mut self, id: &str, archived: bool) -> Result<()> {
+        if archived && is_builtin_vault(id) {
+            return Err(Error::invalid(BUILTIN_VAULT));
+        }
+        self.vault_mut(id)?.archived = archived;
+        Ok(())
+    }
+
+    /// Drops a vault from the list. The caller has checked that it holds no pages.
+    pub fn remove_vault(&mut self, id: &str) -> Result<()> {
+        if is_builtin_vault(id) {
+            return Err(Error::invalid(BUILTIN_VAULT));
+        }
+        self.vault_mut(id)?;
+        self.vaults.retain(|v| v.id != id);
+        Ok(())
+    }
+
+    fn vault_mut(&mut self, id: &str) -> Result<&mut VaultConfig> {
+        self.vaults
+            .iter_mut()
+            .find(|v| v.id == id)
+            .ok_or_else(|| Error::invalid(format!("There is no vault called '{id}'.")))
     }
 
     pub fn to_pretty_json(&self) -> String {

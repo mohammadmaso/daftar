@@ -484,7 +484,7 @@ pub async fn compensate(
 
     let (provider, rc) = rt.for_role(Role::Ingest)?;
     let config = lib.config()?;
-    let schema = std::fs::read_to_string(lib.path(crate::layout::SCHEMA_FILE)).unwrap_or_default();
+    let schema = prompts::schema(lib);
     let system = prompts::render(
         prompts::COMPENSATE,
         &[

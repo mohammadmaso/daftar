@@ -144,8 +144,15 @@ impl<'a> OpContext<'a> {
         let Some(vault) = pages::vault_of(path) else {
             return Err("Pages live under vaults/<vault>/.".into());
         };
-        if self.config.vault(vault).is_none() {
-            return Err(format!("There is no vault called '{vault}'."));
+        match self.config.vault(vault) {
+            None => return Err(format!("There is no vault called '{vault}'.")),
+            // Undo may still repair an archived vault; nothing new is filed into one.
+            Some(v) if v.archived && !self.compensating => {
+                return Err(format!(
+                    "The vault '{vault}' is archived; file into one of the current vaults."
+                ));
+            }
+            Some(_) => {}
         }
         match &self.scope {
             Scope::ReadOnly => Err("This operation cannot change the wiki.".into()),
