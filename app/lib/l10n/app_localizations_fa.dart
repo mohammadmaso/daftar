@@ -427,6 +427,14 @@ class L10nFa extends L10n {
   String get apiKeyMissing => 'کلیدی روی این دستگاه نیست';
 
   @override
+  String get apiKeyKeptApple =>
+      'در iCloud Keychain دستگاه‌های اپل شما ذخیره است؛ برای نگه‌داشتن خالی بگذارید';
+
+  @override
+  String get apiKeyMissingApple =>
+      'هنوز کلیدی نیست؛ پس از ذخیره، دستگاه‌های اپل دیگرتان هم آن را دارند';
+
+  @override
   String get checkConnection => 'بررسی';
 
   @override

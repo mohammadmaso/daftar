@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'library_api.dart';
@@ -37,13 +38,62 @@ extension ApiKeys on CredentialStore {
   ];
 }
 
-class SecureCredentialStore implements CredentialStore {
-  SecureCredentialStore([FlutterSecureStorage? storage])
-    : _s = storage ?? const FlutterSecureStorage();
+/// True where API keys and MCP credentials are iCloud Keychain items, so an iPhone and a Mac
+/// signed in to the same Apple ID share them (ADR-0027).
+bool get secretsFollowAppleId =>
+    defaultTargetPlatform == TargetPlatform.iOS ||
+    defaultTargetPlatform == TargetPlatform.macOS;
 
+class SecureCredentialStore implements CredentialStore {
+  SecureCredentialStore([
+    FlutterSecureStorage? local,
+    FlutterSecureStorage? shared,
+  ]) : _s =
+           local ??
+           const FlutterSecureStorage(iOptions: _localIos, mOptions: _localMac),
+       _shared =
+           shared ??
+           const FlutterSecureStorage(
+             iOptions: _sharedIos,
+             mOptions: _sharedMac,
+           );
+
+  // `first_unlock` lets the background pass read credentials while the phone is locked.
+  static const _localIos = IOSOptions(
+    accessibility: KeychainAccessibility.first_unlock,
+  );
+  static const _localMac = MacOsOptions(
+    accessibility: KeychainAccessibility.first_unlock,
+  );
+  static const _sharedIos = IOSOptions(
+    accessibility: KeychainAccessibility.first_unlock,
+    synchronizable: true,
+  );
+  static const _sharedMac = MacOsOptions(
+    accessibility: KeychainAccessibility.first_unlock,
+    synchronizable: true,
+  );
+
+  /// Repository credentials: this device only (an SSH key is generated per device).
   final FlutterSecureStorage _s;
+
+  /// API keys and MCP credentials: synced through iCloud Keychain on Apple platforms. The
+  /// Apple options are ignored elsewhere, so there it behaves like [_s].
+  final FlutterSecureStorage _shared;
+
   static const _key = 'git.auth.default';
   static String _apiKey(String providerId) => 'ai.key.$providerId';
+  static String _mcpKey(String serverId) => 'mcp.secrets.$serverId';
+
+  /// Reads a shared item, moving one saved before sharing existed into iCloud Keychain.
+  Future<String?> _readShared(String key) async {
+    final synced = await _shared.read(key: key);
+    if (synced != null || !secretsFollowAppleId) return synced;
+    final old = await _s.read(key: key);
+    // Writing the synchronizable item replaces the device-only one.
+    if (old != null) await _shared.write(key: key, value: old);
+    return old;
+  }
 
   @override
   Future<Auth> gitAuth() async {
@@ -73,28 +123,27 @@ class SecureCredentialStore implements CredentialStore {
   Future<void> clear() => _s.delete(key: _key);
 
   @override
-  Future<String?> apiKey(String providerId) =>
-      _s.read(key: _apiKey(providerId));
+  Future<String?> apiKey(String providerId) => _readShared(_apiKey(providerId));
 
   @override
-  Future<String?> mcpSecrets(String serverId) =>
-      _s.read(key: 'mcp.secrets.$serverId');
+  Future<String?> mcpSecrets(String serverId) => _readShared(_mcpKey(serverId));
 
   @override
   Future<void> saveMcpSecrets(String serverId, String json) =>
-      _s.write(key: 'mcp.secrets.$serverId', value: json);
+      _shared.write(key: _mcpKey(serverId), value: json);
 
+  // Deleting removes the synced and the device-only item alike.
   @override
   Future<void> deleteMcpSecrets(String serverId) =>
-      _s.delete(key: 'mcp.secrets.$serverId');
+      _shared.delete(key: _mcpKey(serverId));
 
   @override
   Future<void> saveApiKey(String providerId, String key) =>
-      _s.write(key: _apiKey(providerId), value: key);
+      _shared.write(key: _apiKey(providerId), value: key);
 
   @override
   Future<void> deleteApiKey(String providerId) =>
-      _s.delete(key: _apiKey(providerId));
+      _shared.delete(key: _apiKey(providerId));
 }
 
 const noAuth = Auth(kind: AuthKind.none, secret: '');

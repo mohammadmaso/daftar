@@ -865,6 +865,18 @@ abstract class L10n {
   /// **'No key on this device'**
   String get apiKeyMissing;
 
+  /// No description provided for @apiKeyKeptApple.
+  ///
+  /// In en, this message translates to:
+  /// **'In iCloud Keychain on your Apple devices; leave empty to keep it'**
+  String get apiKeyKeptApple;
+
+  /// No description provided for @apiKeyMissingApple.
+  ///
+  /// In en, this message translates to:
+  /// **'No key yet; once saved, your other Apple devices get it too'**
+  String get apiKeyMissingApple;
+
   /// No description provided for @checkConnection.
   ///
   /// In en, this message translates to:
