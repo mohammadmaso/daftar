@@ -63,8 +63,8 @@ EXTENSIONS.each do |ext|
     s['SWIFT_VERSION'] = '5.0'
     s['IPHONEOS_DEPLOYMENT_TARGET'] = ext[:ios]
     s['TARGETED_DEVICE_FAMILY'] = '1,2'
-    s['MARKETING_VERSION'] = '0.1.0'
-    s['CURRENT_PROJECT_VERSION'] = '1'
+    s['MARKETING_VERSION'] = '0.2.0'
+    s['CURRENT_PROJECT_VERSION'] = '2'
     s['SKIP_INSTALL'] = 'YES'
     s['APPLICATION_EXTENSION_API_ONLY'] = 'YES'
     s['LD_RUNPATH_SEARCH_PATHS'] = ['$(inherited)', '@executable_path/Frameworks',
