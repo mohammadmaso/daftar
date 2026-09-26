@@ -611,7 +611,7 @@ dependencies = [
 
 [[package]]
 name = "daftar_bridge"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -626,7 +626,7 @@ dependencies = [
 
 [[package]]
 name = "daftar_cli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -640,7 +640,7 @@ dependencies = [
 
 [[package]]
 name = "daftar_core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "async-trait",
  "base64 0.23.1",
