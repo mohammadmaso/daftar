@@ -14,15 +14,16 @@ import 'library_api.dart';
 import 'library_state.dart';
 import 'notifications.dart';
 
-/// Background work on Android (brief §3: best effort): every hour or so, when online, sync, file
-/// what is waiting, run due reflections and post their notifications. The app does the same in
-/// the foreground; this only covers the time it is closed. iOS BGTaskScheduler needs Xcode
-/// capabilities (docs/packaging.md), and desktops sync while the app is open.
+/// Background work on Android and iOS (brief §3: best effort): every hour or so, when online,
+/// sync, file what is waiting, run due reflections and post their notifications. The app does the
+/// same in the foreground; this only covers the time it is closed. iOS decides when a refresh
+/// runs. Desktops sync while the app is open.
 abstract final class Background {
-  static const task = 'daftar.background';
+  /// Also the iOS BGTaskScheduler identifier (Info.plist, AppDelegate.swift).
+  static const task = 'dev.daftar.daftar.background';
   static const every = Duration(hours: 1);
 
-  static bool get supported => !kIsWeb && Platform.isAndroid;
+  static bool get supported => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
   static Future<void> register() async {
     if (!supported) return;
