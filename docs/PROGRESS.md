@@ -214,12 +214,53 @@ Reflect settings, notification and help-card widget tests.
 **Not yet:** reflections that fall due while the app is closed run the next time it opens. Background
 execution comes with M9.
 
-## Status after M8
+## M9 — Polish and ship (2026-09-26)
 
-* Rust: 118 tests (unit + scenario + eval + perf), clippy clean with `-D warnings`.
-* Flutter: 147 tests, 64 goldens rendered on Linux (`tools/update_goldens.sh` runs them in Docker
+**Works**
+* Command palette (Ctrl/Cmd+K): search pages, ask the typed question, save it as a note, start a
+  capture, open voice mode or go anywhere, all from the keyboard. Ctrl/Cmd+N opens a new note and
+  Ctrl/Cmd+Shift+N records. The desktop rail shows the palette with its shortcut.
+* App-icon quick actions (Record, New note, Ask) on Android and iOS.
+* Share into the app on Android: text and images become captures, including cold starts.
+* Android home-screen "Record" widget. It opens straight into hands-free recording, which screen
+  readers can also start through a custom action.
+* Background work on Android: an hourly workmanager pass syncs, files, reflects and notifies.
+  `LibraryHandle.open` shares one session per library in a process, and `run_jobs` has a single
+  drainer (ADR-0024).
+* Accessibility pass: 44 pt tap targets, labelled targets and text contrast are checked on eight
+  screens in both languages and themes, plus 200 % text layout. Text fields are now tappable across
+  their whole box, and the Review hint meets AA contrast.
+* Performance pass: the page reader builds Markdown blocks lazily; a 3,000-block page lays out one
+  screenful. Parsed bodies are cached.
+* Packaging (docs/packaging.md): a tag-triggered release workflow for AppImage, .deb, Flatpak,
+  APK, AAB, IPA (unsigned), DMG and MSIX, with signing from secrets. Android release signing reads
+  `key.properties`. The app has its own icon on every platform.
+* SCHEMA.md template finalised (reflections, upkeep, care and privacy). User guides:
+  `docs/user-guide.en.md` and `docs/user-guide.fa.md`.
+
+**Tests:** palette, shortcuts, quick actions, shares, the widget request, the background pass,
+the session registry, accessibility guidelines and long-page laziness.
+
+**Verified locally:** the .deb and AppImage scripts against a stand-in bundle (the AppImage runs),
+and the DMG script on macOS.
+
+**Not yet**
+* iOS Share Extension, iOS widget and iOS background refresh need Xcode targets. The steps are in
+  docs/packaging.md.
+* System-wide hotkey: `hotkey_manager` is unmaintained (last release May 2024). The in-app
+  shortcuts work while the window has focus.
+* Android foreground service for voice with the screen off.
+* Not yet exercised by CI, because CI runs only on `main` and PRs:
+  * the Kotlin code (`MainActivity`, `RecordWidget`);
+  * the MSIX script;
+  * the release workflow.
+
+## Status after M9
+
+* Rust: 119 tests (unit + scenario + eval + perf), clippy clean with `-D warnings`.
+* Flutter: 211 tests, 68 goldens rendered on Linux (`tools/update_goldens.sh` runs them in Docker
   from any host).
 * **Not verified on devices since M1:** no Xcode or Android SDK on the development machine used for
-  M2–M8. Everything above is covered by the core scenario tests and widget tests with fakes, not by
+  M2–M9. Everything above is covered by the core scenario tests and widget tests with fakes, not by
   a run on a phone.
 * Core error messages are English in both languages.
