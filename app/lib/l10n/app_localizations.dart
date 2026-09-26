@@ -2094,6 +2094,120 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'Voice conversation'**
   String get voiceNoticeChannel;
+
+  /// No description provided for @coreKeyRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} rejected the API key.'**
+  String coreKeyRejected(String provider);
+
+  /// No description provided for @coreRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} is busy; trying again soon.'**
+  String coreRateLimited(String provider);
+
+  /// No description provided for @coreUnknownModel.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} doesn\'t know this model.'**
+  String coreUnknownModel(String provider);
+
+  /// No description provided for @coreRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} refused the request.'**
+  String coreRefused(String provider);
+
+  /// No description provided for @coreServerError.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} had a server error; trying again soon.'**
+  String coreServerError(String provider);
+
+  /// No description provided for @coreStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} answered with status {status}.'**
+  String coreStatus(String provider, String status);
+
+  /// No description provided for @coreTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} took too long to answer.'**
+  String coreTimeout(String provider);
+
+  /// No description provided for @coreUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach {provider}.'**
+  String coreUnreachable(String provider);
+
+  /// No description provided for @coreBadResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'{provider} sent an answer that couldn\'t be read.'**
+  String coreBadResponse(String provider);
+
+  /// No description provided for @coreNoModel.
+  ///
+  /// In en, this message translates to:
+  /// **'No model is set up for {role}. Choose one in Settings › Models.'**
+  String coreNoModel(String role);
+
+  /// No description provided for @coreAuthFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The repository didn\'t accept the credentials. Check the token or deploy key.'**
+  String get coreAuthFailed;
+
+  /// No description provided for @coreRemoteBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'The repository kept changing while pushing. Trying again soon.'**
+  String get coreRemoteBusy;
+
+  /// No description provided for @corePushRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'The repository refused the push. Check the branch protection and permissions.'**
+  String get corePushRefused;
+
+  /// No description provided for @coreRecordingGone.
+  ///
+  /// In en, this message translates to:
+  /// **'The recording is no longer on this device.'**
+  String get coreRecordingGone;
+
+  /// No description provided for @coreCaptureGone.
+  ///
+  /// In en, this message translates to:
+  /// **'The capture no longer exists.'**
+  String get coreCaptureGone;
+
+  /// No description provided for @coreEditConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'This page changed while you were editing. Your text is kept; reopen the page to merge it.'**
+  String get coreEditConflict;
+
+  /// No description provided for @coreSecretInPage.
+  ///
+  /// In en, this message translates to:
+  /// **'This page contains what looks like a key or password. Remove it first; secrets never go into the repository.'**
+  String get coreSecretInPage;
+
+  /// No description provided for @coreMcpHttps.
+  ///
+  /// In en, this message translates to:
+  /// **'Servers must use https (plain http only on this computer).'**
+  String get coreMcpHttps;
+
+  /// No description provided for @coreMcpBadUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'The server address is not a web address.'**
+  String get coreMcpBadUrl;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

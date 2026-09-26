@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/core_text.dart';
 import '../core/library_state.dart';
 import '../design/theme.dart';
 import '../design/tokens.dart';
@@ -163,6 +164,8 @@ class DaftarApp extends ConsumerWidget {
       // Theme depends on the resolved locale (Persian gets its own type scale), which is only
       // known below Localizations, so it is applied here rather than via `theme:`.
       builder: (context, child) {
+        // Core sentences are translated with the strings on screen (lib/core/core_text.dart).
+        coreStrings = L10n.of(context);
         final brightness = switch (appearance.theme) {
           ThemePref.system => MediaQuery.platformBrightnessOf(context),
           ThemePref.light => Brightness.light,

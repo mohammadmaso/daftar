@@ -399,7 +399,7 @@ class _DiffView extends ConsumerWidget {
                 child: Center(
                   child: Text(
                     '⋯',
-                    style: context.type.caption.copyWith(color: p.inkFaint),
+                    style: context.type.caption.copyWith(color: p.inkMuted),
                   ),
                 ),
               ),

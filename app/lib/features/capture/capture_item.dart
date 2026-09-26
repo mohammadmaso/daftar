@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/bidi.dart';
+import '../../core/core_text.dart';
 import '../../core/dates.dart';
 import '../../core/job_runner.dart';
 import '../../core/library_api.dart';
@@ -155,7 +156,10 @@ class _StageLine extends ConsumerWidget {
         const SizedBox(width: Space.x2),
         Flexible(
           child: Text(
-            [label, if (capture.problem != null) capture.problem!].join(' · '),
+            [
+              label,
+              if (capture.problem != null) coreText(capture.problem!, l),
+            ].join(' · '),
             style: context.type.caption.copyWith(color: color),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

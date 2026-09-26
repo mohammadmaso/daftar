@@ -1227,4 +1227,87 @@ class L10nEn extends L10n {
 
   @override
   String get voiceNoticeChannel => 'Voice conversation';
+
+  @override
+  String coreKeyRejected(String provider) {
+    return '$provider rejected the API key.';
+  }
+
+  @override
+  String coreRateLimited(String provider) {
+    return '$provider is busy; trying again soon.';
+  }
+
+  @override
+  String coreUnknownModel(String provider) {
+    return '$provider doesn\'t know this model.';
+  }
+
+  @override
+  String coreRefused(String provider) {
+    return '$provider refused the request.';
+  }
+
+  @override
+  String coreServerError(String provider) {
+    return '$provider had a server error; trying again soon.';
+  }
+
+  @override
+  String coreStatus(String provider, String status) {
+    return '$provider answered with status $status.';
+  }
+
+  @override
+  String coreTimeout(String provider) {
+    return '$provider took too long to answer.';
+  }
+
+  @override
+  String coreUnreachable(String provider) {
+    return 'Couldn\'t reach $provider.';
+  }
+
+  @override
+  String coreBadResponse(String provider) {
+    return '$provider sent an answer that couldn\'t be read.';
+  }
+
+  @override
+  String coreNoModel(String role) {
+    return 'No model is set up for $role. Choose one in Settings › Models.';
+  }
+
+  @override
+  String get coreAuthFailed =>
+      'The repository didn\'t accept the credentials. Check the token or deploy key.';
+
+  @override
+  String get coreRemoteBusy =>
+      'The repository kept changing while pushing. Trying again soon.';
+
+  @override
+  String get corePushRefused =>
+      'The repository refused the push. Check the branch protection and permissions.';
+
+  @override
+  String get coreRecordingGone => 'The recording is no longer on this device.';
+
+  @override
+  String get coreCaptureGone => 'The capture no longer exists.';
+
+  @override
+  String get coreEditConflict =>
+      'This page changed while you were editing. Your text is kept; reopen the page to merge it.';
+
+  @override
+  String get coreSecretInPage =>
+      'This page contains what looks like a key or password. Remove it first; secrets never go into the repository.';
+
+  @override
+  String get coreMcpHttps =>
+      'Servers must use https (plain http only on this computer).';
+
+  @override
+  String get coreMcpBadUrl => 'The server address is not a web address.';
 }

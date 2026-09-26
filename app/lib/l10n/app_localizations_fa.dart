@@ -1218,4 +1218,87 @@ class L10nFa extends L10n {
 
   @override
   String get voiceNoticeChannel => 'گفت‌وگوی صوتی';
+
+  @override
+  String coreKeyRejected(String provider) {
+    return '$provider کلید API را نپذیرفت.';
+  }
+
+  @override
+  String coreRateLimited(String provider) {
+    return '$provider سرش شلوغ است؛ کمی بعد دوباره امتحان می‌شود.';
+  }
+
+  @override
+  String coreUnknownModel(String provider) {
+    return '$provider این مدل را نمی‌شناسد.';
+  }
+
+  @override
+  String coreRefused(String provider) {
+    return '$provider درخواست را رد کرد.';
+  }
+
+  @override
+  String coreServerError(String provider) {
+    return '$provider خطای سرور داشت؛ کمی بعد دوباره امتحان می‌شود.';
+  }
+
+  @override
+  String coreStatus(String provider, String status) {
+    return '$provider با وضعیت $status پاسخ داد.';
+  }
+
+  @override
+  String coreTimeout(String provider) {
+    return 'پاسخ $provider بیش از حد طول کشید.';
+  }
+
+  @override
+  String coreUnreachable(String provider) {
+    return 'دسترسی به $provider ممکن نشد.';
+  }
+
+  @override
+  String coreBadResponse(String provider) {
+    return 'پاسخ $provider خواندنی نبود.';
+  }
+
+  @override
+  String coreNoModel(String role) {
+    return 'برای $role مدلی تنظیم نشده است. در تنظیمات › مدل‌ها یکی را انتخاب کنید.';
+  }
+
+  @override
+  String get coreAuthFailed =>
+      'مخزن اعتبارنامه را نپذیرفت. توکن یا Deploy key را بررسی کنید.';
+
+  @override
+  String get coreRemoteBusy =>
+      'مخزن هنگام ارسال مدام تغییر می‌کرد. کمی بعد دوباره امتحان می‌شود.';
+
+  @override
+  String get corePushRefused =>
+      'مخزن ارسال را رد کرد. محافظت شاخه و دسترسی‌ها را بررسی کنید.';
+
+  @override
+  String get coreRecordingGone => 'این ضبط دیگر روی این دستگاه نیست.';
+
+  @override
+  String get coreCaptureGone => 'این ثبت دیگر وجود ندارد.';
+
+  @override
+  String get coreEditConflict =>
+      'این صفحه هنگام ویرایش شما تغییر کرد. متن شما حفظ شده است؛ صفحه را دوباره باز کنید تا ادغامش کنید.';
+
+  @override
+  String get coreSecretInPage =>
+      'به نظر می‌رسد این صفحه کلید یا رمز دارد. اول آن را پاک کنید؛ رمزها هرگز وارد مخزن نمی‌شوند.';
+
+  @override
+  String get coreMcpHttps =>
+      'سرورها باید از https استفاده کنند (http ساده فقط روی همین رایانه).';
+
+  @override
+  String get coreMcpBadUrl => 'نشانی سرور یک نشانی وب نیست.';
 }

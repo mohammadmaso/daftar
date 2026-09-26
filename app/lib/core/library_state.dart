@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'core_text.dart';
 import 'credentials.dart';
 import 'errors.dart';
 import 'job_runner.dart';
@@ -191,7 +192,7 @@ class SyncController extends Notifier<SyncView> {
           SyncState.needsAttention => SyncIndicator.needsAttention,
         },
         pending: after.unpushed,
-        message: r.message,
+        message: r.message == null ? null : coreText(r.message!),
         lastSynced: r.state == SyncState.synced
             ? DateTime.now()
             : state.lastSynced,

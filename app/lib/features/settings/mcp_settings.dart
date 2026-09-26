@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/core_text.dart';
 import '../../core/errors.dart';
 import '../../core/job_runner.dart';
 import '../../core/library_api.dart';
@@ -73,7 +74,7 @@ class McpSection extends ConsumerWidget {
         McpStatusKind.needsAuth => l.mcpNeedsAuth,
         McpStatusKind.desktopOnly => l.mcpDesktopOnly,
         McpStatusKind.disabled => l.mcpDisabled,
-        McpStatusKind.error => x.message ?? '',
+        McpStatusKind.error => coreText(x.message ?? '', l),
       },
     );
   }

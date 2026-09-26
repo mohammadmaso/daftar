@@ -598,5 +598,97 @@
   },
   "voiceNoticeTitle": "Talking",
   "voiceNoticeBody": "Listening. Open the app to end the conversation.",
-  "voiceNoticeChannel": "Voice conversation"
+  "voiceNoticeChannel": "Voice conversation",
+  "coreKeyRejected": "{provider} rejected the API key.",
+  "@coreKeyRejected": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "coreRateLimited": "{provider} is busy; trying again soon.",
+  "@coreRateLimited": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "coreUnknownModel": "{provider} doesn't know this model.",
+  "@coreUnknownModel": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "coreRefused": "{provider} refused the request.",
+  "@coreRefused": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "coreServerError": "{provider} had a server error; trying again soon.",
+  "@coreServerError": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "coreStatus": "{provider} answered with status {status}.",
+  "@coreStatus": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "coreTimeout": "{provider} took too long to answer.",
+  "@coreTimeout": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "coreUnreachable": "Couldn't reach {provider}.",
+  "@coreUnreachable": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "coreBadResponse": "{provider} sent an answer that couldn't be read.",
+  "@coreBadResponse": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "coreNoModel": "No model is set up for {role}. Choose one in Settings › Models.",
+  "@coreNoModel": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "coreAuthFailed": "The repository didn't accept the credentials. Check the token or deploy key.",
+  "coreRemoteBusy": "The repository kept changing while pushing. Trying again soon.",
+  "corePushRefused": "The repository refused the push. Check the branch protection and permissions.",
+  "coreRecordingGone": "The recording is no longer on this device.",
+  "coreCaptureGone": "The capture no longer exists.",
+  "coreEditConflict": "This page changed while you were editing. Your text is kept; reopen the page to merge it.",
+  "coreSecretInPage": "This page contains what looks like a key or password. Remove it first; secrets never go into the repository.",
+  "coreMcpHttps": "Servers must use https (plain http only on this computer).",
+  "coreMcpBadUrl": "The server address is not a web address."
 }

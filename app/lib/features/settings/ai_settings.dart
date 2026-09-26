@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart' show NumberFormat;
 
+import '../../core/core_text.dart';
 import '../../core/credentials.dart';
 import '../../core/errors.dart';
 import '../../core/job_runner.dart';
@@ -575,7 +576,7 @@ class _RoleSheetState extends ConsumerState<RoleSheet> {
                               ).format(r.latencyMs),
                               r.detail,
                             )
-                          : r.detail,
+                          : coreText(r.detail, l),
                       style: context.type.small.copyWith(
                         color: r.ok ? p.positive : p.critical,
                       ),
