@@ -25,10 +25,11 @@
                           Square44x44Logo="Assets\Square44x44Logo.png" />
     </Application>
   </Applications>
+  <!-- Schema order: Capability and rescap:Capability first, DeviceCapability last. -->
   <Capabilities>
     <Capability Name="internetClient" />
+    <rescap:Capability Name="runFullTrust" />
     <DeviceCapability Name="microphone" />
     <DeviceCapability Name="webcam" />
-    <rescap:Capability Name="runFullTrust" />
   </Capabilities>
 </Package>
