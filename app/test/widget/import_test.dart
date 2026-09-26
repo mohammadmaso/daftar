@@ -1,4 +1,5 @@
 import 'package:daftar/core/file_import.dart';
+import 'package:daftar/core/incoming_shares.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -149,5 +150,26 @@ void main() {
     await tester.tap(find.text('Import a file'));
     await tester.pumpAndSettle();
     expect(find.text('report.pdf'), findsOneWidget);
+  });
+
+  testWidgets('a document shared from another app opens the preview', (
+    tester,
+  ) async {
+    final lib = FakeLibrary();
+    final shares = FakeShares()
+      ..pending.add(const SharedItem.file('/tmp/report.pdf'));
+    final imports = FakeFileImports()..previews['/tmp/report.pdf'] = _pdf();
+    await pumpApp(
+      tester,
+      setup: FakeSetup(library: lib),
+      shares: shares,
+      imports: imports,
+    );
+    expect(find.text('report.pdf'), findsOneWidget);
+    expect(lib.imports, isEmpty, reason: 'nothing is saved before File it');
+    await tester.tap(find.text('File it'));
+    await tester.pumpAndSettle();
+    expect(lib.imports.single.$2, 'report.pdf');
+    await tester.pump(const Duration(seconds: 3));
   });
 }

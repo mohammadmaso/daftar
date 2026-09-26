@@ -10,3 +10,10 @@ Terminal=false
 Categories=Office;Utility;
 Keywords=notes;journal;wiki;voice;
 StartupWMClass=daftar
+MimeType=text/plain;text/markdown;text/html;application/rtf;application/pdf;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.openxmlformats-officedocument.presentationml.presentation;application/vnd.oasis.opendocument.text;application/epub+zip;audio/mpeg;audio/mp4;audio/x-m4a;audio/wav;audio/x-wav;audio/ogg;audio/flac;audio/webm;
+Actions=Record;
+
+[Desktop Action Record]
+Name=Record a voice note
+Name[fa]=ضبط یادداشت صوتی
+Exec=daftar --record

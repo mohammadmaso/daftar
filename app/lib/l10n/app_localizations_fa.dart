@@ -1459,7 +1459,7 @@ class L10nFa extends L10n {
   String get importKindMarkdown => 'مارک‌داون';
 
   @override
-  String get importKindHtml => 'صفحهٔ وب';
+  String get importKindHtml => 'صفحه‌ی وب';
 
   @override
   String get importKindRtf => 'متن قالب‌دار';
@@ -1514,7 +1514,7 @@ class L10nFa extends L10n {
 
   @override
   String importTruncated(String limit, String total) {
-    return 'سند بلند است: فقط $limit نویسهٔ نخست از $total نویسه بایگانی می‌شود.';
+    return 'سند بلند است: فقط $limit نویسه‌ی نخست از $total نویسه بایگانی می‌شود.';
   }
 
   @override
@@ -1589,11 +1589,11 @@ class L10nFa extends L10n {
   String get shortcutOnDesktop => 'روشن: در میان‌برهای صفحه‌کلید میزکار';
 
   @override
-  String get shortcutTaken => 'برنامهٔ دیگری از این کلیدها استفاده می‌کند';
+  String get shortcutTaken => 'برنامه‌ی دیگری از این کلیدها استفاده می‌کند';
 
   @override
   String get shortcutUnavailable =>
-      'این میزکار اجازهٔ افزودن میان‌بر به برنامه‌ها نمی‌دهد';
+      'این میزکار اجازه‌ی افزودن میان‌بر به برنامه‌ها نمی‌دهد';
 
   @override
   String get shortcutAddGnome => 'افزودن به میان‌برهای صفحه‌کلید گنوم';
@@ -1608,9 +1608,9 @@ class L10nFa extends L10n {
 
   @override
   String get shortcutFooter =>
-      'ضبط‌کنندهٔ کوچکی روی هر کاری که می‌کنید باز می‌شود. برای ذخیره، دوباره همان کلیدها یا Enter را بزنید.';
+      'ضبط‌کننده‌ی کوچکی روی هر کاری که می‌کنید باز می‌شود. برای ذخیره، دوباره همان کلیدها یا Enter را بزنید.';
 
   @override
   String get shortcutFooterLinux =>
-      'ضبط‌کنندهٔ کوچکی روی هر کاری که می‌کنید باز می‌شود. برای ذخیره، دوباره همان کلیدها یا Enter را بزنید. در هر میزکاری می‌توانید «daftar --record» را هم در تنظیمات صفحه‌کلید آن اجرا کنید.';
+      'ضبط‌کننده‌ی کوچکی روی هر کاری که می‌کنید باز می‌شود. برای ذخیره، دوباره همان کلیدها یا Enter را بزنید. در هر میزکاری می‌توانید «daftar --record» را هم در تنظیمات صفحه‌کلید آن اجرا کنید.';
 }

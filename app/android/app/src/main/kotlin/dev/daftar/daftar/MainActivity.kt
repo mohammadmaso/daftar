@@ -3,6 +3,8 @@ package dev.daftar.daftar
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.provider.OpenableColumns
+import java.io.File
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -71,9 +73,9 @@ class MainActivity : FlutterActivity() {
                     val text = if (subject.isNullOrBlank() || it.contains(subject)) it else "$subject\n$it"
                     pending.add(mapOf("text" to text))
                 }
-                stream(intent)?.let { image(it) }
+                stream(intent)?.let { attachment(it) }
             }
-            Intent.ACTION_SEND_MULTIPLE -> streams(intent).forEach { image(it) }
+            Intent.ACTION_SEND_MULTIPLE -> streams(intent).forEach { attachment(it) }
             ACTION_RECORD -> pending.add(mapOf("record" to true))
         }
         // Handled once: a configuration change must not file the same share again.
@@ -81,12 +83,28 @@ class MainActivity : FlutterActivity() {
         return pending.size > before
     }
 
-    private fun image(uri: Uri) {
-        val type = contentResolver.getType(uri) ?: return
-        if (!type.startsWith("image/")) return
-        val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: return
-        pending.add(mapOf("image" to bytes))
+    /** An image becomes a photo capture; any other file (a document, a recording) is copied
+     *  here and opened in the import preview. */
+    private fun attachment(uri: Uri) {
+        val type = contentResolver.getType(uri) ?: ""
+        if (type.startsWith("image/")) {
+            val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: return
+            pending.add(mapOf("image" to bytes))
+            return
+        }
+        val dir = File(cacheDir, "shared").apply { mkdirs() }
+        val name = displayName(uri)?.replace('/', '_')?.takeIf { it.isNotBlank() } ?: "shared"
+        val out = File(dir, "${System.currentTimeMillis()}-$name")
+        contentResolver.openInputStream(uri)?.use { input ->
+            out.outputStream().use { input.copyTo(it) }
+        } ?: return
+        pending.add(mapOf("file" to out.absolutePath))
     }
+
+    private fun displayName(uri: Uri): String? =
+        contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
+            if (it.moveToFirst()) it.getString(0) else null
+        } ?: uri.lastPathSegment
 
     @Suppress("DEPRECATION")
     private fun stream(intent: Intent): Uri? =

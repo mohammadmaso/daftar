@@ -47,6 +47,7 @@ At the bottom of **Today**:
   slide up to lock and record hands-free, then tap **Save** when you're done.
 * **Tap** the round button to type a note.
 * **Camera**: take a photo or pick one; the text in it is read too.
+* **Paperclip**: import a file. See *Importing files* below.
 * **Auto** chip: by default the assistant decides where a capture belongs. Tap the chip to send
   just the next capture to a particular vault.
 
@@ -54,11 +55,29 @@ Captures are saved on the device in under a tenth of a second and work offline. 
 are filed when a connection and models are available.
 
 **Other ways in**
-* **Share** text or photos from another app into Daftar (Android).
+* **Share** text, photos, documents or recordings from another app into Daftar (Android).
 * **Long-press the app icon** for Record, New note and Ask (Android and iPhone).
 * **Record widget** on the Android home screen opens straight into recording.
 * **Screen readers**: the record button has a "Record a voice note" action that starts recording
   without holding.
+
+**Importing files**
+
+The paperclip, **Import a file** in Commands, and Ctrl+O (⌘O) pick a file. You can also share a
+file into Daftar on Android, or use **Open With** on a computer.
+
+* **Documents**: text in any encoding, Markdown, web pages, RTF, Word (.docx), OpenDocument
+  (.odt), slides (.pptx), e-books (.epub) and PDF.
+  * Before anything is saved, you see the text that was read from the file, with its type, pages
+    and length. **Edit text** lets you trim it, and the chip picks a vault.
+  * **File it** saves it as a capture and files it like a note.
+  * Persian PDFs whose text comes out backwards are put back in reading order.
+  * Only the text is kept, never the original file. A very long document is cut at 60,000
+    characters, and the preview says so.
+  * A scanned PDF has no text to read, so add its pages as photos instead.
+* **Recordings**: MP3, M4A, WAV, OGG, FLAC or WebM, up to 25 MB. **Play** listens first.
+  **Transcribe and file** turns it into text with your speech model, like a voice note. The
+  recording stays on this device.
 
 ## 3. Today and filing
 
@@ -173,8 +192,24 @@ lines. It never analyses that moment or puts it into a notification.
 | Ctrl+N (⌘N) | New note |
 | Ctrl+Shift+N (⌘⇧N) | Record a voice note |
 
+| Ctrl+O (⌘O) | Import a file |
+
 In Commands, type and press Enter. The first entry asks your question, the second saves the text
 as a note, and matching pages follow. Use the arrow keys to choose.
+
+**Record from anywhere.** Ctrl+Alt+Shift+N (⌥⇧⌘N on Mac) works even when Daftar is in the
+background.
+* On Linux and Mac, the window shrinks to a small recorder at the top of the screen and starts at
+  once. Press the keys again, or Enter, to save: Daftar opens on Today with the new note. Esc
+  discards it.
+* On Windows, recording starts in the Daftar window.
+* On Linux, the keys work on X11 and on desktops with the shortcut portal (KDE, GNOME 48 and
+  later). On older GNOME, open **Settings › Record from anywhere** and choose **Add it to GNOME
+  keyboard shortcuts**. On any desktop you can bind a key to `daftar --record` yourself.
+
+**Tray and menu bar.** On Linux and Mac, Daftar has an icon in the tray or menu bar with Record a
+voice note, Import a file, Open and Quit. Closing the window keeps Daftar there, so the shortcut
+keeps working. Use **Quit** to close it completely.
 
 ## 12. Devices and sync
 

@@ -96,7 +96,11 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   Future<void> _fileShares() async {
     final all = await ref.read(incomingSharesProvider).take();
     if (all.any((i) => i.record) && mounted) _capture(CaptureRequest.record);
-    final items = all.where((i) => !i.record).toList();
+    // Documents and recordings are previewed before anything is saved.
+    for (final f in all.map((i) => i.file).nonNulls) {
+      if (mounted) openImport(context, f);
+    }
+    final items = all.where((i) => !i.record && i.file == null).toList();
     if (items.isEmpty) return;
     final lib = await ref.read(libraryProvider.future);
     if (lib == null) return;
