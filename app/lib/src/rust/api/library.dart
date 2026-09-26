@@ -126,6 +126,8 @@ abstract class LibraryHandle implements RustOpaqueInterface {
 
   Future<UndoResult> moveToVault({required String opId, required String vault});
 
+  /// Opens the library, or joins the session already open on it in this process: the app and a
+  /// background task (Android runs both in one process) must share one queue and commit lock.
   static Future<LibraryHandle> open({required String root}) =>
       RustLib.instance.api.crateApiLibraryLibraryHandleOpen(root: root);
 
