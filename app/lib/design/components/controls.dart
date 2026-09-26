@@ -12,11 +12,15 @@ class DChip extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.dot,
   });
 
   final String label;
   final bool selected;
   final VoidCallback? onTap;
+
+  /// A small colour swatch before the label, for chips that double as a legend.
+  final Color? dot;
 
   @override
   Widget build(BuildContext context) {
@@ -44,11 +48,24 @@ class DChip extends StatelessWidget {
               width: Stroke.hairline,
             ),
           ),
-          child: Text(
-            label,
-            style: context.type.label.copyWith(
-              color: selected ? p.accent : p.inkMuted,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (dot != null) ...[
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: Space.x2),
+              ],
+              Text(
+                label,
+                style: context.type.label.copyWith(
+                  color: selected ? p.accent : p.inkMuted,
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -88,6 +88,8 @@ export '../src/rust/api/wiki.dart'
         PageSummary,
         SaveResult,
         SearchHit,
+        WikiGraph,
+        WikiGraphNode,
         WikiPage;
 
 /// The app's view of one open library. Implemented over the Rust core; faked in widget tests.
@@ -121,6 +123,7 @@ abstract class LibraryApi {
   Future<List<wk.PageSummary>> recentPages({String? vault, int limit});
   Future<wk.Listing> listDir(String dir);
   Future<wk.LocalGraph> localGraph(String path, {int depth});
+  Future<wk.WikiGraph> wikiGraph();
   Future<wk.WikiPage> page(String path);
   Future<String?> resolveLink(String target);
   Future<wk.SaveResult> savePage(String path, String baseHash, String text);
@@ -398,6 +401,9 @@ class RustLibraryApi implements LibraryApi {
   @override
   Future<wk.LocalGraph> localGraph(String path, {int depth = 1}) =>
       _h.localGraph(path: path, depth: depth);
+
+  @override
+  Future<wk.WikiGraph> wikiGraph() => _h.wikiGraph();
 
   @override
   Future<wk.WikiPage> page(String path) => _h.page(path: path);

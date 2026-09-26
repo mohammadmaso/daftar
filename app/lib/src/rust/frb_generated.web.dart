@@ -300,6 +300,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Int16List dco_decode_list_prim_i_16_strict(dynamic raw);
 
   @protected
+  Uint32List dco_decode_list_prim_u_32_strict(dynamic raw);
+
+  @protected
   List<int> dco_decode_list_prim_u_8_loose(dynamic raw);
 
   @protected
@@ -319,6 +322,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<Vault> dco_decode_list_vault(dynamic raw);
+
+  @protected
+  List<WikiGraphNode> dco_decode_list_wiki_graph_node(dynamic raw);
 
   @protected
   Listing dco_decode_listing(dynamic raw);
@@ -490,6 +496,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   VoiceStateDto dco_decode_voice_state_dto(dynamic raw);
+
+  @protected
+  WikiGraph dco_decode_wiki_graph(dynamic raw);
+
+  @protected
+  WikiGraphNode dco_decode_wiki_graph_node(dynamic raw);
 
   @protected
   WikiPage dco_decode_wiki_page(dynamic raw);
@@ -774,6 +786,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Int16List sse_decode_list_prim_i_16_strict(SseDeserializer deserializer);
 
   @protected
+  Uint32List sse_decode_list_prim_u_32_strict(SseDeserializer deserializer);
+
+  @protected
   List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer);
 
   @protected
@@ -795,6 +810,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<Vault> sse_decode_list_vault(SseDeserializer deserializer);
+
+  @protected
+  List<WikiGraphNode> sse_decode_list_wiki_graph_node(
+    SseDeserializer deserializer,
+  );
 
   @protected
   Listing sse_decode_listing(SseDeserializer deserializer);
@@ -978,6 +998,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   VoiceStateDto sse_decode_voice_state_dto(SseDeserializer deserializer);
+
+  @protected
+  WikiGraph sse_decode_wiki_graph(SseDeserializer deserializer);
+
+  @protected
+  WikiGraphNode sse_decode_wiki_graph_node(SseDeserializer deserializer);
 
   @protected
   WikiPage sse_decode_wiki_page(SseDeserializer deserializer);
@@ -1343,6 +1369,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_prim_u_32_strict(
+    Uint32List self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_prim_u_8_loose(List<int> self, SseSerializer serializer);
 
   @protected
@@ -1377,6 +1409,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_vault(List<Vault> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_wiki_graph_node(
+    List<WikiGraphNode> self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_listing(Listing self, SseSerializer serializer);
@@ -1587,6 +1625,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_voice_state_dto(VoiceStateDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_wiki_graph(WikiGraph self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_wiki_graph_node(WikiGraphNode self, SseSerializer serializer);
 
   @protected
   void sse_encode_wiki_page(WikiPage self, SseSerializer serializer);

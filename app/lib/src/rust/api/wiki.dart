@@ -179,6 +179,50 @@ class SearchHit {
           snippet == other.snippet;
 }
 
+/// The whole wiki as a graph. Edges hold indexes into `nodes`, one per linked pair.
+class WikiGraph {
+  final List<WikiGraphNode> nodes;
+  final Uint32List edgeFrom;
+  final Uint32List edgeTo;
+
+  const WikiGraph({
+    required this.nodes,
+    required this.edgeFrom,
+    required this.edgeTo,
+  });
+
+  @override
+  int get hashCode => nodes.hashCode ^ edgeFrom.hashCode ^ edgeTo.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WikiGraph &&
+          runtimeType == other.runtimeType &&
+          nodes == other.nodes &&
+          edgeFrom == other.edgeFrom &&
+          edgeTo == other.edgeTo;
+}
+
+/// A page in the whole-wiki graph, with the number of distinct pages it is linked with.
+class WikiGraphNode {
+  final PageSummary page;
+  final int links;
+
+  const WikiGraphNode({required this.page, required this.links});
+
+  @override
+  int get hashCode => page.hashCode ^ links.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WikiGraphNode &&
+          runtimeType == other.runtimeType &&
+          page == other.page &&
+          links == other.links;
+}
+
 class WikiPage {
   final String path;
 

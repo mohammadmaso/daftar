@@ -1081,6 +1081,60 @@ abstract class L10n {
   /// **'Nearby pages'**
   String get localGraph;
 
+  /// No description provided for @graphTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Graph'**
+  String get graphTitle;
+
+  /// No description provided for @openGraph.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the graph'**
+  String get openGraph;
+
+  /// No description provided for @graphFind.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a page'**
+  String get graphFind;
+
+  /// No description provided for @graphUnlinked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlinked pages'**
+  String get graphUnlinked;
+
+  /// No description provided for @graphFit.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit to screen'**
+  String get graphFit;
+
+  /// No description provided for @graphEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages show up here as they are filed and linked.'**
+  String get graphEmpty;
+
+  /// No description provided for @graphOpenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap again to open'**
+  String get graphOpenHint;
+
+  /// No description provided for @linksCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =0{No links} =1{1 link} other{{n} links}}'**
+  String linksCount(int n);
+
+  /// No description provided for @graphSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{pages} · {links}'**
+  String graphSummary(String pages, String links);
+
   /// No description provided for @editPage.
   ///
   /// In en, this message translates to:

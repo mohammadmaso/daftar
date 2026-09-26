@@ -45,6 +45,19 @@ pub struct LocalGraph {
     pub edges: Vec<GraphEdge>,
 }
 
+/// A page in the whole-wiki graph, with the number of distinct pages it is linked with.
+pub struct WikiGraphNode {
+    pub page: PageSummary,
+    pub links: u32,
+}
+
+/// The whole wiki as a graph. Edges hold indexes into `nodes`, one per linked pair.
+pub struct WikiGraph {
+    pub nodes: Vec<WikiGraphNode>,
+    pub edge_from: Vec<u32>,
+    pub edge_to: Vec<u32>,
+}
+
 pub struct WikiPage {
     pub path: String,
     /// The whole file, for the source editor.
@@ -162,6 +175,24 @@ impl LibraryHandle {
                 .into_iter()
                 .map(|(from, to)| GraphEdge { from, to })
                 .collect(),
+        })
+    }
+
+    /// Every page and the links between them, optionally in one vault (the Graph view).
+    pub fn wiki_graph(&self, vault: Option<String>) -> anyhow::Result<WikiGraph> {
+        let g = self.session().wiki_graph(vault.as_deref()).map_err(err)?;
+        let (edge_from, edge_to) = g.edges.iter().map(|&(a, b)| (a as u32, b as u32)).unzip();
+        Ok(WikiGraph {
+            nodes: g
+                .nodes
+                .into_iter()
+                .map(|n| WikiGraphNode {
+                    page: summary(n.page),
+                    links: n.links as u32,
+                })
+                .collect(),
+            edge_from,
+            edge_to,
         })
     }
 

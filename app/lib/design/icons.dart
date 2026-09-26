@@ -24,6 +24,7 @@ enum DIcons {
   copy(_copy),
   edit(_edit),
   graph(_graph),
+  fit(_fit),
   review(_review),
   activity(_activity),
   undo(_undo, directional: true),
@@ -304,6 +305,24 @@ void _graph(Canvas c, Paint p) {
   c.drawLine(const Offset(8.7, 7), const Offset(15.2, 6.2), p);
   c.drawLine(const Offset(7.6, 9), const Offset(10.9, 15.4), p);
   c.drawLine(const Offset(16.4, 8.1), const Offset(13.1, 15.4), p);
+}
+
+// Four corners: fit everything in view.
+void _fit(Canvas c, Paint p) {
+  for (final (x, y, dx, dy) in [
+    (4.5, 4.5, 1.0, 1.0),
+    (19.5, 4.5, -1.0, 1.0),
+    (4.5, 19.5, 1.0, -1.0),
+    (19.5, 19.5, -1.0, -1.0),
+  ]) {
+    c.drawPath(
+      Path()
+        ..moveTo(x, y + 4.5 * dy)
+        ..lineTo(x, y)
+        ..lineTo(x + 4.5 * dx, y),
+      p,
+    );
+  }
 }
 
 // A small stack of cards.

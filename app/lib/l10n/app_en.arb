@@ -272,6 +272,33 @@
   "backlinks": "Linked from",
   "noBacklinks": "No other page links here yet.",
   "localGraph": "Nearby pages",
+  "graphTitle": "Graph",
+  "openGraph": "Open the graph",
+  "graphFind": "Find a page",
+  "graphUnlinked": "Unlinked pages",
+  "graphFit": "Fit to screen",
+  "graphEmpty": "Pages show up here as they are filed and linked.",
+  "graphOpenHint": "Tap again to open",
+  "linksCount": "{n, plural, =0{No links} =1{1 link} other{{n} links}}",
+  "@linksCount": {
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "graphSummary": "{pages} · {links}",
+  "@graphSummary": {
+    "placeholders": {
+      "pages": {
+        "type": "String"
+      },
+      "links": {
+        "type": "String"
+      }
+    }
+  },
   "editPage": "Edit",
   "sourcesCount": "{n, plural, =1{1 source} other{{n} sources}}",
   "@sourcesCount": {

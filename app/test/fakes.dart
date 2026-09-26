@@ -279,6 +279,33 @@ class FakeLibrary implements LibraryApi {
   }
 
   @override
+  Future<WikiGraph> wikiGraph() async {
+    final paths = wiki.keys.where((p) => !p.startsWith('raw/')).toList()
+      ..sort();
+    final at = {for (var i = 0; i < paths.length; i++) paths[i]: i};
+    final from = <int>[], to = <int>[];
+    final links = List.filled(paths.length, 0);
+    for (final p in paths) {
+      for (final b in wiki[p]!.backlinks) {
+        final a = at[b.path];
+        if (a == null) continue;
+        from.add(a);
+        to.add(at[p]!);
+        links[a]++;
+        links[at[p]!]++;
+      }
+    }
+    return WikiGraph(
+      nodes: [
+        for (var i = 0; i < paths.length; i++)
+          WikiGraphNode(page: _summary(wiki[paths[i]]!), links: links[i]),
+      ],
+      edgeFrom: Uint32List.fromList(from),
+      edgeTo: Uint32List.fromList(to),
+    );
+  }
+
+  @override
   Future<WikiPage> page(String path) async =>
       wiki[path] ?? (throw StateError('no page $path'));
 

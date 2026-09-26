@@ -247,6 +247,9 @@ abstract class LibraryHandle implements RustOpaqueInterface {
   Future<UndoResult> undo({required String opId});
 
   Future<List<Vault>> vaults();
+
+  /// Every page and the links between them, optionally in one vault (the Graph view).
+  Future<WikiGraph> wikiGraph({String? vault});
 }
 
 /// Credentials for one call. Loaded from secure storage by the app; never persisted by the core.

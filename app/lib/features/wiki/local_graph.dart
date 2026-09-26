@@ -11,9 +11,17 @@ import 'wiki_state.dart';
 /// A small local graph (§8.3): the page in the middle, depth-1 neighbours on an inner ring,
 /// depth-2 on an outer ring. Minimal and animated; tapping a node opens it.
 class LocalGraphView extends ConsumerStatefulWidget {
-  const LocalGraphView({super.key, required this.path, required this.onOpen});
+  const LocalGraphView({
+    super.key,
+    required this.path,
+    required this.onOpen,
+    this.onOpenGraph,
+  });
   final String path;
   final ValueChanged<String> onOpen;
+
+  /// Opens the whole-wiki graph centred on this page.
+  final VoidCallback? onOpenGraph;
 
   @override
   ConsumerState<LocalGraphView> createState() => _LocalGraphViewState();
@@ -70,6 +78,15 @@ class _LocalGraphViewState extends ConsumerState<LocalGraphView> {
               ),
             ),
           ),
+          if (widget.onOpenGraph != null) ...[
+            const SizedBox(height: Space.x3),
+            DButton(
+              label: l.openGraph,
+              icon: DIcons.graph,
+              variant: DButtonVariant.secondary,
+              onPressed: widget.onOpenGraph,
+            ),
+          ],
         ],
       ),
     );

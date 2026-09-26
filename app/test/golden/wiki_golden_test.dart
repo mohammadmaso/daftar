@@ -56,6 +56,20 @@ void main() {
         );
       });
 
+      testWidgets('graph · $tag · phone', (tester) async {
+        await pumpApp(
+          tester,
+          prefs: prefs,
+          setup: FakeSetup(library: wikiLibrary()),
+          location:
+              '/wiki/graph?focus=${Uri.encodeQueryComponent('vaults/life/people/sara.md')}',
+        );
+        await expectLater(
+          find.byType(DaftarApp),
+          matchesGoldenFile('goldens/graph_${tag}_phone.png'),
+        );
+      });
+
       testWidgets('wiki · $tag · desktop', (tester) async {
         await pumpApp(
           tester,

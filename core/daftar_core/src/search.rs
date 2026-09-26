@@ -269,6 +269,55 @@ impl SearchIndex {
         Ok(Graph { nodes, edges })
     }
 
+    /// The whole wiki as one graph (the Graph view): every page, optionally in one vault, and each
+    /// pair of pages joined by a resolved wikilink once, whichever way it points. Links are
+    /// resolved against every page, so a vault filter only drops nodes, never re-targets links.
+    pub fn wiki_graph(&self, vault: Option<&str>) -> Result<WikiGraph> {
+        let resolver = self.resolver()?;
+        let mut stmt = self.conn.prepare(
+            "SELECT path, vault, kind, title_en, title_fa, summary, updated FROM pages
+             WHERE (?1 IS NULL OR vault = ?1) ORDER BY path",
+        )?;
+        let pages: Vec<PageRef> = stmt
+            .query_map(params![vault], row_to_ref)?
+            .collect::<Result<_, _>>()?;
+        let at: HashMap<&str, usize> = pages
+            .iter()
+            .enumerate()
+            .map(|(i, p)| (p.path.as_str(), i))
+            .collect();
+        let mut stmt = self
+            .conn
+            .prepare("SELECT DISTINCT src, target FROM links ORDER BY src, target")?;
+        let rows = stmt.query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))?;
+        let mut seen = std::collections::HashSet::new();
+        let mut edges = Vec::new();
+        let mut links = vec![0usize; pages.len()];
+        for row in rows {
+            let (src, target) = row?;
+            let Some(&a) = at.get(src.as_str()) else {
+                continue;
+            };
+            let Some(&b) = resolver.resolve(&target).and_then(|t| at.get(t.as_str())) else {
+                continue;
+            };
+            if a == b || !seen.insert((a.min(b), a.max(b))) {
+                continue;
+            }
+            edges.push((a, b));
+            links[a] += 1;
+            links[b] += 1;
+        }
+        Ok(WikiGraph {
+            nodes: pages
+                .into_iter()
+                .zip(links)
+                .map(|(page, links)| WikiGraphNode { page, links })
+                .collect(),
+            edges,
+        })
+    }
+
     /// Most recently updated pages, optionally in one vault.
     pub fn recent(&self, vault: Option<&str>, limit: usize) -> Result<Vec<PageRef>> {
         let mut stmt = self.conn.prepare(
@@ -375,6 +424,21 @@ pub struct GraphNode {
 pub struct Graph {
     pub nodes: Vec<GraphNode>,
     pub edges: Vec<(String, String)>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct WikiGraphNode {
+    pub page: PageRef,
+    /// Distinct pages this one links to or is linked from.
+    pub links: usize,
+}
+
+/// Every page and the links between them. Edges are (source, target) indexes into `nodes`, one
+/// per linked pair.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct WikiGraph {
+    pub nodes: Vec<WikiGraphNode>,
+    pub edges: Vec<(usize, usize)>,
 }
 
 fn row_to_ref(r: &rusqlite::Row<'_>) -> rusqlite::Result<PageRef> {
@@ -637,6 +701,43 @@ mod tests {
                 .len(),
             2
         );
+
+        write(
+            &lib,
+            "vaults/life/topics/lonely.md",
+            "Lonely",
+            "",
+            &[],
+            "No links.",
+        );
+        idx.refresh(&lib).unwrap();
+        let g = idx.wiki_graph(None).unwrap();
+        let name = |i: usize| g.nodes[i].page.path.rsplit('/').next().unwrap().to_owned();
+        let mut pairs: Vec<(String, String)> =
+            g.edges.iter().map(|&(a, b)| (name(a), name(b))).collect();
+        pairs.sort();
+        assert_eq!(
+            pairs,
+            vec![
+                ("2026-09-23.md".into(), "ali.md".into()),
+                ("2026-09-23.md".into(), "sara.md".into()),
+                ("ali.md".into(), "sara.md".into()),
+                ("profile.md".into(), "2026-09-23.md".into()),
+            ],
+            "one edge per linked pair; raw citations left out"
+        );
+        let links = |p: &str| g.nodes.iter().find(|n| n.page.path == p).unwrap().links;
+        assert_eq!(links("vaults/life/journal/2026/2026-09-23.md"), 3);
+        assert_eq!(
+            links("vaults/life/topics/lonely.md"),
+            0,
+            "orphans are nodes"
+        );
+        let life_g = idx.wiki_graph(Some("life")).unwrap();
+        assert_eq!(life_g.nodes.len(), 4);
+        assert_eq!(life_g.edges.len(), 3, "links out of the vault are dropped");
+        std::fs::remove_file(lib.path("vaults/life/topics/lonely.md")).unwrap();
+        idx.refresh(&lib).unwrap();
 
         let life = idx.list_dir("vaults/life").unwrap();
         assert_eq!(

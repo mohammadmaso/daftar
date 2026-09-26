@@ -885,6 +885,11 @@ impl Session {
         self.with_index(|i| i.local_graph(path, depth.clamp(1, 2), 60))
     }
 
+    /// Every page and the links between them, optionally in one vault (the Graph view).
+    pub fn wiki_graph(&self, vault: Option<&str>) -> Result<crate::search::WikiGraph> {
+        self.with_index(|i| i.wiki_graph(vault))
+    }
+
     /// Resolves a wikilink target as Obsidian would (for taps in the reader).
     pub fn resolve_link(&self, target: &str) -> Result<Option<String>> {
         let r = crate::pages::resolver(&self.lib)?;
