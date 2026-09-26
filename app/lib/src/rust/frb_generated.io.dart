@@ -6,6 +6,7 @@
 import 'api/ai.dart';
 import 'api/ask.dart';
 import 'api/audit.dart';
+import 'api/import.dart';
 import 'api/info.dart';
 import 'api/library.dart';
 import 'api/mcp.dart';
@@ -167,6 +168,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ToolApproval dco_decode_box_autoadd_tool_approval(dynamic raw);
 
   @protected
+  int dco_decode_box_autoadd_u_32(dynamic raw);
+
+  @protected
   VoiceOptions dco_decode_box_autoadd_voice_options(dynamic raw);
 
   @protected
@@ -222,6 +226,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int dco_decode_i_32(dynamic raw);
+
+  @protected
+  ImportKind dco_decode_import_kind(dynamic raw);
+
+  @protected
+  ImportPreview dco_decode_import_preview(dynamic raw);
 
   @protected
   JobKindDto dco_decode_job_kind_dto(dynamic raw);
@@ -396,6 +406,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ToolApproval? dco_decode_opt_box_autoadd_tool_approval(dynamic raw);
+
+  @protected
+  int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
 
   @protected
   VoiceStateDto? dco_decode_opt_box_autoadd_voice_state_dto(dynamic raw);
@@ -653,6 +666,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
+
+  @protected
   VoiceOptions sse_decode_box_autoadd_voice_options(
     SseDeserializer deserializer,
   );
@@ -712,6 +728,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
+
+  @protected
+  ImportKind sse_decode_import_kind(SseDeserializer deserializer);
+
+  @protected
+  ImportPreview sse_decode_import_preview(SseDeserializer deserializer);
 
   @protected
   JobKindDto sse_decode_job_kind_dto(SseDeserializer deserializer);
@@ -904,6 +926,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ToolApproval? sse_decode_opt_box_autoadd_tool_approval(
     SseDeserializer deserializer,
   );
+
+  @protected
+  int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
   VoiceStateDto? sse_decode_opt_box_autoadd_voice_state_dto(
@@ -1199,6 +1224,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_voice_options(
     VoiceOptions self,
     SseSerializer serializer,
@@ -1263,6 +1291,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_import_kind(ImportKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_import_preview(ImportPreview self, SseSerializer serializer);
 
   @protected
   void sse_encode_job_kind_dto(JobKindDto self, SseSerializer serializer);
@@ -1527,6 +1561,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     ToolApproval? self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
 
   @protected
   void sse_encode_opt_box_autoadd_voice_state_dto(

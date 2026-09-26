@@ -14,7 +14,7 @@ import 'vaults.dart';
 import 'voice.dart';
 import 'wiki.dart';
 
-// These functions are ignored because they are not marked as `pub`: `err`, `human_error`, `now`, `session_arc`, `session`
+// These functions are ignored because they are not marked as `pub`: `err`, `human_error`, `now`, `plain`, `session_arc`, `session`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`
 
 /// Whether `root` already holds a library with a named device.
@@ -74,6 +74,16 @@ abstract class LibraryHandle implements RustOpaqueInterface {
     required AskScopeDto scopeDto,
     required List<ApiKey> apiKeys,
     required List<McpSecret> mcpSecrets,
+  });
+
+  /// Files a picked audio file: transcribed on this device, then filed like a voice note.
+  Future<String> captureAudioFile({required String path, String? vaultHint});
+
+  /// Files the (previewed, possibly edited) text of an imported document.
+  Future<String> captureImport({
+    required String text,
+    required String fileName,
+    String? vaultHint,
   });
 
   Future<String> capturePhoto({
@@ -317,6 +327,9 @@ class Capture {
   final String device;
   final String text;
   final String? vaultHint;
+
+  /// The imported file's name, for imports and picked recordings.
+  final String? fileName;
   final List<String> images;
   final Stage stage;
   final String? problem;
@@ -329,6 +342,7 @@ class Capture {
     required this.device,
     required this.text,
     this.vaultHint,
+    this.fileName,
     required this.images,
     required this.stage,
     this.problem,
@@ -343,6 +357,7 @@ class Capture {
       device.hashCode ^
       text.hashCode ^
       vaultHint.hashCode ^
+      fileName.hashCode ^
       images.hashCode ^
       stage.hashCode ^
       problem.hashCode ^
@@ -359,6 +374,7 @@ class Capture {
           device == other.device &&
           text == other.text &&
           vaultHint == other.vaultHint &&
+          fileName == other.fileName &&
           images == other.images &&
           stage == other.stage &&
           problem == other.problem &&

@@ -61,6 +61,17 @@ enum Command {
         #[arg(long)]
         vault: Option<String>,
     },
+    /// Import a file: a document (text, Markdown, HTML, RTF, DOCX, ODT, PPTX, EPUB, PDF) is read
+    /// into text and filed; an audio file is transcribed and filed like a voice note.
+    Import {
+        path: PathBuf,
+        file: PathBuf,
+        #[arg(long)]
+        vault: Option<String>,
+        /// Only print the extracted text; file nothing.
+        #[arg(long)]
+        preview: bool,
+    },
     /// List today's (or DATE's, YYYY-MM-DD) captures.
     Today {
         path: PathBuf,
@@ -391,6 +402,42 @@ fn main() -> anyhow::Result<()> {
             let s = Session::open(path)?;
             let bytes = std::fs::read(&image)?;
             let item = s.capture_photo(&bytes, None, vault, &now())?;
+            print(json, &item.path, |p| p.clone())?;
+        }
+        Command::Import {
+            path,
+            file,
+            vault,
+            preview,
+        } => {
+            let name = file
+                .file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            if daftar_core::extract::classify(&name) == daftar_core::extract::FileClass::Audio {
+                if preview {
+                    println!("{name}: a recording; it is transcribed when imported.");
+                    return Ok(());
+                }
+                let s = Session::open(path)?;
+                let item = s.capture_audio_file(&file, vault, &now())?;
+                print(json, &item.path, |p| p.clone())?;
+                return Ok(());
+            }
+            let doc = daftar_core::extract::extract_path(&file)?;
+            if preview {
+                println!("{}", doc.text);
+                if doc.truncated {
+                    eprintln!(
+                        "(only the first {} of {} characters would be filed)",
+                        daftar_core::extract::MAX_IMPORT_CHARS,
+                        doc.total_chars
+                    );
+                }
+                return Ok(());
+            }
+            let s = Session::open(path)?;
+            let item = s.capture_import(&doc.text, &doc.name, vault, &now())?;
             print(json, &item.path, |p| p.clone())?;
         }
         Command::Today { path, date } => {

@@ -642,3 +642,43 @@ async fn human_edit_and_ingest_on_the_same_page() {
         no_conflict_markers(d.root());
     }
 }
+
+/// Imported files: a document's extracted text is filed as an `import` capture that remembers the
+/// file's name; a picked recording goes through transcription like a voice note.
+#[tokio::test(flavor = "multi_thread")]
+async fn imported_document_and_recording_are_filed() {
+    let remote = Remote::new();
+    let d = Device::clone_from(&remote, "laptop");
+    let s = session(&d);
+    let now = zoned("2026-09-23T09:00:00+03:30[Asia/Tehran]");
+
+    let doc = daftar_core::extract::extract(
+        "trip.html",
+        b"<h1>Trip</h1><p>Walked with Sara to the old bazaar.</p>",
+    )
+    .unwrap();
+    let item = s.capture_import(&doc.text, &doc.name, None, &now).unwrap();
+    let on_disk = std::fs::read_to_string(d.lib.path(&item.path)).unwrap();
+    assert!(on_disk.contains("kind: import"), "{on_disk}");
+    assert!(on_disk.contains("source: \"trip.html\""), "{on_disk}");
+    assert!(on_disk.ends_with("# Trip\n\nWalked with Sara to the old bazaar.\n"));
+    run(&s, &runtime(archivist())).await;
+    assert_eq!(
+        raw::read(&d.lib, &item.path).unwrap().meta.status,
+        RawStatus::Ingested
+    );
+
+    // Recordings: only formats the transcriber accepts, stored under a name it understands.
+    let aac = d.root().join("../memo.aac");
+    std::fs::write(&aac, b"audio").unwrap();
+    assert!(s.capture_audio_file(&aac, None, &now).is_err());
+    let opus = d.root().join("../memo.opus");
+    std::fs::write(&opus, b"audio").unwrap();
+    let voice = s.capture_audio_file(&opus, None, &now).unwrap();
+    assert_eq!(voice.meta.kind, raw::RawKind::Voice);
+    assert_eq!(voice.meta.source.as_deref(), Some("memo.opus"));
+    let stored = daftar_core::assets::audio_for(&d.lib, voice.id()).unwrap();
+    assert_eq!(stored.extension().unwrap(), "ogg");
+    let jobs = s.queue().jobs_for_raw(voice.id()).unwrap();
+    assert!(jobs.iter().any(|j| j.kind == JobKind::Transcribe));
+}

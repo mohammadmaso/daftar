@@ -47,6 +47,11 @@ pub fn normalise_image(bytes: &[u8]) -> Result<Vec<u8>> {
 /// Keeps a voice recording on this device only (not committed) so it can be re-transcribed.
 pub fn store_audio(lib: &Library, raw_id: Ulid, src: &Path) -> Result<PathBuf> {
     let ext = src.extension().and_then(|e| e.to_str()).unwrap_or("m4a");
+    store_audio_as(lib, raw_id, src, ext)
+}
+
+/// Like [`store_audio`], under an explicit extension (the transcriber reads the format from it).
+pub fn store_audio_as(lib: &Library, raw_id: Ulid, src: &Path, ext: &str) -> Result<PathBuf> {
     let dest = lib.audio_dir().join(format!("{raw_id}.{ext}"));
     fs::create_dir_all(lib.audio_dir())?;
     if src != dest {

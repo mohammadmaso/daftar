@@ -79,6 +79,9 @@ pub struct RawMeta {
     pub assets: Vec<String>,
     #[serde(default)]
     pub transcript_model: Option<String>,
+    /// The imported file's name, for `import` captures and imported recordings.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source: Option<String>,
     pub status: RawStatus,
 }
 
@@ -101,6 +104,7 @@ pub struct NewCapture {
     pub text: String,
     pub vault_hint: Option<String>,
     pub assets: Vec<String>,
+    pub source: Option<String>,
 }
 
 fn render(meta: &RawMeta, body: &str) -> String {
@@ -115,8 +119,14 @@ fn render(meta: &RawMeta, body: &str) -> String {
         }
     };
     let opt = |v: &Option<String>| v.as_deref().map(quote).unwrap_or_else(|| "null".into());
+    // `source` is written only when set, so other captures keep the §3.1 shape exactly.
+    let source = meta
+        .source
+        .as_deref()
+        .map(|s| format!("source: {}\n", quote(s)))
+        .unwrap_or_default();
     let mut out = format!(
-        "---\nid: {}\nkind: {}\ncaptured_at: {}\ndevice: {}\nlang: {}\nvault_hint: {}\nassets: {}\ntranscript_model: {}\nstatus: {}\n---\n",
+        "---\nid: {}\nkind: {}\ncaptured_at: {}\ndevice: {}\nlang: {}\nvault_hint: {}\nassets: {}\ntranscript_model: {}\n{source}status: {}\n---\n",
         meta.id,
         meta.kind.as_str(),
         meta.captured_at,
@@ -184,6 +194,7 @@ pub(crate) fn create_with_id(
         vault_hint: capture.vault_hint,
         assets: capture.assets,
         transcript_model: None,
+        source: capture.source,
         status: RawStatus::Pending,
     };
     let doc = render(&meta, &capture.text);
