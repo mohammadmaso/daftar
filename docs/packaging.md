@@ -8,7 +8,7 @@ them as workflow artifacts. The version comes from `app/pubspec.yaml`.
 |---|---|---|---|
 | Linux | `Daftar-<v>-x86_64.AppImage`, `daftar_<v>_amd64.deb`, `Daftar-<v>-x86_64.flatpak` | `packaging/linux/build_appimage.sh`, `build_deb.sh`, `dev.daftar.Daftar.yml` | — (not signed) |
 | Android | `Daftar-<v>.apk`, `Daftar-<v>.aab` | Gradle | the `ANDROID_*` secrets are set |
-| iOS | `Daftar-<v>-unsigned.ipa` | `flutter build ipa --no-codesign` | signing needs Xcode (below) |
+| iOS | `Daftar-<v>-unsigned.ipa` | `flutter build ipa --no-codesign` | signing needs the team's profiles (below) |
 | macOS | `Daftar-<v>.dmg` | `packaging/macos/build_dmg.sh` | the `MACOS_*` secrets are set; notarized with the `NOTARY_*` secrets |
 | Windows | `Daftar-<v>-x64.msix` | `packaging/windows/build_msix.ps1` | the `WINDOWS_*` secrets are set |
 
@@ -81,25 +81,25 @@ New-SelfSignedCertificate -Type Custom -Subject "CN=Daftar Test" -KeyUsage Digit
 distribution certificate and provisioning profiles. Set the team in Xcode (Runner › Signing &
 Capabilities), then run `flutter build ipa --export-options-plist=…` on a Mac with those installed.
 
-## Steps that need Xcode (not done yet)
+## iOS extensions and capabilities
 
-These iOS features need new targets or capabilities. They can't be created or verified without
-Xcode, so they are not in the project yet. Android already has all three (ADR-0024).
+The project has two extension targets besides Runner. `tools/ios_extensions.rb` adds them; it is
+idempotent and uses the `xcodeproj` gem.
+* **ShareExtension**: share into the app (§8.1). It writes shared text, links and images to the App
+  Group `group.dev.daftar.daftar`, in the `Inbox/` folder. `Runner/DaftarInbox.swift` hands them
+  to Dart over the `daftar/share` channel, which Android also uses.
+* **RecordWidget**: a WidgetKit "Record" widget that opens `daftar://record`.
 
-1. **Share Extension** (share into the app, §8.1):
-   * File › New › Target › Share Extension, named `ShareExtension`.
-   * Add an App Group (`group.dev.daftar.daftar`) to both Runner and the extension.
-   * The extension writes shared text and images to the group container and opens
-     `daftar://share`.
-   * Runner reads the container and answers the `daftar/share` method channel the way
-     `MainActivity.kt` does (`take` returns `[{text}|{image}]`).
-2. **Home-screen widget** ("Record"): add a WidgetKit extension with one button that opens
-   `daftar://record`. Runner answers it through the same channel with `{record: true}`.
-3. **Background refresh:**
-   * Enable Background Modes › Background fetch.
-   * Add `dev.daftar.daftar.background` to `BGTaskSchedulerPermittedIdentifiers` in Info.plist.
-   * Register workmanager's task in `AppDelegate.swift` (see the workmanager iOS setup).
-   * Then allow iOS in `Background.supported` (`lib/core/background.dart`).
+Background refresh uses the task `dev.daftar.daftar.background`. It is registered in
+`AppDelegate.swift` and listed in `BGTaskSchedulerPermittedIdentifiers`. Background Modes include
+audio (for voice) and fetch.
+
+**For signed builds**, the Apple developer account needs three things. Unsigned CI builds skip all
+of them.
+* The App Group `group.dev.daftar.daftar`.
+* App IDs for `dev.daftar.daftar`, `dev.daftar.daftar.ShareExtension` and
+  `dev.daftar.daftar.RecordWidget`, each with that App Group enabled.
+* Provisioning profiles for all three.
 
 ## Icons
 

@@ -244,16 +244,22 @@ the session registry, accessibility guidelines and long-page laziness.
 **Verified locally:** the .deb and AppImage scripts against a stand-in bundle (the AppImage runs),
 and the DMG script on macOS.
 
+**Added after review (2026-09-26)**
+* iOS: a Share Extension, a WidgetKit Record widget and BGTaskScheduler background refresh. The
+  minimum iOS version is now 14.
+* A system-wide record shortcut: ⌥⇧⌘N on macOS and Ctrl+Alt+Shift+N on Windows. Linux has none,
+  because Wayland offers no portable global shortcut.
+* On Android, voice mode keeps running with the screen off (a microphone foreground service).
+* Core error messages are shown in the app's language (known sentences; others as written).
+* Build fixes found by CI:
+  * libgit2 linking on Apple platforms;
+  * webkit2gtk-4.1 on Ubuntu 24.04;
+  * audioplayers under the new MSVC.
+
 **Not yet**
-* iOS Share Extension, iOS widget and iOS background refresh need Xcode targets. The steps are in
-  docs/packaging.md.
-* System-wide hotkey: `hotkey_manager` is unmaintained (last release May 2024). The in-app
-  shortcuts work while the window has focus.
-* Android foreground service for voice with the screen off.
-* Not yet exercised by CI, because CI runs only on `main` and PRs:
-  * the Kotlin code (`MainActivity`, `RecordWidget`);
-  * the MSIX script;
-  * the release workflow.
+* Signing the iOS extensions needs the App Group and App IDs in the developer account
+  (docs/packaging.md).
+* No run on a real device yet.
 
 ## Status after M9
 
@@ -263,4 +269,3 @@ and the DMG script on macOS.
 * **Not verified on devices since M1:** no Xcode or Android SDK on the development machine used for
   M2–M9. Everything above is covered by the core scenario tests and widget tests with fakes, not by
   a run on a phone.
-* Core error messages are English in both languages.
