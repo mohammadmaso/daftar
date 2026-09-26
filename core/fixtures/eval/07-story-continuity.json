@@ -1,0 +1,23 @@
+{
+  "name": "story-continuity",
+  "op": "story",
+  "story": "glass-city",
+  "pages": [
+    {
+      "path": "vaults/stories/glass-city/characters/sara.md",
+      "content": "---\nid: 01EVAL07804854254289184359\ntype: character\nvault: stories\ntitle: { en: \"Sara (Glass City)\", fa: \"سارا (شهر شیشه‌ای)\" }\naliases: []\nsummary: \"The glassblower's daughter.\"\nsources: []\ncreated: 2026-09-01\nupdated: 2026-09-01\nstatus: active\n---\n\n# Sara\n\n- Chapter 2: overhears the guards talk about the tower key.\n- Chapter 3: diagnosed with the glass fever; tells no one.\n"
+    },
+    {
+      "path": "vaults/stories/glass-city/timeline.md",
+      "content": "---\nid: 01EVAL09000143931876470409\ntype: thread\nvault: stories\ntitle: { en: \"Timeline\", fa: \"خط زمانی\" }\naliases: []\nsummary: \"What happens when.\"\nsources: []\ncreated: 2026-09-01\nupdated: 2026-09-01\nstatus: active\n---\n\n# Timeline\n\n1. Chapter 1: the tower is sealed.\n2. Chapter 2: Sara overhears the guards; Omid is away in the harbour.\n3. Chapter 3: Sara falls ill.\n4. Chapter 4: Omid returns.\n"
+    },
+    {
+      "path": "vaults/life/people/sara.md",
+      "content": "---\nid: 01EVAL00312618602283644031\ntype: person\nvault: life\ntitle: { en: \"Sara\", fa: \"سارا\" }\naliases: [\"sara\", \"سارا\"]\nsummary: \"Cousin.\"\nsources: []\ncreated: 2026-09-01\nupdated: 2026-09-01\nstatus: active\n---\n\n# Sara\n\nMy cousin. Lives in Tehran.\n"
+    }
+  ],
+  "question": "At the start of chapter 4, does Omid know that Sara is ill?",
+  "expect": {
+    "cited": true
+  }
+}

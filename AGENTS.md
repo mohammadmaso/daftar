@@ -36,6 +36,7 @@ cd app && flutter_rust_bridge_codegen generate        # codegen pinned to 2.13.0
 # Flutter
 cd app && flutter analyze && flutter test
 flutter test --update-goldens test/golden             # only on Linux; goldens are Linux-rendered
+tools/update_goldens.sh [--plain-name X]              # same, in Docker, from macOS/Windows hosts
 flutter run -d linux --dart-define=DAFTAR_PREVIEW=true  # preview surfaces (design gallery)
 flutter build linux | apk | windows | macos | ios --no-codesign
 ```
@@ -43,6 +44,10 @@ flutter build linux | apk | windows | macos | ios --no-codesign
 On machines with an HTTP proxy set, `flutter test` needs
 `NO_PROXY=127.0.0.1,localhost,::1 no_proxy=127.0.0.1,localhost,::1`, otherwise the test runner's
 local websocket is sent to the proxy and fails with HTTP 403.
+
+Flutter is pinned to 3.41.1 (ADR-0003); on a machine where it is not on `PATH`, prefix commands with
+`PATH=$HOME/flutter/bin:$HOME/.cargo/bin:$PATH`. When a push of many commits fails behind a slow
+proxy, push them one at a time (`git push origin <sha>:refs/heads/<branch>`).
 
 ## Conventions
 

@@ -3,13 +3,18 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  audioplayers_windows
+  desktop_webview_window
   file_selector_windows
   flutter_secure_storage_windows
   record_windows
+  url_launcher_windows
+  window_to_front
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
   daftar_bridge
+  flutter_local_notifications_windows
   jni
 )
 

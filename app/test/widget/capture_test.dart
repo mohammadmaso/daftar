@@ -7,7 +7,9 @@ import '../fakes.dart';
 import '../helpers.dart';
 
 void main() {
-  testWidgets('first run shows onboarding; local start opens Today', (tester) async {
+  testWidgets('first run shows onboarding; local start opens Today', (
+    tester,
+  ) async {
     final setup = FakeSetup();
     await pumpApp(tester, setup: setup);
     expect(find.text('A notebook that files itself.'), findsOneWidget);
@@ -19,18 +21,23 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(setup.deviceName, 'Test phone');
-    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('Today'), findsWidgets);
     expect(find.text('On this device only'), findsOneWidget);
   });
 
-  testWidgets('connect with HTTPS token clones and stores credentials', (tester) async {
+  testWidgets('connect with HTTPS token clones and stores credentials', (
+    tester,
+  ) async {
     final setup = FakeSetup();
     await pumpApp(tester, setup: setup);
     await tester.tap(find.text('Connect a private repository'));
     await tester.pumpAndSettle();
 
     final continueButton = find.text('Continue');
-    await tester.enterText(find.byType(EditableText).at(0), 'https://github.com/me/notes.git');
+    await tester.enterText(
+      find.byType(EditableText).at(0),
+      'https://github.com/me/notes.git',
+    );
     await tester.enterText(find.byType(EditableText).at(1), 'github_pat_x');
     await tester.pumpAndSettle();
     await tester.tap(continueButton);
@@ -41,10 +48,12 @@ void main() {
     expect(setup.clonedUrl, 'https://github.com/me/notes.git');
     expect(setup.clonedAuth!.kind, AuthKind.token);
     expect(setup.clonedAuth!.secret, 'github_pat_x');
-    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('Today'), findsWidgets);
   });
 
-  testWidgets('SSH mode generates a key and shows the public half', (tester) async {
+  testWidgets('SSH mode generates a key and shows the public half', (
+    tester,
+  ) async {
     await pumpApp(tester, setup: FakeSetup());
     await tester.tap(find.text('Connect a private repository'));
     await tester.pumpAndSettle();
@@ -53,7 +62,11 @@ void main() {
     await tester.tap(find.text('Create a key for this device'));
     await tester.pumpAndSettle();
     expect(find.textContaining('ssh-ed25519 AAAA'), findsOneWidget);
-    expect(find.textContaining('PRIVATE KEY'), findsNothing, reason: 'private key is never shown');
+    expect(
+      find.textContaining('PRIVATE KEY'),
+      findsNothing,
+      reason: 'private key is never shown',
+    );
   });
 
   testWidgets('tap the capture button to type a note', (tester) async {
@@ -73,7 +86,11 @@ void main() {
   testWidgets('hold to record, release to save', (tester) async {
     final lib = FakeLibrary();
     final rec = FakeRecorder();
-    await pumpApp(tester, setup: FakeSetup(library: lib), recorder: rec);
+    await pumpApp(
+      tester,
+      setup: FakeSetup(library: lib),
+      recorder: rec,
+    );
     final button = find.bySemanticsLabel('Hold to record, tap to type');
     final g = await tester.startGesture(tester.getCenter(button));
     await tester.pump(const Duration(milliseconds: 600));
@@ -89,7 +106,11 @@ void main() {
   testWidgets('slide toward the start cancels the recording', (tester) async {
     final lib = FakeLibrary();
     final rec = FakeRecorder();
-    await pumpApp(tester, setup: FakeSetup(library: lib), recorder: rec);
+    await pumpApp(
+      tester,
+      setup: FakeSetup(library: lib),
+      recorder: rec,
+    );
     final button = find.bySemanticsLabel('Hold to record, tap to type');
     final g = await tester.startGesture(tester.getCenter(button));
     await tester.pump(const Duration(milliseconds: 600));

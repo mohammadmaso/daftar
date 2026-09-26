@@ -94,6 +94,8 @@ pub struct SyncOutcome {
     pub duplicates_dropped: Vec<String>,
     /// Paths changed by the integration (for incremental re-indexing).
     pub changed_paths: Vec<String>,
+    /// Local files not committed because they look like they contain a key or token (§12).
+    pub held_back: Vec<String>,
 }
 
 impl SyncOutcome {
@@ -106,6 +108,7 @@ impl SyncOutcome {
             pushed: 0,
             conflicts: vec![],
             replays: vec![],
+            held_back: vec![],
             duplicates_dropped: vec![],
             changed_paths: vec![],
         }
@@ -122,7 +125,7 @@ pub struct LocalStatus {
 
 // ───────────────────────────── setup ─────────────────────────────
 
-fn signature(dev: &LocalDevice) -> Result<Signature<'static>> {
+pub(crate) fn signature(dev: &LocalDevice) -> Result<Signature<'static>> {
     let name = if dev.name.is_empty() {
         dev.id.clone()
     } else {
@@ -239,6 +242,30 @@ pub(crate) fn commit_paths(
 /// Commits everything in the worktree that is ready: sealed captures (plus their assets and
 /// status changes) as one `capture:` commit, and any other change — typically edits made outside
 /// the app — as one `edit:` commit. Returns the number of commits created.
+fn has_secret(lib: &Library, rel: &str) -> bool {
+    (rel.ends_with(".md") || rel.ends_with(".json") || rel.ends_with(".txt"))
+        && std::fs::read_to_string(lib.path(rel))
+            .is_ok_and(|t| !crate::secrets::scan(&t).is_empty())
+}
+
+/// Uncommitted text files that the secret guard is holding back.
+pub fn held_back(lib: &Library) -> Result<Vec<String>> {
+    let repo = Repository::open(lib.root())?;
+    let mut opts = StatusOptions::new();
+    opts.include_untracked(true)
+        .recurse_untracked_dirs(true)
+        .include_ignored(false);
+    let mut out = Vec::new();
+    for s in repo.statuses(Some(&mut opts))?.iter() {
+        if let Ok(p) = s.path()
+            && has_secret(lib, p)
+        {
+            out.push(p.to_owned());
+        }
+    }
+    Ok(out)
+}
+
 pub fn commit_local(lib: &Library, queue: &Queue, dev: &LocalDevice) -> Result<usize> {
     let repo = Repository::open(lib.root())?;
     let mut opts = StatusOptions::new();
@@ -251,6 +278,7 @@ pub fn commit_local(lib: &Library, queue: &Queue, dev: &LocalDevice) -> Result<u
     let mut captures = Vec::new();
     let mut capture_kinds: Vec<&'static str> = Vec::new();
     let mut raw_other = Vec::new();
+    let mut settings = Vec::new();
     let mut edits = Vec::new();
 
     for s in statuses.iter() {
@@ -282,11 +310,18 @@ pub fn commit_local(lib: &Library, queue: &Queue, dev: &LocalDevice) -> Result<u
             }
         } else if path.starts_with(".daftar/devices/") {
             raw_other.push(path);
+        } else if path == layout::CONFIG_FILE {
+            settings.push(path);
         } else {
             edits.push(path);
         }
     }
     raw_other.retain(|p| !unsealed_assets.contains(p));
+    // §12: anything that looks like a key or token stays out of history until the user redacts it.
+    let clean = |p: &String| !has_secret(lib, p);
+    captures.retain(clean);
+    edits.retain(clean);
+    settings.retain(clean);
 
     let sig = signature(dev)?;
     let mut n = 0;
@@ -308,6 +343,12 @@ pub fn commit_local(lib: &Library, queue: &Queue, dev: &LocalDevice) -> Result<u
         all.extend(raw_other);
         let msg = format!("{subject}\n\nDevice: {}\n", dev.id);
         if commit_paths(&repo, &all, &msg, &sig)?.is_some() {
+            n += 1;
+        }
+    }
+    if !settings.is_empty() {
+        let msg = format!("settings: shared settings changed\n\nDevice: {}\n", dev.id);
+        if commit_paths(&repo, &settings, &msg, &sig)?.is_some() {
             n += 1;
         }
     }
@@ -573,17 +614,20 @@ pub fn sync(
 ) -> Result<SyncOutcome> {
     crate::tls::configure_git(&lib.local_dir())?;
     let committed = commit_local(lib, queue, dev)?;
+    let held = held_back(lib)?;
     let repo = Repository::open(lib.root())?;
     let branch = current_branch(&repo)?;
     if repo.find_remote(REMOTE).is_err() {
         let mut o = SyncOutcome::new(SyncState::LocalChanges);
         o.committed = committed;
+        o.held_back = held;
         o.message = Some("no remote configured".into());
         return Ok(o);
     }
 
     let mut outcome = SyncOutcome::new(SyncState::Synced);
     outcome.committed = committed;
+    outcome.held_back = held;
     for attempt in 1..=MAX_PUSH_ATTEMPTS {
         let upstream = match fetch(&repo, &branch, auth) {
             Ok(u) => u,
@@ -785,13 +829,27 @@ fn integrate(
 }
 
 /// Generated indexes are never merged (§4.4): rebuild those of vaults whose pages changed.
-fn regenerate_indexes_after_merge(lib: &Library, repo: &Repository, dev: &LocalDevice, changed: &[String]) -> Result<()> {
-    let vaults: BTreeSet<String> = changed.iter().filter(|p| !crate::pages::is_generated_index(p)).filter_map(|p| crate::pages::vault_of(p).map(str::to_owned)).collect();
+fn regenerate_indexes_after_merge(
+    lib: &Library,
+    repo: &Repository,
+    dev: &LocalDevice,
+    changed: &[String],
+) -> Result<()> {
+    let vaults: BTreeSet<String> = changed
+        .iter()
+        .filter(|p| !crate::pages::is_generated_index(p))
+        .filter_map(|p| crate::pages::vault_of(p).map(str::to_owned))
+        .collect();
     if vaults.is_empty() {
         return Ok(());
     }
     let paths = crate::pages::regenerate_indexes(lib, &vaults.into_iter().collect::<Vec<_>>())?;
-    commit_paths(repo, &paths, &format!("index: regenerate\n\nDevice: {}\n", dev.id), &signature(dev)?)?;
+    commit_paths(
+        repo,
+        &paths,
+        &format!("index: regenerate\n\nDevice: {}\n", dev.id),
+        &signature(dev)?,
+    )?;
     Ok(())
 }
 
@@ -816,6 +874,7 @@ fn revert_entry(target: &str, dev: &LocalDevice, now: &Zoned) -> LedgerEntry {
         forced_vault: None,
         replayed_from: None,
         reverts: Some(target.to_owned()),
+        rejected_claims: vec![],
     }
 }
 
@@ -889,6 +948,17 @@ fn resolve_human_conflicts(
                     && path.matches('/').count() == 2;
                 if is_generated {
                     Some(repo.find_blob(ours.id)?.content().to_vec())
+                } else if path == layout::CONFIG_FILE {
+                    let parse = |e: &git2::IndexEntry| -> Result<serde_json::Value> {
+                        Ok(serde_json::from_slice(repo.find_blob(e.id)?.content())?)
+                    };
+                    let base = c.ancestor.as_ref().map(parse).transpose()?;
+                    // `ours` is the remote side here, `theirs` this device (see labels below).
+                    let merged =
+                        crate::config::merge_json(base.as_ref(), &parse(ours)?, &parse(theirs)?);
+                    let mut text = serde_json::to_string_pretty(&merged)?;
+                    text.push('\n');
+                    Some(text.into_bytes())
                 } else {
                     let mut opts = git2::MergeFileOptions::new();
                     opts.our_label("remote").their_label("local");

@@ -88,6 +88,14 @@ impl Library {
         Ok(())
     }
 
+    /// Read-modify-write of the shared config. The change is committed on the next sync.
+    pub fn update_config<T>(&self, f: impl FnOnce(&mut Config) -> T) -> Result<T> {
+        let mut c = self.config()?;
+        let out = f(&mut c);
+        self.save_config(&c)?;
+        Ok(out)
+    }
+
     pub fn device(&self) -> Result<LocalDevice> {
         let p = self.local_dir().join("device.json");
         let bytes = fs::read(&p).map_err(|_| {

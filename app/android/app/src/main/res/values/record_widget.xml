@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mirrors the accent tokens in lib/design/tokens.dart. -->
+    <color name="record_widget_accent">#FF22505E</color>
+    <color name="record_widget_on_accent">#FFF7F4EE</color>
+    <string name="record_widget_label">Record</string>
+    <string name="record_widget_description">Start a voice note in one tap</string>
+</resources>

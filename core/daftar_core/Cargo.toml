@@ -28,4 +28,11 @@ sha2.workspace = true
 base64.workspace = true
 async-trait.workspace = true
 unicode-normalization.workspace = true
+rmcp.workspace = true
+url.workspace = true
+http.workspace = true
+
+# stdio MCP servers are desktop-only (§10): no child processes on phones.
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+rmcp = { workspace = true, features = ["transport-child-process"] }
 

@@ -14,7 +14,9 @@ pub fn page_paths(lib: &Library) -> Result<Vec<String>> {
     let mut out = Vec::new();
     let mut stack = vec![layout::VAULTS_DIR.to_owned()];
     while let Some(rel) = stack.pop() {
-        let Ok(entries) = fs::read_dir(lib.path(&rel)) else { continue };
+        let Ok(entries) = fs::read_dir(lib.path(&rel)) else {
+            continue;
+        };
         for e in entries.flatten() {
             let name = e.file_name().to_string_lossy().into_owned();
             if name.starts_with('.') {
@@ -74,7 +76,10 @@ impl Resolver {
     pub fn add(&mut self, path: &str) {
         let no_ext = path.trim_end_matches(".md").to_owned();
         self.paths.insert(no_ext);
-        self.by_slug.entry(wiki::slug_of(path).to_lowercase()).or_default().push(path.to_owned());
+        self.by_slug
+            .entry(wiki::slug_of(path).to_lowercase())
+            .or_default()
+            .push(path.to_owned());
     }
 
     /// Repo path (with `.md`) a link target points to.
@@ -93,7 +98,9 @@ impl Resolver {
             return None;
         }
         let suffix = format!("/{t}");
-        let mut matches = candidates.iter().filter(|c| c.trim_end_matches(".md").ends_with(&suffix));
+        let mut matches = candidates
+            .iter()
+            .filter(|c| c.trim_end_matches(".md").ends_with(&suffix));
         match (matches.next(), matches.next()) {
             (Some(one), None) => Some(one.clone()),
             _ => None,
@@ -114,7 +121,9 @@ pub fn raw_paths(lib: &Library) -> Result<Vec<String>> {
     let mut out = Vec::new();
     let mut stack = vec![layout::RAW_DIR.to_owned()];
     while let Some(rel) = stack.pop() {
-        let Ok(entries) = fs::read_dir(lib.path(&rel)) else { continue };
+        let Ok(entries) = fs::read_dir(lib.path(&rel)) else {
+            continue;
+        };
         for e in entries.flatten() {
             let name = e.file_name().to_string_lossy().into_owned();
             let child = format!("{rel}/{name}");
@@ -134,7 +143,11 @@ pub fn raw_paths(lib: &Library) -> Result<Vec<String>> {
 pub fn generate_index(vault_title_en: &str, vault_title_fa: &str, pages: &[&Page]) -> String {
     let mut by_type: BTreeMap<&str, Vec<&Page>> = BTreeMap::new();
     for p in pages {
-        let t = if p.meta.kind.is_empty() { "page" } else { p.meta.kind.as_str() };
+        let t = if p.meta.kind.is_empty() {
+            "page"
+        } else {
+            p.meta.kind.as_str()
+        };
         by_type.entry(t).or_default().push(p);
     }
     let mut out = format!("# {vault_title_en} · {vault_title_fa}\n\n{GENERATED_MARKER}\n");
@@ -154,10 +167,20 @@ pub fn generate_index(vault_title_en: &str, vault_title_fa: &str, pages: &[&Page
                 (en, fa) if en == fa => en.to_owned(),
                 (en, fa) => format!("{en} · {fa}"),
             };
-            let summary = if p.meta.summary.is_empty() { String::new() } else { format!(" — {}", p.meta.summary.trim()) };
+            let summary = if p.meta.summary.is_empty() {
+                String::new()
+            } else {
+                format!(" — {}", p.meta.summary.trim())
+            };
             let n = p.meta.sources.len();
-            let updated = if p.meta.updated.is_empty() { String::new() } else { format!(" · {}", p.meta.updated) };
-            out.push_str(&format!("- [[{path}|{title}]]{summary} _({n} src{updated})_\n"));
+            let updated = if p.meta.updated.is_empty() {
+                String::new()
+            } else {
+                format!(" · {}", p.meta.updated)
+            };
+            out.push_str(&format!(
+                "- [[{path}|{title}]]{summary} _({n} src{updated})_\n"
+            ));
         }
     }
     out
@@ -170,7 +193,10 @@ pub fn regenerate_indexes(lib: &Library, vaults: &[String]) -> Result<Vec<String
     let mut changed = Vec::new();
     for v in vaults {
         let Some(vc) = config.vault(v) else { continue };
-        let ps: Vec<&Page> = pages.iter().filter(|p| vault_of(&p.path) == Some(v.as_str())).collect();
+        let ps: Vec<&Page> = pages
+            .iter()
+            .filter(|p| vault_of(&p.path) == Some(v.as_str()))
+            .collect();
         let text = generate_index(&vc.title.en, &vc.title.fa, &ps);
         let rel = layout::vault_index(v);
         let current = fs::read_to_string(lib.path(&rel)).unwrap_or_default();
@@ -188,21 +214,41 @@ mod tests {
 
     #[test]
     fn resolver_prefers_exact_paths_and_unique_names() {
-        let r = Resolver::new(["vaults/life/people/sara.md", "vaults/stories/x/characters/sara.md", "vaults/health/profile.md", "raw/2026/09/23/a.md"]);
-        assert_eq!(r.resolve("profile").as_deref(), Some("vaults/health/profile.md"));
+        let r = Resolver::new([
+            "vaults/life/people/sara.md",
+            "vaults/stories/x/characters/sara.md",
+            "vaults/health/profile.md",
+            "raw/2026/09/23/a.md",
+        ]);
+        assert_eq!(
+            r.resolve("profile").as_deref(),
+            Some("vaults/health/profile.md")
+        );
         assert_eq!(r.resolve("sara"), None, "ambiguous");
-        assert_eq!(r.resolve("people/sara").as_deref(), Some("vaults/life/people/sara.md"));
-        assert_eq!(r.resolve("raw/2026/09/23/a").as_deref(), Some("raw/2026/09/23/a.md"));
+        assert_eq!(
+            r.resolve("people/sara").as_deref(),
+            Some("vaults/life/people/sara.md")
+        );
+        assert_eq!(
+            r.resolve("raw/2026/09/23/a").as_deref(),
+            Some("raw/2026/09/23/a.md")
+        );
         assert_eq!(r.resolve("nope"), None);
     }
 
     #[test]
     fn index_is_deterministic_and_grouped() {
         let a = wiki::parse("vaults/life/people/sara.md", "---\ntype: person\ntitle: { en: \"Sara\", fa: \"سارا\" }\nsummary: \"Cousin.\"\nsources: [a, b]\nupdated: 2026-09-23\n---\nx").unwrap();
-        let b = wiki::parse("vaults/life/concerns/career.md", "---\ntype: concern\ntitle: { en: \"Career\", fa: \"\" }\n---\nx").unwrap();
+        let b = wiki::parse(
+            "vaults/life/concerns/career.md",
+            "---\ntype: concern\ntitle: { en: \"Career\", fa: \"\" }\n---\nx",
+        )
+        .unwrap();
         let out = generate_index("Life", "زندگی", &[&a, &b]);
         assert!(out.contains("## concern\n\n- [[vaults/life/concerns/career|Career]] _(0 src)_"));
-        assert!(out.contains("- [[vaults/life/people/sara|Sara · سارا]] — Cousin. _(2 src · 2026-09-23)_"));
+        assert!(out.contains(
+            "- [[vaults/life/people/sara|Sara · سارا]] — Cousin. _(2 src · 2026-09-23)_"
+        ));
         assert!(out.find("## concern").unwrap() < out.find("## person").unwrap());
     }
 }

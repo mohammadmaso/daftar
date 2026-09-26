@@ -5,9 +5,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/identity.dart';
 import '../../core/dates.dart';
+import '../../core/job_runner.dart';
 import '../../core/library_state.dart';
 import '../../design/design.dart';
 import '../../l10n/app_localizations.dart';
+import '../ask/ask_screen.dart' show TalkToSomeoneCard;
+import '../review/review_screen.dart' show reviewCardsProvider;
+import '../settings/ai_settings.dart' show roleName;
+import '../shell/home_shell.dart' show kWideLayout;
 import 'capture_bar.dart';
 import 'capture_item.dart';
 
@@ -38,7 +43,7 @@ class TodayScreen extends ConsumerWidget {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(
+                  padding: const EdgeInsetsDirectional.fromSTEB(
                     Space.x4,
                     Space.x4,
                     Space.x2,
@@ -66,6 +71,8 @@ class TodayScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: Space.x1),
                             const SyncBadge(),
+                            const _FilingWaits(),
+                            const _ReviewAndActivity(),
                           ],
                         ),
                       ),
@@ -82,6 +89,18 @@ class TodayScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+                if (ref.watch(helpCardProvider))
+                  Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      Space.x3,
+                      Space.x2,
+                      Space.x3,
+                      Space.x2,
+                    ),
+                    child: TalkToSomeoneCard(
+                      onClose: ref.read(helpCardProvider.notifier).close,
+                    ),
+                  ),
                 Expanded(
                   child: RefreshIndicator(
                     color: p.accent,
@@ -128,9 +147,17 @@ class TodayScreen extends ConsumerWidget {
                               itemCount: items.length,
                               separatorBuilder: (_, _) =>
                                   const DHairline(indent: 52 + Space.x1),
-                              itemBuilder: (_, i) => CaptureItem(
-                                capture: items[items.length - 1 - i],
-                              ),
+                              itemBuilder: (_, i) {
+                                final c = items[items.length - 1 - i];
+                                final op = c.filing?.opId;
+                                return CaptureItem(
+                                  capture: c,
+                                  onTap: op == null
+                                      ? null
+                                      : () =>
+                                            context.push('/activity/op?id=$op'),
+                                );
+                              },
                             ),
                     ),
                   ),
@@ -140,6 +167,84 @@ class TodayScreen extends ConsumerWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// §8.1: Review and Activity are reached from a small badge on Today.
+class _ReviewAndActivity extends ConsumerWidget {
+  const _ReviewAndActivity();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = L10n.of(context);
+    final p = context.palette;
+    final n = ref.watch(reviewCardsProvider).value?.length ?? 0;
+    final wide = MediaQuery.sizeOf(context).width >= kWideLayout;
+    if (wide) return const SizedBox.shrink(); // the rail has both
+    return Padding(
+      padding: const EdgeInsets.only(top: Space.x1),
+      child: Wrap(
+        spacing: Space.x2,
+        children: [
+          if (n > 0)
+            Pressable(
+              onPressed: () => context.push('/review'),
+              radius: Radii.pill,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Space.x2,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: p.accentSoft,
+                  borderRadius: BorderRadius.circular(Radii.pill),
+                ),
+                child: Text(
+                  l.toReview(n),
+                  style: context.type.caption.copyWith(color: p.accent),
+                ),
+              ),
+            ),
+          Pressable(
+            onPressed: () => context.push('/activity'),
+            radius: Radii.pill,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Space.x1,
+                vertical: 2,
+              ),
+              child: Text(
+                l.activityTitle,
+                style: context.type.caption.copyWith(color: p.inkMuted),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shown when filing is paused because a model role is not set up (never an error).
+class _FilingWaits extends ConsumerWidget {
+  const _FilingWaits();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final role = ref.watch(jobRunnerProvider).waitingFor;
+    if (role == null) return const SizedBox.shrink();
+    final l = L10n.of(context);
+    return Pressable(
+      onPressed: () => context.push('/settings'),
+      radius: Radii.small,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: Space.x1),
+        child: Text(
+          l.filingWaits(roleName(l, role)),
+          style: context.type.caption.copyWith(color: context.palette.pending),
         ),
       ),
     );

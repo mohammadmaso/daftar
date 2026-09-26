@@ -32,10 +32,7 @@ pub fn device_id(name: &str) -> String {
         slug.pop();
     }
     if slug.is_empty() {
-        format!(
-            "device-{}",
-            &new_id().to_string()[20..].to_ascii_lowercase()
-        )
+        format!("device-{}", new_id().to_string()[20..].to_ascii_lowercase())
     } else {
         slug
     }

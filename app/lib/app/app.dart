@@ -4,14 +4,22 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/core_text.dart';
 import '../core/library_state.dart';
 import '../design/theme.dart';
 import '../design/tokens.dart';
+import '../features/activity/activity_screen.dart';
+import '../features/ask/ask_screen.dart';
 import '../features/capture/today_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
+import '../features/review/review_screen.dart';
 import '../features/settings/gallery_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/shell/home_shell.dart';
+import '../features/voice/voice_screen.dart';
+import '../features/wiki/editor_screen.dart';
+import '../features/wiki/page_screen.dart';
+import '../features/wiki/wiki_screen.dart';
 import '../l10n/app_localizations.dart';
 import 'appearance.dart';
 import 'features.dart';
@@ -35,6 +43,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/start', builder: (_, _) => const _Start()),
       GoRoute(path: '/setup', builder: (_, _) => const OnboardingScreen()),
+      // Voice mode is full-screen (§8.4), outside the tab shell.
+      GoRoute(path: '/voice', builder: (_, _) => const VoiceScreen()),
       ShellRoute(
         builder: (context, state, child) =>
             HomeShell(location: state.matchedLocation, child: child),
@@ -45,6 +55,48 @@ final routerProvider = Provider<GoRouter>((ref) {
               showSettingsButton:
                   MediaQuery.sizeOf(context).width < kWideLayout,
             ),
+          ),
+          GoRoute(
+            path: '/wiki',
+            builder: (context, state) =>
+                WikiScreen(selected: state.uri.queryParameters['path']),
+            routes: [
+              GoRoute(
+                path: 'page',
+                builder: (context, state) =>
+                    PageScreen(path: state.uri.queryParameters['path'] ?? ''),
+              ),
+              GoRoute(
+                path: 'edit',
+                builder: (context, state) =>
+                    EditorScreen(path: state.uri.queryParameters['path'] ?? ''),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/ask',
+            builder: (_, state) =>
+                AskScreen(question: state.uri.queryParameters['q']),
+          ),
+          GoRoute(
+            path: '/review',
+            builder: (context, _) => ReviewScreen(
+              embedded: MediaQuery.sizeOf(context).width >= kWideLayout,
+            ),
+          ),
+          GoRoute(
+            path: '/activity',
+            builder: (context, _) => ActivityScreen(
+              embedded: MediaQuery.sizeOf(context).width >= kWideLayout,
+            ),
+            routes: [
+              GoRoute(
+                path: 'op',
+                builder: (context, state) => OperationScreen(
+                  opId: state.uri.queryParameters['id'] ?? '',
+                ),
+              ),
+            ],
           ),
           GoRoute(
             path: '/settings',
@@ -112,6 +164,8 @@ class DaftarApp extends ConsumerWidget {
       // Theme depends on the resolved locale (Persian gets its own type scale), which is only
       // known below Localizations, so it is applied here rather than via `theme:`.
       builder: (context, child) {
+        // Core sentences are translated with the strings on screen (lib/core/core_text.dart).
+        coreStrings = L10n.of(context);
         final brightness = switch (appearance.theme) {
           ThemePref.system => MediaQuery.platformBrightnessOf(context),
           ThemePref.light => Brightness.light,

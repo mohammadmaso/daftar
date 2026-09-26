@@ -108,3 +108,18 @@ String clockTime(DateTime d, String languageCode) {
   final s = DateFormat.Hm('en').format(d);
   return languageCode == 'fa' ? persianDigits(s) : s;
 }
+
+/// "23 Sep 2026" / «۱ مهر ۱۴۰۵».
+String shortDate(DateTime d, String languageCode) {
+  if (languageCode == 'fa') {
+    final j = JalaliDate.fromDateTime(d);
+    return persianDigits(
+      '${j.day} ${JalaliDate.monthNames[j.month - 1]} ${j.year}',
+    );
+  }
+  return DateFormat('d MMM y', languageCode).format(d);
+}
+
+/// Weekday name for an ISO day (1 = Monday … 7 = Sunday).
+String weekdayName(int isoDay, String languageCode) =>
+    DateFormat.EEEE(languageCode).format(DateTime(2024, 1, isoDay));

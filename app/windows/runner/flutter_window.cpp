@@ -2,7 +2,13 @@
 
 #include <optional>
 
+#include <flutter/standard_method_codec.h>
+
 #include "flutter/generated_plugin_registrant.h"
+
+namespace {
+constexpr int kRecordHotKey = 1;
+}
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -25,6 +31,13 @@ bool FlutterWindow::OnCreate() {
     return false;
   }
   RegisterPlugins(flutter_controller_->engine());
+  hotkey_channel_ =
+      std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+          flutter_controller_->engine()->messenger(), "daftar/hotkey",
+          &flutter::StandardMethodCodec::GetInstance());
+  // Best effort: another app may already own the combination.
+  RegisterHotKey(GetHandle(), kRecordHotKey,
+                 MOD_CONTROL | MOD_ALT | MOD_SHIFT | MOD_NOREPEAT, 'N');
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -40,6 +53,8 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  UnregisterHotKey(GetHandle(), kRecordHotKey);
+  hotkey_channel_ = nullptr;
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }
@@ -64,6 +79,14 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
   switch (message) {
     case WM_FONTCHANGE:
       flutter_controller_->engine()->ReloadSystemFonts();
+      break;
+    case WM_HOTKEY:
+      if (wparam == kRecordHotKey && hotkey_channel_) {
+        ShowWindow(hwnd, SW_RESTORE);
+        SetForegroundWindow(hwnd);
+        hotkey_channel_->InvokeMethod("record", nullptr);
+        return 0;
+      }
       break;
   }
 

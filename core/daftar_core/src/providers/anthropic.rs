@@ -8,8 +8,8 @@ use serde_json::{Value, json};
 use super::openai::{check, parse_args};
 use super::sse;
 use super::{
-    ChatRequest, ChatResponse, LlmProvider, MsgRole, OnDelta, Part, ProviderConfig, ProviderError, ProviderErrorKind,
-    ProviderResult, StopReason, ToolCall,
+    ChatRequest, ChatResponse, LlmProvider, MsgRole, OnDelta, Part, ProviderConfig, ProviderError,
+    ProviderErrorKind, ProviderResult, StopReason, ToolCall,
 };
 use crate::ledger::Usage;
 
@@ -25,12 +25,26 @@ pub struct Anthropic {
 
 impl Anthropic {
     pub fn new(c: &ProviderConfig, key: String, timeout: Duration) -> Self {
-        let base = if c.base_url.is_empty() { "https://api.anthropic.com/v1".to_owned() } else { c.base_url.trim_end_matches('/').to_owned() };
-        Self { name: c.name.clone(), base, key, headers: c.extra_headers.clone(), http: crate::tls::http_client(timeout) }
+        let base = if c.base_url.is_empty() {
+            "https://api.anthropic.com/v1".to_owned()
+        } else {
+            c.base_url.trim_end_matches('/').to_owned()
+        };
+        Self {
+            name: c.name.clone(),
+            base,
+            key,
+            headers: c.extra_headers.clone(),
+            http: crate::tls::http_client(timeout),
+        }
     }
 
     fn req(&self, method: reqwest::Method, path: &str) -> reqwest::RequestBuilder {
-        let mut r = self.http.request(method, format!("{}{path}", self.base)).header("x-api-key", &self.key).header("anthropic-version", VERSION);
+        let mut r = self
+            .http
+            .request(method, format!("{}{path}", self.base))
+            .header("x-api-key", &self.key)
+            .header("anthropic-version", VERSION);
         for (k, v) in &self.headers {
             r = r.header(k, v);
         }
@@ -65,11 +79,16 @@ impl Anthropic {
                 MsgRole::Tool => ("user", vec![json!({"type": "tool_result", "tool_use_id": m.tool_call_id, "content": m.text()})]),
             };
             // Consecutive tool results must share one user turn.
-            if let Some(last) = messages.last_mut() {
-                if last["role"] == role && role == "user" && m.role == MsgRole::Tool {
-                    last["content"].as_array_mut().expect("array").extend(content);
-                    continue;
-                }
+            if let Some(last) = messages.last_mut()
+                && last["role"] == role
+                && role == "user"
+                && m.role == MsgRole::Tool
+            {
+                last["content"]
+                    .as_array_mut()
+                    .expect("array")
+                    .extend(content);
+                continue;
             }
             messages.push(json!({"role": role, "content": content}));
         }
@@ -108,9 +127,15 @@ impl LlmProvider for Anthropic {
         let mut req = req.clone();
         if req.json {
             // No JSON mode: instruct and prefill is unreliable with tools, so instruct only.
-            req.system.push_str("\n\nReply with a single JSON object and nothing else.");
+            req.system
+                .push_str("\n\nReply with a single JSON object and nothing else.");
         }
-        let resp = self.req(reqwest::Method::POST, "/messages").json(&Self::body(&req)).send().await.map_err(|e| ProviderError::from_reqwest(&self.name, e))?;
+        let resp = self
+            .req(reqwest::Method::POST, "/messages")
+            .json(&Self::body(&req))
+            .send()
+            .await
+            .map_err(|e| ProviderError::from_reqwest(&self.name, e))?;
         let resp = check(&self.name, resp).await?;
         let mut text = String::new();
         // index -> (id, name, partial json)
@@ -125,13 +150,22 @@ impl LlmProvider for Anthropic {
             match v["type"].as_str().unwrap_or_default() {
                 "message_start" => {
                     let u = &v["message"]["usage"];
-                    usage.input_tokens = u["input_tokens"].as_u64().unwrap_or(0) + u["cache_read_input_tokens"].as_u64().unwrap_or(0) + u["cache_creation_input_tokens"].as_u64().unwrap_or(0);
+                    usage.input_tokens = u["input_tokens"].as_u64().unwrap_or(0)
+                        + u["cache_read_input_tokens"].as_u64().unwrap_or(0)
+                        + u["cache_creation_input_tokens"].as_u64().unwrap_or(0);
                     usage.cached_input_tokens = u["cache_read_input_tokens"].as_u64().unwrap_or(0);
                 }
                 "content_block_start" => {
                     let b = &v["content_block"];
                     if b["type"] == "tool_use" {
-                        blocks.insert(v["index"].as_u64().unwrap_or(0), (b["id"].as_str().unwrap_or_default().to_owned(), b["name"].as_str().unwrap_or_default().to_owned(), String::new()));
+                        blocks.insert(
+                            v["index"].as_u64().unwrap_or(0),
+                            (
+                                b["id"].as_str().unwrap_or_default().to_owned(),
+                                b["name"].as_str().unwrap_or_default().to_owned(),
+                                String::new(),
+                            ),
+                        );
                     }
                 }
                 "content_block_delta" => {
@@ -153,7 +187,9 @@ impl LlmProvider for Anthropic {
                     }
                 }
                 "message_delta" => {
-                    usage.output_tokens = v["usage"]["output_tokens"].as_u64().unwrap_or(usage.output_tokens);
+                    usage.output_tokens = v["usage"]["output_tokens"]
+                        .as_u64()
+                        .unwrap_or(usage.output_tokens);
                     stop = match v["delta"]["stop_reason"].as_str() {
                         Some("end_turn") | Some("stop_sequence") => StopReason::EndTurn,
                         Some("tool_use") => StopReason::ToolUse,
@@ -162,21 +198,59 @@ impl LlmProvider for Anthropic {
                     };
                 }
                 "error" => {
-                    let kind = if v["error"]["type"] == "overloaded_error" { ProviderErrorKind::Server } else { ProviderErrorKind::BadRequest };
-                    return Err(ProviderError::new(kind, format!("{}: {}", self.name, v["error"]["message"].as_str().unwrap_or("error"))));
+                    let kind = if v["error"]["type"] == "overloaded_error" {
+                        ProviderErrorKind::Server
+                    } else {
+                        ProviderErrorKind::BadRequest
+                    };
+                    return Err(ProviderError::new(
+                        kind,
+                        format!(
+                            "{}: {}",
+                            self.name,
+                            v["error"]["message"].as_str().unwrap_or("error")
+                        ),
+                    ));
                 }
                 _ => {}
             }
             Ok(())
         })
         .await?;
-        let tool_calls: Vec<ToolCall> = blocks.into_values().map(|(id, name, args)| ToolCall { id, name, arguments: parse_args(&args) }).collect();
-        Ok(ChatResponse { text, tool_calls, usage, stop })
+        let tool_calls: Vec<ToolCall> = blocks
+            .into_values()
+            .map(|(id, name, args)| ToolCall {
+                id,
+                name,
+                arguments: parse_args(&args),
+            })
+            .collect();
+        Ok(ChatResponse {
+            text,
+            tool_calls,
+            usage,
+            stop,
+        })
     }
 
     async fn list_models(&self) -> ProviderResult<Vec<String>> {
-        let resp = self.req(reqwest::Method::GET, "/models?limit=100").send().await.map_err(|e| ProviderError::from_reqwest(&self.name, e))?;
-        let v: Value = check(&self.name, resp).await?.json().await.map_err(|e| ProviderError::from_reqwest(&self.name, e))?;
-        Ok(v["data"].as_array().map(|a| a.iter().filter_map(|m| m["id"].as_str().map(str::to_owned)).collect()).unwrap_or_default())
+        let resp = self
+            .req(reqwest::Method::GET, "/models?limit=100")
+            .send()
+            .await
+            .map_err(|e| ProviderError::from_reqwest(&self.name, e))?;
+        let v: Value = check(&self.name, resp)
+            .await?
+            .json()
+            .await
+            .map_err(|e| ProviderError::from_reqwest(&self.name, e))?;
+        Ok(v["data"]
+            .as_array()
+            .map(|a| {
+                a.iter()
+                    .filter_map(|m| m["id"].as_str().map(str::to_owned))
+                    .collect()
+            })
+            .unwrap_or_default())
     }
 }

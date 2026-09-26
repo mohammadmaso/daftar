@@ -1,0 +1,21 @@
+{
+  "name": "mixed-language-work-note",
+  "op": "ingest",
+  "pages": [],
+  "captures": [
+    {
+      "text": "جلسه‌ی امروز درباره‌ی migration به Postgres خوب بود؛ deadline آخر مهر است و من مسئول backup plan هستم.",
+      "at": "2026-09-23T15:00:00+03:30[Asia/Tehran]"
+    }
+  ],
+  "expect": {
+    "vaults": [
+      "work"
+    ],
+    "never_write": [
+      "vaults/stories/",
+      "vaults/health/"
+    ],
+    "pages_touched_min": 1
+  }
+}

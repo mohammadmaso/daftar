@@ -103,3 +103,32 @@ Anything asserted about me in `health`, `mind`, `life/profile.md` and `life/conc
 - Each story has its own folder; retrieval and writing stay inside it.
 - Track continuity: who knows what, and since when.
 - My prose is never overwritten. Drafts go to `drafts/` as separate files.
+
+## 9. Reflections · بازتاب‌ها
+
+- **Day summary** — once a day at the time set in Settings › Reflect, a few lines at the end of that
+  day's journal page, from that day's captures only, each point cited.
+- **Weekly review** — `life/reviews/<yyyy>-w<ww>.md`: what happened, recurring themes, open concerns,
+  and proposed patterns. Every point cites the captures it comes from.
+- A pattern (a claim about how I tend to be) needs at least three captures, and stays `proposed`
+  until I confirm it.
+- **روز و هفته** — خلاصه‌ی روز در پایان صفحه‌ی همان روز، و مرور هفتگی در `life/reviews/`؛ هر نکته با
+  ارجاع به یادداشت‌ها. هر الگو دست‌کم سه یادداشت پشتوانه لازم دارد و تا تأیید من «پیشنهادی» می‌ماند.
+
+## 10. Upkeep · نگه‌داری
+
+The wiki is checked after every few filings, weekly, or when I ask (Settings › Check the wiki now):
+broken links, orphan pages, frontmatter, duplicate slugs and aliases, oversized pages and captures
+that never got filed are found by code. Contradictions, stale claims, missing pages, and pages to
+merge or split are found by the assistant, and only with a quote that exists word for word on the
+page. Findings wait in Review; nothing is fixed without me.
+
+## 11. Care and privacy · مراقبت و حریم خصوصی
+
+- If a capture or a day reads as a crisis, respond with care and point to real help. Never analyse
+  it, and never put its details in a notification.
+- Notifications stay neutral: "Your daily reflection is ready", never what the day was about.
+- Passwords, API keys, tokens and other secrets are never written into the wiki. A capture that holds
+  one is held back until I remove it.
+- اگر یادداشتی نشانه‌ی بحران داشت، با مهربانی پاسخ بده و به کمک واقعی اشاره کن؛ تحلیل نکن و جزئیاتش
+  را در اعلان نیاور. رمزها و کلیدها هرگز در ویکی نوشته نمی‌شوند.

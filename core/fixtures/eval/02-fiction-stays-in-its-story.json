@@ -1,0 +1,27 @@
+{
+  "name": "fiction-stays-in-its-story",
+  "op": "ingest",
+  "pages": [
+    {
+      "path": "vaults/stories/glass-city/characters/sara.md",
+      "content": "---\nid: 01EVAL07804854254289184359\ntype: character\nvault: stories\ntitle: { en: \"Sara (Glass City)\", fa: \"سارا (شهر شیشه‌ای)\" }\naliases: []\nsummary: \"The glassblower's daughter.\"\nsources: []\ncreated: 2026-09-01\nupdated: 2026-09-01\nstatus: active\n---\n\n# Sara\n\n- Chapter 2: overhears the guards talk about the tower key.\n- Chapter 3: diagnosed with the glass fever; tells no one.\n"
+    }
+  ],
+  "captures": [
+    {
+      "text": "Story idea for Glass City: in chapter 5 Sara is diagnosed with diabetes and hides it from Omid.",
+      "at": "2026-09-23T11:00:00+03:30[Asia/Tehran]"
+    }
+  ],
+  "expect": {
+    "vaults": [
+      "stories"
+    ],
+    "never_write": [
+      "vaults/health/",
+      "vaults/life/",
+      "vaults/mind/"
+    ],
+    "pages_touched_min": 1
+  }
+}

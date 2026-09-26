@@ -1,10 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/bidi.dart';
+import '../../core/core_text.dart';
 import '../../core/dates.dart';
+import '../../core/job_runner.dart';
 import '../../core/library_api.dart';
+import '../../core/library_state.dart';
 import '../../design/design.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -98,19 +102,48 @@ class CaptureItem extends StatelessWidget {
   };
 }
 
-class _StageLine extends StatelessWidget {
+/// "Filed to Life · Health — 4 pages updated, 1 claim to review" (§4.2 step 5).
+String filingLine(
+  L10n l,
+  Filing f,
+  String Function(String vaultId) vaultTitle,
+) {
+  final pages = f.pagesCreated + f.pagesUpdated;
+  final details = [
+    if (pages > 0) l.pagesUpdated(pages),
+    if (f.claimsToReview > 0) l.claimsToReview(f.claimsToReview),
+  ];
+  final head = f.vaults.isEmpty
+      ? l.stageFiled
+      : l.filedTo(f.vaults.map(vaultTitle).join(' · '));
+  return details.isEmpty ? head : '$head — ${details.join(l.listSeparator)}';
+}
+
+class _StageLine extends ConsumerWidget {
   const _StageLine({required this.capture});
   final Capture capture;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = L10n.of(context);
     final p = context.palette;
+    final lang = Localizations.localeOf(context).languageCode;
+    final vaults = ref.watch(vaultsProvider).value ?? const <Vault>[];
+    String vaultTitle(String id) {
+      final v = vaults.where((x) => x.id == id).firstOrNull;
+      return v == null ? id : (lang == 'fa' ? v.titleFa : v.titleEn);
+    }
+
     final (label, color) = switch (capture.stage) {
       Stage.saved => (l.stageSaved, p.inkMuted),
       Stage.working => (l.stageWorking, p.accent),
       Stage.failed => (l.stageFailed, p.critical),
-      Stage.filed => (l.stageFiled, p.positive),
+      Stage.filed => (
+        capture.filing == null
+            ? l.stageFiled
+            : filingLine(l, capture.filing!, vaultTitle),
+        p.positive,
+      ),
       Stage.excluded => (l.stageExcluded, p.inkMuted),
     };
     return Row(
@@ -123,11 +156,35 @@ class _StageLine extends StatelessWidget {
         const SizedBox(width: Space.x2),
         Flexible(
           child: Text(
-            [label, if (capture.problem != null) capture.problem!].join(' · '),
+            [
+              label,
+              if (capture.problem != null) coreText(capture.problem!, l),
+            ].join(' · '),
             style: context.type.caption.copyWith(color: color),
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ),
+        if (capture.stage == Stage.failed)
+          Pressable(
+            onPressed: () async {
+              final lib = await ref.read(libraryProvider.future);
+              await lib?.retryCapture(capture.id);
+              ref.read(revisionProvider.notifier).bump();
+              await ref.read(jobRunnerProvider.notifier).kick();
+            },
+            radius: Radii.pill,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Space.x2,
+                vertical: Space.x1,
+              ),
+              child: Text(
+                l.retry,
+                style: context.type.caption.copyWith(color: p.accent),
+              ),
+            ),
+          ),
       ],
     );
   }

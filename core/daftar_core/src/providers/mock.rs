@@ -15,7 +15,10 @@ use std::sync::Mutex;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use super::{ChatRequest, ChatResponse, LlmProvider, MsgRole, OnDelta, ProviderError, ProviderErrorKind, ProviderResult, StopReason, ToolCall};
+use super::{
+    ChatRequest, ChatResponse, LlmProvider, MsgRole, OnDelta, ProviderError, ProviderErrorKind,
+    ProviderResult, StopReason, ToolCall,
+};
 use crate::ledger::Usage;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -58,11 +61,18 @@ pub struct MockProvider {
 impl MockProvider {
     pub fn new(script: Script) -> Self {
         let n = script.chat.len();
-        Self { script: Mutex::new(script), used: Mutex::new(vec![false; n]), transcript_cursor: Mutex::new(0), func: None, requests: Mutex::new(vec![]) }
+        Self {
+            script: Mutex::new(script),
+            used: Mutex::new(vec![false; n]),
+            transcript_cursor: Mutex::new(0),
+            func: None,
+            requests: Mutex::new(vec![]),
+        }
     }
 
     pub fn from_file(path: &str) -> crate::Result<Self> {
-        let bytes = std::fs::read(Path::new(path)).map_err(|e| crate::Error::invalid(format!("mock script {path}: {e}")))?;
+        let bytes = std::fs::read(Path::new(path))
+            .map_err(|e| crate::Error::invalid(format!("mock script {path}: {e}")))?;
         Ok(Self::new(serde_json::from_slice(&bytes)?))
     }
 
@@ -74,7 +84,12 @@ impl MockProvider {
     }
 
     pub fn remaining(&self) -> usize {
-        self.used.lock().expect("lock").iter().filter(|u| !**u).count()
+        self.used
+            .lock()
+            .expect("lock")
+            .iter()
+            .filter(|u| !**u)
+            .count()
     }
 }
 
@@ -90,7 +105,9 @@ fn request_text(req: &ChatRequest) -> String {
 fn fill(template: &str, req: &ChatRequest) -> String {
     let mut out = template.to_owned();
     while let Some(start) = out.find("{{hash:") {
-        let Some(end) = out[start..].find("}}") else { break };
+        let Some(end) = out[start..].find("}}") else {
+            break;
+        };
         let path = out[start + 7..start + end].to_owned();
         let needle = format!("path: {path}\n");
         let hash = req
@@ -99,20 +116,43 @@ fn fill(template: &str, req: &ChatRequest) -> String {
             .rev()
             .filter(|m| m.role == MsgRole::Tool)
             .map(|m| m.text())
-            .find_map(|t| t.find(&needle).and_then(|i| t[i + needle.len()..].lines().next().and_then(|l| l.strip_prefix("hash: ").map(str::to_owned))))
+            .find_map(|t| {
+                t.find(&needle).and_then(|i| {
+                    t[i + needle.len()..]
+                        .lines()
+                        .next()
+                        .and_then(|l| l.strip_prefix("hash: ").map(str::to_owned))
+                })
+            })
             .unwrap_or_default();
         out.replace_range(start..start + end + 2, &hash);
     }
-    let first_user = req.messages.iter().find(|m| m.role == MsgRole::User).map(|m| m.text()).unwrap_or_default();
-    let field = |k: &str| first_user.lines().find_map(|l| l.strip_prefix(k)).map(|v| v.trim().to_owned()).unwrap_or_default();
-    out.replace("{{raw_path}}", &field("path:")).replace("{{raw_id}}", &field("id:"))
+    let first_user = req
+        .messages
+        .iter()
+        .find(|m| m.role == MsgRole::User)
+        .map(|m| m.text())
+        .unwrap_or_default();
+    let field = |k: &str| {
+        first_user
+            .lines()
+            .find_map(|l| l.strip_prefix(k))
+            .map(|v| v.trim().to_owned())
+            .unwrap_or_default()
+    };
+    out.replace("{{raw_path}}", &field("path:"))
+        .replace("{{raw_id}}", &field("id:"))
 }
 
 fn fill_value(v: &Value, req: &ChatRequest) -> Value {
     match v {
         Value::String(s) => Value::String(fill(s, req)),
         Value::Array(a) => Value::Array(a.iter().map(|x| fill_value(x, req)).collect()),
-        Value::Object(o) => Value::Object(o.iter().map(|(k, x)| (k.clone(), fill_value(x, req))).collect()),
+        Value::Object(o) => Value::Object(
+            o.iter()
+                .map(|(k, x)| (k.clone(), fill_value(x, req)))
+                .collect(),
+        ),
         other => other.clone(),
     }
 }
@@ -137,20 +177,38 @@ impl LlmProvider for MockProvider {
                 .enumerate()
                 .find(|(i, r)| !used[*i] && r.when.as_deref().is_none_or(|w| text.contains(w)))
                 .map(|(i, _)| i)
-                .ok_or_else(|| ProviderError::new(ProviderErrorKind::BadRequest, "Mock script has no reply left for this request."))?;
+                .ok_or_else(|| {
+                    ProviderError::new(
+                        ProviderErrorKind::BadRequest,
+                        "Mock script has no reply left for this request.",
+                    )
+                })?;
             used[idx] = true;
             let r = &script.chat[idx];
             let tool_calls: Vec<ToolCall> = r
                 .tool_calls
                 .iter()
                 .enumerate()
-                .map(|(i, c)| ToolCall { id: format!("mock_{idx}_{i}"), name: c.name.clone(), arguments: fill_value(&c.arguments, req) })
+                .map(|(i, c)| ToolCall {
+                    id: format!("mock_{idx}_{i}"),
+                    name: c.name.clone(),
+                    arguments: fill_value(&c.arguments, req),
+                })
                 .collect();
             ChatResponse {
                 text: fill(&r.text, req),
-                stop: if tool_calls.is_empty() { StopReason::EndTurn } else { StopReason::ToolUse },
+                stop: if tool_calls.is_empty() {
+                    StopReason::EndTurn
+                } else {
+                    StopReason::ToolUse
+                },
                 tool_calls,
-                usage: Usage { input_tokens: (text.len() / 4) as u64, output_tokens: 50, cached_input_tokens: 0, cost_usd: None },
+                usage: Usage {
+                    input_tokens: (text.len() / 4) as u64,
+                    output_tokens: 50,
+                    cached_input_tokens: 0,
+                    cost_usd: None,
+                },
             }
         };
         if let Some(cb) = on_delta {
@@ -161,10 +219,23 @@ impl LlmProvider for MockProvider {
         Ok(resp)
     }
 
-    async fn transcribe(&self, _model: &str, _audio: Vec<u8>, _file_name: &str, _language: Option<&str>) -> ProviderResult<String> {
+    async fn transcribe(
+        &self,
+        _model: &str,
+        _audio: Vec<u8>,
+        _file_name: &str,
+        _language: Option<&str>,
+    ) -> ProviderResult<String> {
         let script = self.script.lock().expect("lock");
         let mut c = self.transcript_cursor.lock().expect("lock");
-        let t = script.transcripts.get(*c).or(script.transcripts.last()).cloned().ok_or_else(|| ProviderError::new(ProviderErrorKind::NotSupported, "Mock has no transcripts."))?;
+        let t = script
+            .transcripts
+            .get(*c)
+            .or(script.transcripts.last())
+            .cloned()
+            .ok_or_else(|| {
+                ProviderError::new(ProviderErrorKind::NotSupported, "Mock has no transcripts.")
+            })?;
         *c += 1;
         Ok(t)
     }
@@ -180,7 +251,16 @@ mod tests {
     use crate::providers::Message;
 
     fn req(msgs: Vec<Message>) -> ChatRequest {
-        ChatRequest { model: "m".into(), system: "INGEST".into(), messages: msgs, tools: vec![], max_tokens: 100, temperature: None, json: false, params: Default::default() }
+        ChatRequest {
+            model: "m".into(),
+            system: "INGEST".into(),
+            messages: msgs,
+            tools: vec![],
+            max_tokens: 100,
+            temperature: None,
+            json: false,
+            params: Default::default(),
+        }
     }
 
     #[tokio::test]
@@ -193,13 +273,28 @@ mod tests {
         }))
         .unwrap();
         let m = MockProvider::new(script);
-        let call = ToolCall { id: "1".into(), name: "page_read".into(), arguments: Value::Null };
+        let call = ToolCall {
+            id: "1".into(),
+            name: "page_read".into(),
+            arguments: Value::Null,
+        };
         let r = m
-            .chat(&req(vec![Message::user("id: 01X\npath: raw/2026/x.md\n"), Message::assistant("", vec![call.clone()]), Message::tool(&call, "path: a.md\nhash: abc123\n 1 | x")]), None)
+            .chat(
+                &req(vec![
+                    Message::user("id: 01X\npath: raw/2026/x.md\n"),
+                    Message::assistant("", vec![call.clone()]),
+                    Message::tool(&call, "path: a.md\nhash: abc123\n 1 | x"),
+                ]),
+                None,
+            )
             .await
             .unwrap();
         assert_eq!(r.tool_calls[0].arguments["base_hash"], "abc123");
         assert_eq!(r.tool_calls[0].arguments["src"], "raw/2026/x.md");
-        assert_eq!(m.remaining(), 1, "ROUTER reply skipped because the request didn't mention it");
+        assert_eq!(
+            m.remaining(),
+            1,
+            "ROUTER reply skipped because the request didn't mention it"
+        );
     }
 }

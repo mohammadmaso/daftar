@@ -5,18 +5,24 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'core_text.dart';
 import 'credentials.dart';
 import 'errors.dart';
+import 'job_runner.dart';
 import 'library_api.dart';
 
 /// Wall clock; overridden in tests for deterministic goldens.
 final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 
 /// Where this device keeps its checkout of the (single, for now) library.
-final libraryRootProvider = FutureProvider<String>((ref) async {
+final libraryRootProvider = FutureProvider<String>(
+  (ref) => defaultLibraryRoot(),
+);
+
+Future<String> defaultLibraryRoot() async {
   final base = await getApplicationSupportDirectory();
   return '${base.path}${Platform.pathSeparator}libraries${Platform.pathSeparator}default';
-});
+}
 
 final setupApiProvider = Provider<SetupApi>((ref) => const RustSetupApi());
 
@@ -186,13 +192,17 @@ class SyncController extends Notifier<SyncView> {
           SyncState.needsAttention => SyncIndicator.needsAttention,
         },
         pending: after.unpushed,
-        message: r.message,
+        message: r.message == null ? null : coreText(r.message!),
         lastSynced: r.state == SyncState.synced
             ? DateTime.now()
             : state.lastSynced,
       );
       if (r.pulled > 0 || r.changedPaths.isNotEmpty) {
         ref.read(revisionProvider.notifier).bump();
+      }
+      // Pulled captures from other devices, or AI ops dropped for replay (§5.4), need filing.
+      if (r.pulled > 0 || r.replays > 0) {
+        unawaited(ref.read(jobRunnerProvider.notifier).kick());
       }
     } catch (e) {
       state = SyncView(

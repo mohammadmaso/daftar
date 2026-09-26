@@ -153,6 +153,7 @@ impl Device {
             forced_vault: None,
             replayed_from: None,
             reverts: None,
+            rejected_claims: vec![],
         };
         let ledger_rel = ledger::write(&self.lib, &entry).unwrap();
         let repo = Repository::open(self.root()).unwrap();

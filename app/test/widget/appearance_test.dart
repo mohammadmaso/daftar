@@ -19,9 +19,12 @@ void main() {
     expect(find.text('Settings'), findsOneWidget);
     expect(_dir(tester), TextDirection.ltr);
 
+    await scrollTo(tester, find.text('فارسی'));
+
     await tester.tap(find.text('فارسی'));
     await tester.pumpAndSettle();
 
+    await scrollUp(tester, find.text('تنظیمات'));
     expect(find.text('تنظیمات'), findsOneWidget);
     expect(_dir(tester), TextDirection.rtl);
     expect(
@@ -29,8 +32,11 @@ void main() {
       'Vazirmatn',
     );
 
+    await scrollTo(tester, find.text('English'));
+
     await tester.tap(find.text('English'));
     await tester.pumpAndSettle();
+    await scrollUp(tester, find.text('Settings'));
     expect(find.text('Settings'), findsOneWidget);
     expect(_dir(tester), TextDirection.ltr);
   });
@@ -46,6 +52,8 @@ void main() {
     await pumpApp(tester, location: '/settings');
     expect(_palette(tester), same(Palette.light));
 
+    await scrollTo(tester, find.text('Dark'));
+
     await tester.tap(find.text('Dark'));
     await tester.pumpAndSettle();
     expect(_palette(tester), same(Palette.dark));
@@ -57,14 +65,20 @@ void main() {
   });
 
   testWidgets('system theme follows platform brightness', (tester) async {
-    await pumpApp(tester, platformBrightness: Brightness.dark, location: '/settings');
+    await pumpApp(
+      tester,
+      platformBrightness: Brightness.dark,
+      location: '/settings',
+    );
     expect(_palette(tester), same(Palette.dark));
   });
 
   testWidgets('choices persist across restarts', (tester) async {
     await pumpApp(tester, location: '/settings');
+    await scrollTo(tester, find.text('فارسی'));
     await tester.tap(find.text('فارسی'));
     await tester.pumpAndSettle();
+    await scrollTo(tester, find.text('تیره'));
     await tester.tap(find.text('تیره'));
     await tester.pumpAndSettle();
 

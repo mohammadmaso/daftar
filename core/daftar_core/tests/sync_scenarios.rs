@@ -322,5 +322,94 @@ fn capture_is_fast() {
         s.capture_text(&format!("note {i}"), None, &now).unwrap();
         worst = worst.max(t.elapsed());
     }
-    assert!(worst < std::time::Duration::from_millis(100), "worst capture took {worst:?}");
+    assert!(
+        worst < std::time::Duration::from_millis(100),
+        "worst capture took {worst:?}"
+    );
+}
+
+/// Settings changed on two devices while apart merge structurally; config.json stays valid JSON.
+#[test]
+fn concurrent_settings_changes_merge() {
+    use daftar_core::providers::{ProviderConfig, ProviderKind, Role};
+
+    let remote = Remote::new();
+    let a = Device::clone_from(&remote, "pixel-8");
+    let b = Device::clone_from(&remote, "laptop");
+    let provider = |name: &str| ProviderConfig {
+        id: String::new(),
+        name: name.into(),
+        kind: ProviderKind::OpenaiCompatible,
+        base_url: String::new(),
+        extra_headers: Default::default(),
+        timeout_s: 60,
+    };
+    let pa = a
+        .lib
+        .update_config(|c| {
+            let id = c.ai.upsert_provider(provider("OpenRouter"));
+            c.ai.set_role(Role::Chat, &id, "gpt-5-mini");
+            id
+        })
+        .unwrap();
+    let pb = b
+        .lib
+        .update_config(|c| {
+            c.routing_threshold = 0.7;
+            let id = c.ai.upsert_provider(provider("Anthropic"));
+            c.ai.set_role(Role::Ingest, &id, "claude-sonnet-5");
+            id
+        })
+        .unwrap();
+    assert_eq!(a.sync().state, SyncState::Synced);
+    let o = b.sync();
+    assert_eq!(o.state, SyncState::Synced, "{o:?}");
+    assert!(o.conflicts.is_empty(), "{:?}", o.conflicts);
+    a.sync();
+
+    for d in [&a, &b] {
+        let c = d.lib.config().expect("config.json is still valid");
+        assert!(c.ai.provider(&pa).is_some() && c.ai.provider(&pb).is_some());
+        assert_eq!(c.ai.role(Role::Chat).unwrap().provider, pa);
+        assert_eq!(c.ai.role(Role::Ingest).unwrap().provider, pb);
+        assert_eq!(c.routing_threshold, 0.7);
+        no_conflict_markers(d.root());
+    }
+    assert!(
+        remote
+            .commit_subjects()
+            .iter()
+            .any(|s| s == "settings: shared settings changed")
+    );
+}
+
+/// §12: a capture that contains an API key is not committed; after redaction it syncs.
+#[test]
+fn captured_secrets_are_held_back_until_redacted() {
+    let remote = Remote::new();
+    let a = Device::clone_from(&remote, "laptop");
+    let key = "sk-proj-abcDEF1234567890abcDEF1234567890xyz";
+    let item = a.capture(
+        &format!("New OpenRouter key for the app: {key}"),
+        "2026-09-23T10:00:00+03:30[Asia/Tehran]",
+    );
+    let o = a.sync();
+    assert_eq!(o.held_back, vec![item.path.clone()]);
+    let laptop2 = Device::clone_from(&remote, "desk");
+    assert!(
+        laptop2.raw_files().is_empty(),
+        "the key never reached the remote"
+    );
+
+    let s = daftar_core::session::Session::open(a.root()).unwrap();
+    assert!(s.redact(&item.path).unwrap());
+    let o = a.sync();
+    assert!(o.held_back.is_empty());
+    let b = Device::clone_from(&remote, "desk2");
+    assert_eq!(b.raw_files().len(), 1);
+    let body = b.read(&item.path);
+    assert!(
+        !body.contains(key) && body.contains("[redacted OpenAI key]"),
+        "{body}"
+    );
 }

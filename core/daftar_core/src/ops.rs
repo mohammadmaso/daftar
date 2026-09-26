@@ -56,22 +56,46 @@ fn languages(_lib: &Library) -> String {
 
 fn vault_lines(lib: &Library) -> crate::Result<String> {
     let c = lib.config()?;
-    Ok(c.active_vaults().map(|v| format!("- `{}` ({} · {}): {}", v.id, v.title.en, v.title.fa, v.purpose)).collect::<Vec<_>>().join("\n"))
+    Ok(c.active_vaults()
+        .map(|v| {
+            format!(
+                "- `{}` ({} · {}): {}",
+                v.id, v.title.en, v.title.fa, v.purpose
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n"))
 }
 
 fn index_summaries(lib: &Library) -> crate::Result<String> {
     let c = lib.config()?;
     let mut out = String::new();
     for v in c.active_vaults() {
-        let idx = std::fs::read_to_string(lib.path(&crate::layout::vault_index(&v.id))).unwrap_or_default();
-        let lines: Vec<&str> = idx.lines().filter(|l| l.starts_with("- [[")).take(40).collect();
-        out.push_str(&format!("### {}\n{}\n", v.id, if lines.is_empty() { "(empty)".to_owned() } else { lines.join("\n") }));
+        let idx = std::fs::read_to_string(lib.path(&crate::layout::vault_index(&v.id)))
+            .unwrap_or_default();
+        let lines: Vec<&str> = idx
+            .lines()
+            .filter(|l| l.starts_with("- [["))
+            .take(40)
+            .collect();
+        out.push_str(&format!(
+            "### {}\n{}\n",
+            v.id,
+            if lines.is_empty() {
+                "(empty)".to_owned()
+            } else {
+                lines.join("\n")
+            }
+        ));
     }
     Ok(out)
 }
 
 fn tz_name(now: &Zoned) -> String {
-    now.time_zone().iana_name().unwrap_or("local time").to_owned()
+    now.time_zone()
+        .iana_name()
+        .unwrap_or("local time")
+        .to_owned()
 }
 
 fn kind_label(k: RawKind) -> &'static str {
@@ -91,11 +115,20 @@ pub async fn transcribe(lib: &Library, rt: &AiRuntime, item: &RawItem) -> Result
     if !item.body.is_empty() {
         return Ok(()); // already sealed (idempotent after crash)
     }
-    let audio = assets::audio_for(lib, item.id()).ok_or_else(|| OpError::Permanent("The recording is no longer on this device.".into()))?;
+    let audio = assets::audio_for(lib, item.id())
+        .ok_or_else(|| OpError::Permanent("The recording is no longer on this device.".into()))?;
     let bytes = std::fs::read(&audio).map_err(crate::Error::from)?;
     let (p, rc) = rt.for_role(Role::Stt)?;
-    let lang = rc.params.get("language").and_then(Value::as_str).filter(|l| *l != "auto");
-    let name = audio.file_name().and_then(|n| n.to_str()).unwrap_or("audio.m4a").to_owned();
+    let lang = rc
+        .params
+        .get("language")
+        .and_then(Value::as_str)
+        .filter(|l| *l != "auto");
+    let name = audio
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("audio.m4a")
+        .to_owned();
     let text = p.transcribe(&rc.model, bytes, &name, lang).await?;
     let model = format!("{}/{}", rc.provider, rc.model);
     if text.trim().is_empty() {
@@ -107,25 +140,62 @@ pub async fn transcribe(lib: &Library, rt: &AiRuntime, item: &RawItem) -> Result
     Ok(())
 }
 
-pub async fn describe(lib: &Library, rt: &AiRuntime, item: &RawItem, note: Option<&str>, now: &Zoned) -> Result<(), OpError> {
+pub async fn describe(
+    lib: &Library,
+    rt: &AiRuntime,
+    item: &RawItem,
+    note: Option<&str>,
+    now: &Zoned,
+) -> Result<(), OpError> {
     if !item.body.is_empty() {
         return Ok(());
     }
-    let asset = item.meta.assets.first().ok_or_else(|| OpError::Permanent("This photo has no image file.".into()))?;
+    let asset = item
+        .meta
+        .assets
+        .first()
+        .ok_or_else(|| OpError::Permanent("This photo has no image file.".into()))?;
     let bytes = std::fs::read(lib.path(asset)).map_err(crate::Error::from)?;
     let (p, rc) = rt.for_role(Role::Vision)?;
-    let note_line = note.filter(|n| !n.trim().is_empty()).map(|n| format!("\nThe user added this note: \"{n}\"\n")).unwrap_or_default();
-    let system = prompts::render(prompts::VISION_DESCRIBE, &[("today", &now.strftime("%Y-%m-%d").to_string()), ("languages", &languages(lib)), ("note", &note_line)]);
+    let note_line = note
+        .filter(|n| !n.trim().is_empty())
+        .map(|n| format!("\nThe user added this note: \"{n}\"\n"))
+        .unwrap_or_default();
+    let system = prompts::render(
+        prompts::VISION_DESCRIBE,
+        &[
+            ("today", &now.strftime("%Y-%m-%d").to_string()),
+            ("languages", &languages(lib)),
+            ("note", &note_line),
+        ],
+    );
     let mut msg = Message::user("Describe this photo.");
-    msg.parts.push(Part::Image { media_type: "image/jpeg".into(), data: base64::engine::general_purpose::STANDARD.encode(bytes) });
-    let req = ChatRequest { model: rc.model.clone(), system, messages: vec![msg], tools: vec![], max_tokens: 2000, temperature: Some(0.1), json: false, params: rc.params.clone() };
+    msg.parts.push(Part::Image {
+        media_type: "image/jpeg".into(),
+        data: base64::engine::general_purpose::STANDARD.encode(bytes),
+    });
+    let req = ChatRequest {
+        model: rc.model.clone(),
+        system,
+        messages: vec![msg],
+        tools: vec![],
+        max_tokens: 2000,
+        temperature: Some(0.1),
+        json: false,
+        params: rc.params.clone(),
+    };
     let resp = p.chat(&req, None).await?;
     let mut body = String::new();
     if let Some(n) = note.filter(|n| !n.trim().is_empty()) {
         body.push_str(&format!("> {}\n\n", n.trim()));
     }
     body.push_str(resp.text.trim());
-    raw::seal(lib, &item.path, &body, Some(&format!("{}/{}", rc.provider, rc.model)))?;
+    raw::seal(
+        lib,
+        &item.path,
+        &body,
+        Some(&format!("{}/{}", rc.provider, rc.model)),
+    )?;
     Ok(())
 }
 
@@ -188,44 +258,113 @@ pub fn extract_json(text: &str) -> Option<Value> {
     None
 }
 
-pub async fn route(lib: &Library, rt: &AiRuntime, item: &RawItem, forced: Option<&str>, now: &Zoned) -> Result<(Route, Usage, String), OpError> {
+pub async fn route(
+    lib: &Library,
+    rt: &AiRuntime,
+    item: &RawItem,
+    forced: Option<&str>,
+    now: &Zoned,
+) -> Result<(Route, Usage, String), OpError> {
     let config = lib.config()?;
-    let fixed = forced.map(|v| (v.to_owned(), "forced")).or_else(|| item.meta.vault_hint.clone().map(|v| (v, "hint")));
+    let fixed = forced
+        .map(|v| (v.to_owned(), "forced"))
+        .or_else(|| item.meta.vault_hint.clone().map(|v| (v, "hint")));
     // A fixed personal vault needs no model call; a fixed `stories` still needs the story slug.
-    if let Some((v, by)) = &fixed {
-        if v != "stories" && config.vault(v).is_some() {
-            return Ok((Route { targets: vec![Target { vault: v.clone(), reason: format!("chosen by the user ({by})"), confidence: 1.0 }], is_fiction: false, story: None, lang: item.meta.lang.clone(), decided_by: (*by).into() }, Usage::default(), String::new()));
-        }
+    if let Some((v, by)) = &fixed
+        && v != "stories"
+        && config.vault(v).is_some()
+    {
+        return Ok((
+            Route {
+                targets: vec![Target {
+                    vault: v.clone(),
+                    reason: format!("chosen by the user ({by})"),
+                    confidence: 1.0,
+                }],
+                is_fiction: false,
+                story: None,
+                lang: item.meta.lang.clone(),
+                decided_by: (*by).into(),
+            },
+            Usage::default(),
+            String::new(),
+        ));
     }
     let (p, rc) = rt.for_role(Role::Router)?;
-    let system = prompts::render(prompts::ROUTER, &[
-        ("today", &now.strftime("%Y-%m-%d").to_string()),
-        ("timezone", &tz_name(now)),
-        ("languages", &languages(lib)),
-        ("vaults", &vault_lines(lib)?),
-        ("index_summaries", &index_summaries(lib)?),
-    ]);
-    let user = format!("ROUTER task. Capture ({}, {}):\n<capture>\n{}\n</capture>", kind_label(item.meta.kind), item.meta.captured_at, item.body);
-    let req = ChatRequest { model: rc.model.clone(), system, messages: vec![Message::user(user)], tools: vec![], max_tokens: 600, temperature: Some(0.0), json: true, params: rc.params.clone() };
+    let system = prompts::render(
+        prompts::ROUTER,
+        &[
+            ("today", &now.strftime("%Y-%m-%d").to_string()),
+            ("timezone", &tz_name(now)),
+            ("languages", &languages(lib)),
+            ("vaults", &vault_lines(lib)?),
+            ("index_summaries", &index_summaries(lib)?),
+        ],
+    );
+    let user = format!(
+        "ROUTER task. Capture ({}, {}):\n<capture>\n{}\n</capture>",
+        kind_label(item.meta.kind),
+        item.meta.captured_at,
+        item.body
+    );
+    let req = ChatRequest {
+        model: rc.model.clone(),
+        system,
+        messages: vec![Message::user(user)],
+        tools: vec![],
+        max_tokens: 600,
+        temperature: Some(0.0),
+        json: true,
+        params: rc.params.clone(),
+    };
     let resp = p.chat(&req, None).await?;
-    let v = extract_json(&resp.text).ok_or_else(|| OpError::Permanent("The router's answer could not be read.".into()))?;
-    let mut r: Route = serde_json::from_value(v).map_err(|_| OpError::Permanent("The router's answer had an unexpected shape.".into()))?;
-    r.targets.retain(|t| config.vault(&t.vault).is_some_and(|v| !v.archived));
+    let v = extract_json(&resp.text)
+        .ok_or_else(|| OpError::Permanent("The router's answer could not be read.".into()))?;
+    let mut r: Route = serde_json::from_value(v)
+        .map_err(|_| OpError::Permanent("The router's answer had an unexpected shape.".into()))?;
+    r.targets
+        .retain(|t| config.vault(&t.vault).is_some_and(|v| !v.archived));
     r.decided_by = "router".into();
     if let Some((v, by)) = fixed {
         // Pinned `stories`: keep the router's story slug, force fiction.
-        r.targets = vec![Target { vault: v, reason: format!("chosen by the user ({by})"), confidence: 1.0 }];
+        r.targets = vec![Target {
+            vault: v,
+            reason: format!("chosen by the user ({by})"),
+            confidence: 1.0,
+        }];
         r.is_fiction = true;
         r.decided_by = by.into();
     }
     if r.is_fiction || r.targets.iter().any(|t| t.vault == "stories") {
         r.is_fiction = true;
-        r.targets = vec![Target { vault: "stories".into(), reason: r.targets.first().map(|t| t.reason.clone()).unwrap_or_default(), confidence: r.targets.iter().map(|t| t.confidence).fold(0.0, f64::max).max(0.01) }];
-        let slug = r.story.as_deref().map(crate::wiki::sanitize_slug).filter(|s| !s.starts_with("page-")).unwrap_or_else(|| "untitled".into());
+        r.targets = vec![Target {
+            vault: "stories".into(),
+            reason: r
+                .targets
+                .first()
+                .map(|t| t.reason.clone())
+                .unwrap_or_default(),
+            confidence: r
+                .targets
+                .iter()
+                .map(|t| t.confidence)
+                .fold(0.0, f64::max)
+                .max(0.01),
+        }];
+        let slug = r
+            .story
+            .as_deref()
+            .map(crate::wiki::sanitize_slug)
+            .filter(|s| !s.starts_with("page-"))
+            .unwrap_or_else(|| "untitled".into());
         r.story = Some(slug);
     }
     if r.targets.is_empty() {
-        r.targets.push(Target { vault: "life".into(), reason: "no vault fitted clearly; filed in Life".into(), confidence: 0.3 });
+        r.targets.push(Target {
+            vault: "life".into(),
+            reason: "no vault fitted clearly; filed in Life".into(),
+            confidence: 0.3,
+        });
     }
     Ok((r, resp.usage, format!("{}/{}", rc.provider, rc.model)))
 }
@@ -267,9 +406,13 @@ pub async fn ingest(
     cancel: &Cancel,
     commit_lock: &std::sync::Mutex<()>,
 ) -> Result<IngestOutcome, OpError> {
-    let item = raw::find(lib, raw_id)?.ok_or_else(|| OpError::Permanent("The capture no longer exists.".into()))?;
+    let item = raw::find(lib, raw_id)?
+        .ok_or_else(|| OpError::Permanent("The capture no longer exists.".into()))?;
     if item.meta.status != RawStatus::Pending {
-        return Ok(IngestOutcome::Skipped(format!("capture is {}", item.meta.status.as_str())));
+        return Ok(IngestOutcome::Skipped(format!(
+            "capture is {}",
+            item.meta.status.as_str()
+        )));
     }
     // Double-ingest guard (§5.4 step 5): another device may have filed it already.
     let live = ledger::live_ingests_by_source(&ledger::all(lib)?);
@@ -277,20 +420,34 @@ pub async fn ingest(
         return Ok(IngestOutcome::Skipped("already filed".into()));
     }
     if item.meta.kind.needs_model_body() && item.body.is_empty() {
-        return Err(OpError::Permanent("This capture has not been transcribed yet.".into()));
+        return Err(OpError::Permanent(
+            "This capture has not been transcribed yet.".into(),
+        ));
     }
 
     let started = crate::time::rfc3339(now);
-    let (route, route_usage, router_model) = route(lib, rt, &item, opts.forced_vault.as_deref(), now).await?;
+    let (route, route_usage, router_model) =
+        route(lib, rt, &item, opts.forced_vault.as_deref(), now).await?;
     let scope = match (&route.is_fiction, &route.story) {
         (true, Some(s)) => Scope::Story(s.clone()),
         _ => Scope::Personal,
     };
     let op_id = crate::ids::new_id().to_string();
-    let mut ctx = OpContext::new(lib, now.clone(), op_id.clone(), dev.id.clone(), scope.clone(), Some(item.clone()))?;
+    let mut ctx = OpContext::new(
+        lib,
+        now.clone(),
+        op_id.clone(),
+        dev.id.clone(),
+        scope.clone(),
+        Some(item.clone()),
+    )?;
 
     let threshold = ctx.config.routing_threshold;
-    let best = route.targets.iter().map(|t| t.confidence).fold(0.0, f64::max);
+    let best = route
+        .targets
+        .iter()
+        .map(|t| t.confidence)
+        .fold(0.0, f64::max);
     if route.decided_by == "router" && best < threshold {
         ctx.cs.review_items.push(ReviewItem::new(
             ReviewKind::Routing,
@@ -308,18 +465,26 @@ pub async fn ingest(
         Scope::Story(s) => format!("This capture is FICTION for the story `{s}`. Write only inside `vaults/stories/{s}/` (characters/, places/, timeline.md, threads/, chapters/). Nothing here is about the user: no journal entry, no claims, no people pages outside the story."),
         _ => "This capture is about the user's real life. Never write into `vaults/stories/`. Story material mentioned in passing stays out of the personal pages.".into(),
     };
-    let vault_ids = ctx.config.active_vaults().map(|v| v.id.clone()).collect::<Vec<_>>().join(", ");
+    let vault_ids = ctx
+        .config
+        .active_vaults()
+        .map(|v| v.id.clone())
+        .collect::<Vec<_>>()
+        .join(", ");
     let schema = std::fs::read_to_string(lib.path(crate::layout::SCHEMA_FILE)).unwrap_or_default();
-    let system = prompts::render(prompts::INGEST, &[
-        ("today", &now.strftime("%Y-%m-%d").to_string()),
-        ("timezone", &tz_name(now)),
-        ("languages", &languages(lib)),
-        ("vault_ids", &vault_ids),
-        ("schema", &schema),
-        ("isolation", &isolation),
-        ("raw_path_no_ext", &raw_no_ext),
-        ("source_label", &label),
-    ]);
+    let system = prompts::render(
+        prompts::INGEST,
+        &[
+            ("today", &now.strftime("%Y-%m-%d").to_string()),
+            ("timezone", &tz_name(now)),
+            ("languages", &languages(lib)),
+            ("vault_ids", &vault_ids),
+            ("schema", &schema),
+            ("isolation", &isolation),
+            ("raw_path_no_ext", &raw_no_ext),
+            ("source_label", &label),
+        ],
+    );
     let hhmm = item.meta.captured_at.get(11..16).unwrap_or("");
     let mut user = format!(
         "New capture to file.\nid: {}\npath: {}\nkind: {}\ncaptured_at: {} (journal time {hhmm})\nlanguages: {}\nrouted to: {}\n",
@@ -328,7 +493,12 @@ pub async fn ingest(
         kind_label(item.meta.kind),
         item.meta.captured_at,
         item.meta.lang.join(", "),
-        route.targets.iter().map(|t| format!("{} ({:.2} — {})", t.vault, t.confidence, t.reason)).collect::<Vec<_>>().join("; "),
+        route
+            .targets
+            .iter()
+            .map(|t| format!("{} ({:.2} — {})", t.vault, t.confidence, t.reason))
+            .collect::<Vec<_>>()
+            .join("; "),
     );
     if let Scope::Story(s) = &scope {
         user.push_str(&format!("story: {s}\n"));
@@ -339,34 +509,77 @@ pub async fn ingest(
     if let Some(n) = &opts.note {
         user.push_str(&format!("correction from the user (follow it): {n}\n"));
     }
-    user.push_str(&format!("cite it as: [[{raw_no_ext}|{label}]]\n\n<capture>\n{}\n</capture>", item.body));
+    let rejected = ledger::rejected_for_source(&ledger::all(lib)?, &raw_no_ext);
+    if !rejected.is_empty() {
+        user.push_str("the user already rejected these claims from this capture; do not propose them again:\n");
+        for c in &rejected {
+            user.push_str(&format!("- {} ({})\n", c.text, c.page));
+        }
+    }
+    user.push_str(&format!(
+        "cite it as: [[{raw_no_ext}|{label}]]\n\n<capture>\n{}\n</capture>",
+        item.body
+    ));
 
     let spec = AgentSpec {
         model: rc.model.clone(),
         system,
         tools: tools::specs(true),
-        max_steps: rc.params.get("max_steps").and_then(Value::as_u64).unwrap_or(40) as usize,
-        max_tokens: rc.params.get("max_tokens").and_then(Value::as_u64).unwrap_or(4096) as u32,
+        max_steps: rc
+            .params
+            .get("max_steps")
+            .and_then(Value::as_u64)
+            .unwrap_or(40) as usize,
+        max_tokens: rc
+            .params
+            .get("max_tokens")
+            .and_then(Value::as_u64)
+            .unwrap_or(4096) as u32,
         temperature: Some(0.2),
         context_chars: 400_000,
-        params: rc.params.iter().filter(|(k, _)| !matches!(k.as_str(), "max_steps" | "max_tokens")).map(|(k, v)| (k.clone(), v.clone())).collect(),
+        params: rc
+            .params
+            .iter()
+            .filter(|(k, _)| !matches!(k.as_str(), "max_steps" | "max_tokens"))
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect(),
+        external: None,
     };
     let lib_ref = lib;
     let validator = move |c: &OpContext<'_>| -> Vec<String> {
         let blame = |p: &str| -> BTreeSet<usize> { tools::human_lines_at_head(lib_ref, p) };
         validate::validate(lib_ref, &c.cs, &c.scope, &blame).errors
     };
-    let outcome = agent::run(&provider, &spec, &mut ctx, vec![Message::user(user)], Some(&validator), 2, cancel, None).await?;
+    let outcome = agent::run(
+        &provider,
+        &spec,
+        &mut ctx,
+        vec![Message::user(user)],
+        Some(&validator),
+        2,
+        cancel,
+        None,
+    )
+    .await?;
 
     let mut usage = outcome.usage.clone();
     usage.input_tokens += route_usage.input_tokens;
     usage.output_tokens += route_usage.output_tokens;
     usage.cost_usd = rt.config.cost(&rc.model, &outcome.usage);
 
-    ctx.cs.raw_status.insert(item.path.clone(), RawStatus::Ingested);
+    ctx.cs
+        .raw_status
+        .insert(item.path.clone(), RawStatus::Ingested);
     let (created, updated) = ctx.cs.page_changes();
     let vaults = ctx.cs.touched_vaults();
-    let summary = summary_line(lib, &item, &vaults, &created, &updated, ctx.cs.claims_added.len());
+    let summary = summary_line(
+        lib,
+        &item,
+        &vaults,
+        &created,
+        &updated,
+        ctx.cs.claims_added.len(),
+    );
     let mut models = vec![format!("{}/{}", rc.provider, rc.model)];
     if !router_model.is_empty() && !models.contains(&router_model) {
         models.push(router_model);
@@ -391,12 +604,17 @@ pub async fn ingest(
         forced_vault: opts.forced_vault.clone(),
         replayed_from: opts.replayed_from.clone(),
         reverts: None,
+        rejected_claims: vec![],
     };
     let n_pages = created.len() + updated.len();
     let subject = format!(
         "ingest: {} → {} ({} {})",
         kind_label(item.meta.kind),
-        if vaults.is_empty() { "nothing filed".to_owned() } else { vaults.join(", ") },
+        if vaults.is_empty() {
+            "nothing filed".to_owned()
+        } else {
+            vaults.join(", ")
+        },
         n_pages,
         if n_pages == 1 { "page" } else { "pages" }
     );
@@ -406,43 +624,117 @@ pub async fn ingest(
         vaults,
         pages_created: created,
         pages_updated: updated,
-        claims_proposed: ctx.cs.review_items.iter().filter(|r| r.kind == ReviewKind::Claim).count(),
+        claims_proposed: ctx
+            .cs
+            .review_items
+            .iter()
+            .filter(|r| r.kind == ReviewKind::Claim)
+            .count(),
         review_items: ctx.cs.review_items.len(),
     };
-    let log_title = item.body.lines().find(|l| !l.trim().is_empty()).unwrap_or("").to_owned();
+    let log_title = item
+        .body
+        .lines()
+        .find(|l| !l.trim().is_empty())
+        .unwrap_or("")
+        .to_owned();
     {
         let _g = commit_lock.lock().unwrap_or_else(|p| p.into_inner());
         // Re-check after waiting: a sync may have brought in another device's ingest meanwhile.
         if ledger::live_ingests_by_source(&ledger::all(lib)?).contains_key(&item.meta.id) {
-            return Ok(IngestOutcome::Skipped("already filed by another device".into()));
+            return Ok(IngestOutcome::Skipped(
+                "already filed by another device".into(),
+            ));
         }
-        changeset::commit(lib, dev, now, &ctx.cs, entry, CommitInfo { subject, source_path: Some(item.path.clone()), log_title })?;
+        changeset::commit(
+            lib,
+            dev,
+            now,
+            &ctx.cs,
+            entry,
+            CommitInfo {
+                subject,
+                source_path: Some(item.path.clone()),
+                log_title,
+            },
+        )?;
     }
     Ok(IngestOutcome::Filed(result))
 }
 
-fn summary_line(lib: &Library, item: &RawItem, vaults: &[String], created: &[String], updated: &[String], claims: usize) -> String {
+fn summary_line(
+    lib: &Library,
+    item: &RawItem,
+    vaults: &[String],
+    created: &[String],
+    updated: &[String],
+    claims: usize,
+) -> String {
     let config = lib.config().ok();
-    let vname = |v: &str| config.as_ref().and_then(|c| c.vault(v)).map(|x| x.title.en.clone()).unwrap_or_else(|| v.to_owned());
-    let title = |p: &str| crate::pages::read(lib, p).map(|pg| pg.title("en").to_owned()).unwrap_or_else(|_| crate::wiki::slug_of(p).to_owned());
+    let vname = |v: &str| {
+        config
+            .as_ref()
+            .and_then(|c| c.vault(v))
+            .map(|x| x.title.en.clone())
+            .unwrap_or_else(|| v.to_owned())
+    };
+    let title = |p: &str| {
+        crate::pages::read(lib, p)
+            .map(|pg| pg.title("en").to_owned())
+            .unwrap_or_else(|_| crate::wiki::slug_of(p).to_owned())
+    };
     if vaults.is_empty() {
-        return format!("Read your {}; nothing needed filing.", kind_label(item.meta.kind));
+        return format!(
+            "Read your {}; nothing needed filing.",
+            kind_label(item.meta.kind)
+        );
     }
     let vs = match vaults.len() {
         1 => vname(&vaults[0]),
-        _ => format!("{} and {}", vaults[..vaults.len() - 1].iter().map(|v| vname(v)).collect::<Vec<_>>().join(", "), vname(&vaults[vaults.len() - 1])),
+        _ => format!(
+            "{} and {}",
+            vaults[..vaults.len() - 1]
+                .iter()
+                .map(|v| vname(v))
+                .collect::<Vec<_>>()
+                .join(", "),
+            vname(&vaults[vaults.len() - 1])
+        ),
     };
     let mut parts = Vec::new();
     if !updated.is_empty() {
-        parts.push(format!("updated {}", updated.iter().take(4).map(|p| title(p)).collect::<Vec<_>>().join(", ")));
+        parts.push(format!(
+            "updated {}",
+            updated
+                .iter()
+                .take(4)
+                .map(|p| title(p))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
     }
     if !created.is_empty() {
-        parts.push(format!("created {}", created.iter().take(4).map(|p| title(p)).collect::<Vec<_>>().join(", ")));
+        parts.push(format!(
+            "created {}",
+            created
+                .iter()
+                .take(4)
+                .map(|p| title(p))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
     }
     if claims > 0 {
-        parts.push(format!("{claims} claim{}", if claims == 1 { "" } else { "s" }));
+        parts.push(format!(
+            "{claims} claim{}",
+            if claims == 1 { "" } else { "s" }
+        ));
     }
-    format!("Filed your {} to {vs}: {}", kind_label(item.meta.kind), parts.join("; "))
+    format!(
+        "Filed your {} to {vs}: {}",
+        kind_label(item.meta.kind),
+        parts.join("; ")
+    )
 }
 
 #[cfg(test)]

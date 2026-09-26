@@ -4,7 +4,9 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use crate::ledger::Usage;
-use crate::providers::{ChatRequest, DynProvider, Message, MsgRole, OnDelta, Part, ProviderError, ToolSpec};
+use crate::providers::{
+    ChatRequest, DynProvider, Message, MsgRole, OnDelta, Part, ProviderError, ToolSpec,
+};
 use crate::tools::OpContext;
 
 #[derive(Debug, Clone, Default)]
@@ -19,6 +21,15 @@ impl Cancel {
     }
 }
 
+/// Tools that live outside the op context and run asynchronously (MCP servers, §10).
+#[async_trait::async_trait]
+pub trait ExternalTools: Send + Sync {
+    fn specs(&self) -> Vec<ToolSpec>;
+    fn handles(&self, name: &str) -> bool;
+    /// Result text for the model; failures start with `ERROR:`.
+    async fn call(&self, name: &str, arguments: &serde_json::Value) -> String;
+}
+
 pub struct AgentSpec {
     pub model: String,
     pub system: String,
@@ -29,6 +40,7 @@ pub struct AgentSpec {
     /// Rough context budget in characters (≈ 4 chars per token).
     pub context_chars: usize,
     pub params: serde_json::Map<String, serde_json::Value>,
+    pub external: Option<Arc<dyn ExternalTools>>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -51,8 +63,9 @@ pub struct AgentOutcome {
 }
 
 /// Validation hook: returns error messages (empty = accept).
-pub type Validator<'v> = &'v dyn Fn(&OpContext<'_>) -> Vec<String>;
+pub type Validator<'v> = &'v (dyn Fn(&OpContext<'_>) -> Vec<String> + Sync);
 
+#[allow(clippy::too_many_arguments)]
 pub async fn run(
     provider: &DynProvider,
     spec: &AgentSpec,
@@ -70,11 +83,15 @@ pub async fn run(
             return Err(AgentError::Cancelled);
         }
         trim_context(&mut messages, spec.context_chars);
+        let mut tools = spec.tools.clone();
+        if let Some(x) = &spec.external {
+            tools.extend(x.specs());
+        }
         let req = ChatRequest {
             model: spec.model.clone(),
             system: spec.system.clone(),
             messages: messages.clone(),
-            tools: spec.tools.clone(),
+            tools,
             max_tokens: spec.max_tokens,
             temperature: spec.temperature,
             json: false,
@@ -84,7 +101,10 @@ pub async fn run(
         usage.input_tokens += resp.usage.input_tokens;
         usage.output_tokens += resp.usage.output_tokens;
         usage.cached_input_tokens += resp.usage.cached_input_tokens;
-        messages.push(Message::assistant(resp.text.clone(), resp.tool_calls.clone()));
+        messages.push(Message::assistant(
+            resp.text.clone(),
+            resp.tool_calls.clone(),
+        ));
 
         if resp.tool_calls.is_empty() {
             if let Some(v) = validator {
@@ -101,12 +121,22 @@ pub async fn run(
                     continue;
                 }
             }
-            return Ok(AgentOutcome { text: resp.text, usage, steps: step, messages });
+            return Ok(AgentOutcome {
+                text: resp.text,
+                usage,
+                steps: step,
+                messages,
+            });
         }
         let mut images = Vec::new();
         for call in &resp.tool_calls {
             if cancel.is_cancelled() {
                 return Err(AgentError::Cancelled);
+            }
+            if let Some(x) = spec.external.as_ref().filter(|x| x.handles(&call.name)) {
+                let text = x.call(&call.name, &call.arguments).await;
+                messages.push(Message::tool(call, text));
+                continue;
             }
             let out = ctx.call(&call.name, &call.arguments);
             messages.push(Message::tool(call, out.text));
@@ -132,7 +162,10 @@ fn size(m: &Message) -> usize {
             Part::Image { .. } => 4_000,
         })
         .sum::<usize>()
-        + m.tool_calls.iter().map(|c| c.arguments.to_string().len()).sum::<usize>()
+        + m.tool_calls
+            .iter()
+            .map(|c| c.arguments.to_string().len())
+            .sum::<usize>()
 }
 
 fn path_of_tool_result(text: &str) -> Option<&str> {
@@ -145,19 +178,30 @@ pub fn trim_context(messages: &mut [Message], budget: usize) {
     // 1. Stale reads: a page_read result for PATH followed later by an edit/create/claim on PATH.
     let n = messages.len();
     for i in 0..n {
-        if messages[i].role != MsgRole::Tool || messages[i].tool_name.as_deref() != Some("page_read") {
+        if messages[i].role != MsgRole::Tool
+            || messages[i].tool_name.as_deref() != Some("page_read")
+        {
             continue;
         }
         let text = messages[i].text();
-        let Some(path) = path_of_tool_result(&text).map(str::to_owned) else { continue };
+        let Some(path) = path_of_tool_result(&text).map(str::to_owned) else {
+            continue;
+        };
         let edited_later = messages[i + 1..].iter().any(|m| {
             m.role == MsgRole::Tool
-                && matches!(m.tool_name.as_deref(), Some("page_edit" | "page_create" | "claim_propose" | "claim_supersede"))
+                && matches!(
+                    m.tool_name.as_deref(),
+                    Some("page_edit" | "page_create" | "claim_propose" | "claim_supersede")
+                )
                 && path_of_tool_result(&m.text()) == Some(path.as_str())
                 && !m.text().starts_with("ERROR")
         });
         if edited_later {
-            messages[i].parts = vec![Part::Text { text: format!("[earlier copy of {path} removed because the page was edited since; page_read it again if needed]") }];
+            messages[i].parts = vec![Part::Text {
+                text: format!(
+                    "[earlier copy of {path} removed because the page was edited since; page_read it again if needed]"
+                ),
+            }];
         }
     }
     // 2. Budget: drop oldest tool results (never the first user message or the last few turns).
@@ -167,7 +211,9 @@ pub fn trim_context(messages: &mut [Message], budget: usize) {
     while total > budget && i + keep_tail < messages.len() {
         if messages[i].role == MsgRole::Tool && size(&messages[i]) > 200 {
             let before = size(&messages[i]);
-            messages[i].parts = vec![Part::Text { text: "[older tool result removed to save space]".into() }];
+            messages[i].parts = vec![Part::Text {
+                text: "[older tool result removed to save space]".into(),
+            }];
             total = total - before + size(&messages[i]);
         }
         i += 1;
@@ -181,8 +227,16 @@ mod tests {
 
     #[test]
     fn stale_reads_are_replaced() {
-        let read = ToolCall { id: "1".into(), name: "page_read".into(), arguments: serde_json::Value::Null };
-        let edit = ToolCall { id: "2".into(), name: "page_edit".into(), arguments: serde_json::Value::Null };
+        let read = ToolCall {
+            id: "1".into(),
+            name: "page_read".into(),
+            arguments: serde_json::Value::Null,
+        };
+        let edit = ToolCall {
+            id: "2".into(),
+            name: "page_edit".into(),
+            arguments: serde_json::Value::Null,
+        };
         let mut ms = vec![
             Message::user("go"),
             Message::assistant("", vec![read.clone()]),
@@ -191,7 +245,11 @@ mod tests {
             Message::tool(&edit, "edited\npath: vaults/life/people/sara.md\nhash: bbb"),
         ];
         trim_context(&mut ms, 1_000_000);
-        assert!(ms[2].text().starts_with("[earlier copy of vaults/life/people/sara.md removed"));
+        assert!(
+            ms[2]
+                .text()
+                .starts_with("[earlier copy of vaults/life/people/sara.md removed")
+        );
         assert!(ms[4].text().starts_with("edited"));
     }
 }

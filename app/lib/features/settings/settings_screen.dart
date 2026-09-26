@@ -15,6 +15,9 @@ import '../../design/design.dart';
 import '../../l10n/app_localizations.dart';
 import '../capture/today_screen.dart' show SyncBadge;
 import '../onboarding/onboarding_screen.dart';
+import 'ai_settings.dart';
+import 'mcp_settings.dart';
+import 'reflect_settings.dart';
 
 final repoStatusProvider = FutureProvider<RepoStatus?>((ref) async {
   ref.watch(revisionProvider);
@@ -45,7 +48,11 @@ class SettingsScreen extends ConsumerWidget {
       backLabel: l.back,
       trailing: Monogram(name: AppIdentity.name(locale)),
       children: [
+        // §8.6 order: providers, models, repository, appearance, about.
+        const AiSettingsSections(),
         const _RepositorySection(),
+        const McpSection(),
+        const ReflectSection(),
         DSection(
           title: l.appearance,
           footer: l.textSizeFooter,
@@ -150,6 +157,16 @@ class _RepositorySection extends ConsumerWidget {
           trailing: _Value(status.deviceName, ltr: false),
         ),
         DListRow(title: l.branch, trailing: _Value(status.branch)),
+        DListRow(
+          title: l.rebuildIndex,
+          chevron: true,
+          onTap: () async {
+            final lib = await ref.read(libraryProvider.future);
+            final n = await lib?.rebuildIndex() ?? 0;
+            ref.read(revisionProvider.notifier).bump();
+            if (context.mounted) showNote(context, l.indexRebuilt(n));
+          },
+        ),
         DListRow(
           title: l.folder,
           subtitle: status.root,

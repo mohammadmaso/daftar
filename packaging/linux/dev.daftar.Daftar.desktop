@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Daftar
+Name[fa]=دفتر
+Comment=A private notebook that files what you say into your own wiki
+Comment[fa]=دفتری خصوصی که گفته‌هایت را در ویکی خودت بایگانی می‌کند
+Exec=daftar %U
+Icon=dev.daftar.Daftar
+Terminal=false
+Categories=Office;Utility;
+Keywords=notes;journal;wiki;voice;
+StartupWMClass=daftar

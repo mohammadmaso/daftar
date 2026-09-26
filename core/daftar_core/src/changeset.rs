@@ -65,13 +65,21 @@ impl Changeset {
         let mut created = Vec::new();
         let mut updated = Vec::new();
         for p in self.files.keys().filter(|p| p.starts_with("vaults/")) {
-            if self.created.contains(p) { created.push(p.clone()) } else { updated.push(p.clone()) }
+            if self.created.contains(p) {
+                created.push(p.clone())
+            } else {
+                updated.push(p.clone())
+            }
         }
         (created, updated)
     }
 
     pub fn touched_vaults(&self) -> Vec<String> {
-        let v: BTreeSet<String> = self.files.keys().filter_map(|p| pages::vault_of(p).map(str::to_owned)).collect();
+        let v: BTreeSet<String> = self
+            .files
+            .keys()
+            .filter_map(|p| pages::vault_of(p).map(str::to_owned))
+            .collect();
         v.into_iter().collect()
     }
 }
@@ -91,18 +99,26 @@ fn pending_path(lib: &Library) -> std::path::PathBuf {
 /// Undoes a half-applied op after a crash. Returns the op id that was rolled back, if any.
 pub fn recover(lib: &Library) -> Result<Option<String>> {
     let p = pending_path(lib);
-    let Ok(bytes) = fs::read(&p) else { return Ok(None) };
+    let Ok(bytes) = fs::read(&p) else {
+        return Ok(None);
+    };
     let pending: PendingOp = serde_json::from_slice(&bytes)?;
     let repo = Repository::open(lib.root())?;
     let committed = repo
         .head()
         .ok()
         .and_then(|h| h.peel_to_commit().ok())
-        .is_some_and(|c| ledger::trailer(c.message().unwrap_or_default(), "Op-Id") == Some(pending.op_id.as_str()));
+        .is_some_and(|c| {
+            ledger::trailer(c.message().unwrap_or_default(), "Op-Id")
+                == Some(pending.op_id.as_str())
+        });
     if !committed {
         let head_tree = repo.head().ok().and_then(|h| h.peel_to_tree().ok());
         for path in &pending.paths {
-            match head_tree.as_ref().and_then(|t| t.get_path(Path::new(path)).ok()) {
+            match head_tree
+                .as_ref()
+                .and_then(|t| t.get_path(Path::new(path)).ok())
+            {
                 Some(entry) => {
                     let blob = repo.find_blob(entry.id())?;
                     atomic_write(&lib.path(path), blob.content())?;
@@ -124,7 +140,35 @@ pub struct CommitInfo {
 }
 
 /// Applies the changeset, updates raw status, log, ledger and indexes, and commits once.
-pub fn commit(lib: &Library, dev: &LocalDevice, now: &Zoned, cs: &Changeset, mut entry: LedgerEntry, info: CommitInfo) -> Result<git2::Oid> {
+pub fn commit(
+    lib: &Library,
+    dev: &LocalDevice,
+    now: &Zoned,
+    cs: &Changeset,
+    mut entry: LedgerEntry,
+    info: CommitInfo,
+) -> Result<git2::Oid> {
+    // A claim proposed and then removed within the same op leaves no card behind.
+    let pruned;
+    let cs = {
+        let alive = |page: &str, id: &str| {
+            cs.read(lib, page)
+                .is_some_and(|t| t.lines().any(|l| l.trim_end().ends_with(&format!("^{id}"))))
+        };
+        let mut c = cs.clone();
+        c.review_items.retain(|r| {
+            r.kind != review::ReviewKind::Claim
+                || alive(
+                    r.payload["page"].as_str().unwrap_or_default(),
+                    r.payload["claim_id"].as_str().unwrap_or_default(),
+                )
+        });
+        let pages: Vec<String> = c.files.keys().cloned().collect();
+        c.claims_added
+            .retain(|id| pages.iter().any(|p| alive(p, id)));
+        pruned = c;
+        &pruned
+    };
     let (created, updated) = cs.page_changes();
     entry.pages_created = created;
     entry.pages_updated = updated;
@@ -154,21 +198,46 @@ pub fn commit(lib: &Library, dev: &LocalDevice, now: &Zoned, cs: &Changeset, mut
     let untracked: Vec<String> = cs
         .raw_status
         .keys()
-        .filter(|p| repo.status_file(Path::new(p)).is_ok_and(|s| s.contains(git2::Status::WT_NEW)))
+        .filter(|p| {
+            repo.status_file(Path::new(p))
+                .is_ok_and(|s| s.contains(git2::Status::WT_NEW))
+        })
         .cloned()
         .collect();
+    if let Some(p) = untracked.iter().find(|p| {
+        std::fs::read_to_string(lib.path(p)).is_ok_and(|t| !crate::secrets::scan(&t).is_empty())
+    }) {
+        return Err(crate::Error::invalid(format!(
+            "{p} looks like it contains a key or token; redact it before it is filed."
+        )));
+    }
     if !untracked.is_empty() {
         let mut with_assets = untracked.clone();
         for p in &untracked {
             if let Ok(item) = raw::read(lib, p) {
-                with_assets.extend(item.meta.assets.into_iter().filter(|a| repo.status_file(Path::new(a)).is_ok_and(|s| s.contains(git2::Status::WT_NEW))));
+                with_assets.extend(item.meta.assets.into_iter().filter(|a| {
+                    repo.status_file(Path::new(a))
+                        .is_ok_and(|s| s.contains(git2::Status::WT_NEW))
+                }));
             }
         }
-        let msg = format!("capture: {} {}\n\nDevice: {}\n", untracked.len(), if untracked.len() == 1 { "item" } else { "items" }, dev.id);
+        let msg = format!(
+            "capture: {} {}\n\nDevice: {}\n",
+            untracked.len(),
+            if untracked.len() == 1 {
+                "item"
+            } else {
+                "items"
+            },
+            dev.id
+        );
         crate::sync::commit_paths(&repo, &with_assets, &msg, &sig)?;
     }
 
-    let pending = PendingOp { op_id: entry.op_id.clone(), paths: paths.iter().cloned().collect() };
+    let pending = PendingOp {
+        op_id: entry.op_id.clone(),
+        paths: paths.iter().cloned().collect(),
+    };
     atomic_write(&pending_path(lib), &serde_json::to_vec(&pending)?)?;
 
     for (path, content) in &cs.files {
@@ -190,15 +259,22 @@ pub fn commit(lib: &Library, dev: &LocalDevice, now: &Zoned, cs: &Changeset, mut
     pages::regenerate_indexes(lib, &vaults)?;
 
     let msg = ledger::commit_message(&info.subject, &entry, info.source_path.as_deref(), &vaults);
-    let oid = crate::sync::commit_paths(&repo, &paths.into_iter().collect::<Vec<_>>(), &msg, &sig)?.expect("non-empty");
+    let oid = crate::sync::commit_paths(&repo, &paths.into_iter().collect::<Vec<_>>(), &msg, &sig)?
+        .expect("non-empty");
     fs::remove_file(pending_path(lib))?;
     Ok(oid)
 }
 
-fn append_log(lib: &Library, rel: &str, now: &Zoned, entry: &LedgerEntry, vaults: &[String], title: &str) -> Result<()> {
-    let mut text = fs::read_to_string(lib.path(rel)).unwrap_or_else(|_| {
-        format!("# Log · {}\n\n", now.strftime("%Y-%m"))
-    });
+fn append_log(
+    lib: &Library,
+    rel: &str,
+    now: &Zoned,
+    entry: &LedgerEntry,
+    vaults: &[String],
+    title: &str,
+) -> Result<()> {
+    let mut text = fs::read_to_string(lib.path(rel))
+        .unwrap_or_else(|_| format!("# Log · {}\n\n", now.strftime("%Y-%m")));
     if !text.ends_with('\n') {
         text.push('\n');
     }
@@ -207,7 +283,11 @@ fn append_log(lib: &Library, rel: &str, now: &Zoned, entry: &LedgerEntry, vaults
         "## [{}] {} | {} | \"{}\" (op {})\n",
         now.strftime("%Y-%m-%d %H:%M"),
         entry.op_type.as_str(),
-        if vaults.is_empty() { "-".to_owned() } else { vaults.join(", ") },
+        if vaults.is_empty() {
+            "-".to_owned()
+        } else {
+            vaults.join(", ")
+        },
         short.replace('"', "'"),
         entry.op_id
     ));

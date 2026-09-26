@@ -1,9 +1,16 @@
 import 'package:daftar/app/app.dart';
 import 'package:daftar/app/appearance.dart';
 import 'package:daftar/app/core.dart';
+import 'package:daftar/core/app_shortcuts.dart';
 import 'package:daftar/core/credentials.dart';
+import 'package:daftar/core/global_hotkey.dart';
+import 'package:daftar/core/incoming_shares.dart';
+import 'package:daftar/core/job_runner.dart';
 import 'package:daftar/core/library_state.dart';
+import 'package:daftar/core/notifications.dart';
+import 'package:daftar/core/oauth_browser.dart';
 import 'package:daftar/core/recorder.dart';
+import 'package:daftar/core/voice_io.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -32,6 +39,16 @@ Future<ProviderContainer> pumpApp(
   Brightness platformBrightness = Brightness.light,
   FakeSetup? setup,
   FakeRecorder? recorder,
+  FakeProviderApi? providerApi,
+  MemoryCredentialStore? credentials,
+  FakeMic? mic,
+  FakePlayer? player,
+  FakeAwake? awake,
+  FakeBrowser? browser,
+  FakeNotifications? notifications,
+  FakeAppShortcuts? shortcuts,
+  FakeShares? shares,
+  FakeHotkey? hotkey,
   String? location,
 }) async {
   SharedPreferences.setMockInitialValues(prefs);
@@ -48,8 +65,23 @@ Future<ProviderContainer> pumpApp(
       sharedPreferencesProvider.overrideWithValue(sp),
       coreInfoProvider.overrideWithValue(fakeCoreInfo),
       libraryRootProvider.overrideWith((ref) async => '/tmp/daftar-test'),
-      setupApiProvider.overrideWithValue(setup ?? FakeSetup(library: FakeLibrary())),
-      credentialStoreProvider.overrideWithValue(MemoryCredentialStore()),
+      setupApiProvider.overrideWithValue(
+        setup ?? FakeSetup(library: FakeLibrary()),
+      ),
+      credentialStoreProvider.overrideWithValue(
+        credentials ?? MemoryCredentialStore(),
+      ),
+      providerApiProvider.overrideWithValue(providerApi ?? FakeProviderApi()),
+      voiceMicProvider.overrideWithValue(mic ?? FakeMic()),
+      voicePlayerProvider.overrideWithValue(player ?? FakePlayer()),
+      screenAwakeProvider.overrideWithValue(awake ?? FakeAwake()),
+      oauthBrowserProvider.overrideWithValue(browser ?? FakeBrowser()),
+      globalHotkeyProvider.overrideWithValue(hotkey ?? FakeHotkey()),
+      incomingSharesProvider.overrideWithValue(shares ?? FakeShares()),
+      appShortcutsProvider.overrideWithValue(shortcuts ?? FakeAppShortcuts()),
+      systemNotificationsProvider.overrideWithValue(
+        notifications ?? FakeNotifications(),
+      ),
       voiceRecorderProvider.overrideWithValue(recorder ?? FakeRecorder()),
       clockProvider.overrideWithValue(() => fixedNow),
     ],
@@ -66,5 +98,27 @@ Future<ProviderContainer> pumpApp(
   return container;
 }
 
-Map<String, Object> prefsFor({required String language, required String theme}) =>
-    {'appearance.language': language, 'appearance.theme': theme};
+Map<String, Object> prefsFor({
+  required String language,
+  required String theme,
+}) => {'appearance.language': language, 'appearance.theme': theme};
+
+/// Scrolls the first scrollable until [finder] is built and visible, like a user would.
+Future<void> scrollTo(WidgetTester tester, Finder finder) async {
+  await tester.scrollUntilVisible(
+    finder,
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
+}
+
+/// Scrolls back up until [finder] is built and visible.
+Future<void> scrollUp(WidgetTester tester, Finder finder) async {
+  await tester.scrollUntilVisible(
+    finder,
+    -200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
+}

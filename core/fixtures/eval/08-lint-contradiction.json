@@ -1,0 +1,19 @@
+{
+  "name": "lint-contradiction",
+  "op": "lint",
+  "pages": [
+    {
+      "path": "vaults/health/profile.md",
+      "content": "---\nid: 01EVAL07180691893522178408\ntype: profile\nvault: health\ntitle: { en: \"Health profile\", fa: \"پروفایل سلامت\" }\naliases: []\nsummary: \"Conditions, medications and labs.\"\nsources: []\ncreated: 2026-09-01\nupdated: 2026-09-01\nstatus: active\n---\n\n# Health profile\n\n## Medications\n- Takes vitamin D 50,000 IU weekly (status:: confirmed) (src:: [[raw/2026/03/03/20260303T101500-pixel-8-01JAB0000000000000000000A|voice · 3 Mar]]) ^c-01JAB0000000000000000000C\n"
+    },
+    {
+      "path": "vaults/health/labs/vitamin-d-june.md",
+      "content": "---\nid: 01EVAL04649786158310799610\ntype: lab\nvault: health\ntitle: { en: \"Vitamin D in June\", fa: \"ویتامین D در خرداد\" }\naliases: []\nsummary: \"June follow-up.\"\nsources: []\ncreated: 2026-09-01\nupdated: 2026-09-01\nstatus: active\n---\n\n# Vitamin D in June\n\n- Takes 1,000 IU vitamin D daily since June (status:: confirmed) (src:: [[raw/2026/06/10/20260610T090000-pixel-8-01JAB0000000000000000000D|voice · 10 Jun]]) ^c-01JAB0000000000000000000E\n"
+    }
+  ],
+  "expect": {
+    "finding_kinds": [
+      "contradiction"
+    ]
+  }
+}

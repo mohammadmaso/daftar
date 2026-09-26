@@ -31,15 +31,28 @@ pub fn client_config() -> Arc<rustls::ClientConfig> {
 /// Proxy from the environment (`https_proxy`, `http_proxy`, `all_proxy`, `no_proxy`), never for
 /// loopback hosts. Common for users behind censorship or corporate networks.
 pub fn env_proxy_for(url: &reqwest::Url) -> Option<String> {
-    let host = url.host_str()?.trim_start_matches('[').trim_end_matches(']').to_ascii_lowercase();
-    if host == "localhost" || host.parse::<std::net::IpAddr>().is_ok_and(|ip| ip.is_loopback()) {
+    let host = url
+        .host_str()?
+        .trim_start_matches('[')
+        .trim_end_matches(']')
+        .to_ascii_lowercase();
+    if host == "localhost"
+        || host
+            .parse::<std::net::IpAddr>()
+            .is_ok_and(|ip| ip.is_loopback())
+    {
         return None;
     }
-    let var = |names: &[&str]| names.iter().find_map(|n| std::env::var(n).ok().filter(|v| !v.is_empty()));
+    let var = |names: &[&str]| {
+        names
+            .iter()
+            .find_map(|n| std::env::var(n).ok().filter(|v| !v.is_empty()))
+    };
     if let Some(no) = var(&["no_proxy", "NO_PROXY"]) {
-        let bypass = no.split(',').map(|e| e.trim().trim_start_matches('.').to_ascii_lowercase()).any(|e| {
-            !e.is_empty() && (e == "*" || host == e || host.ends_with(&format!(".{e}")))
-        });
+        let bypass = no
+            .split(',')
+            .map(|e| e.trim().trim_start_matches('.').to_ascii_lowercase())
+            .any(|e| !e.is_empty() && (e == "*" || host == e || host.ends_with(&format!(".{e}"))));
         if bypass {
             return None;
         }
@@ -53,7 +66,9 @@ pub fn env_proxy_for(url: &reqwest::Url) -> Option<String> {
 pub fn http_client(timeout: std::time::Duration) -> reqwest::Client {
     reqwest::Client::builder()
         .no_proxy()
-        .proxy(reqwest::Proxy::custom(|url| env_proxy_for(url).and_then(|p| reqwest::Url::parse(&p).ok())))
+        .proxy(reqwest::Proxy::custom(|url| {
+            env_proxy_for(url).and_then(|p| reqwest::Url::parse(&p).ok())
+        }))
         .use_preconfigured_tls((*client_config()).clone())
         .connect_timeout(std::time::Duration::from_secs(15))
         .timeout(timeout)
@@ -83,11 +98,21 @@ pub fn configure_git(state_dir: &Path) -> crate::Result<()> {
     if DONE.get().is_some() {
         return Ok(());
     }
+    // libgit2 uses the OS TLS stack on Apple platforms (SecureTransport) and Windows (WinHTTP);
+    // those use the system trust store and reject a CA file. Only the OpenSSL backend needs one.
+    if cfg!(any(target_vendor = "apple", target_os = "windows")) {
+        let _ = DONE.set(());
+        let _ = state_dir;
+        return Ok(());
+    }
     // Prefer the OS bundle where it is a plain file (keeps enterprise CAs working on Linux).
-    let system = ["/etc/ssl/certs/ca-certificates.crt", "/etc/pki/tls/certs/ca-bundle.crt"]
-        .into_iter()
-        .map(Path::new)
-        .find(|p| p.is_file());
+    let system = [
+        "/etc/ssl/certs/ca-certificates.crt",
+        "/etc/pki/tls/certs/ca-bundle.crt",
+    ]
+    .into_iter()
+    .map(Path::new)
+    .find(|p| p.is_file());
     let file = match system {
         Some(p) => p.to_path_buf(),
         None => {

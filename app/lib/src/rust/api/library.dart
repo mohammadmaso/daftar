@@ -4,9 +4,16 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
+import 'ai.dart';
+import 'ask.dart';
+import 'audit.dart';
+import 'mcp.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'reflect.dart';
+import 'voice.dart';
+import 'wiki.dart';
 
-// These functions are ignored because they are not marked as `pub`: `err`, `human_error`, `now`
+// These functions are ignored because they are not marked as `pub`: `err`, `human_error`, `now`, `session_arc`, `session`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`
 
 /// Whether `root` already holds a library with a named device.
@@ -46,6 +53,21 @@ Future<SshKeyPair> generateSshKey({required String comment}) =>
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<LibraryHandle>>
 abstract class LibraryHandle implements RustOpaqueInterface {
+  /// Operations newest first; pass the last op id seen as `before` to page.
+  Future<List<Operation>> activity({required int limit, String? before});
+
+  Future<AiSettings> aiSettings();
+
+  /// Streams `Delta`s, then exactly one `Done` or `Failed`.
+  Stream<AskEvent> ask({
+    required List<AskTurn> history,
+    required String question,
+    AskImage? image,
+    required AskScopeDto scopeDto,
+    required List<ApiKey> apiKeys,
+    required List<McpSecret> mcpSecrets,
+  });
+
   Future<String> capturePhoto({
     required List<int> bytes,
     String? note,
@@ -56,6 +78,8 @@ abstract class LibraryHandle implements RustOpaqueInterface {
 
   Future<String> captureVoice({required String audioPath, String? vaultHint});
 
+  Future<void> clearRole({required ModelRole role});
+
   /// Captures of the given local date, oldest first.
   Future<List<Capture>> day({
     required int year,
@@ -65,14 +89,162 @@ abstract class LibraryHandle implements RustOpaqueInterface {
 
   Future<bool> discard({required String id});
 
+  /// Files an excluded capture again.
+  Future<void> includeCapture({required String rawId});
+
+  /// Settings › Check the wiki now (code checks only; model checks run with the jobs).
+  Future<LintSummary> lintNow();
+
+  /// One level of the page tree, e.g. `vaults/life` or `vaults/life/people`.
+  Future<Listing> listDir({required String dir});
+
+  Future<LocalGraph> localGraph({required String path, required int depth});
+
+  /// Connects once to report status and tools (§10 server list).
+  Future<McpStatus> mcpCheck({required String id, required String secretsJson});
+
+  /// Starts OAuth (§10). With no `redirect_uri` (desktop) a loopback listener on 127.0.0.1 is
+  /// used; call `mcp_oauth_wait`. On mobile pass `daftar://oauth/callback` and hand the redirect
+  /// to `mcp_oauth_complete`. The app opens `auth_url` in the system browser.
+  Future<OAuthStart> mcpOauthBegin({
+    required String id,
+    required String secretsJson,
+    String? redirectUri,
+  });
+
+  /// Finishes OAuth with the redirect URL; returns the new secrets JSON for this server.
+  Future<String> mcpOauthComplete({
+    required String flowId,
+    required String callbackUrl,
+  });
+
+  /// Desktop: waits for the browser to come back to the loopback listener. Returns the new
+  /// secrets JSON for this server.
+  Future<String> mcpOauthWait({required String flowId});
+
+  Future<List<McpServer>> mcpServers();
+
+  Future<UndoResult> moveToVault({required String opId, required String vault});
+
+  /// Opens the library, or joins the session already open on it in this process: the app and a
+  /// background task (Android runs both in one process) must share one queue and commit lock.
   static Future<LibraryHandle> open({required String root}) =>
       RustLib.instance.api.crateApiLibraryLibraryHandleOpen(root: root);
 
+  Future<Operation> operation({required String opId});
+
+  Future<List<PageDiff>> operationDiff({required String opId});
+
+  Future<WikiPage> page({required String path});
+
+  /// Settings › Repository › Rebuild index.
+  Future<int> rebuildIndex();
+
+  Future<List<PageSummary>> recentPages({String? vault, required int limit});
+
+  Future<ReflectPrefs> reflectPrefs();
+
+  /// Picks up files changed outside the app (on resume and after sync).
+  Future<int> refreshIndex();
+
+  Future<void> removeMcpServer({required String id});
+
+  /// Removes a provider and the roles that used it. The app deletes its key from secure storage.
+  Future<void> removeProvider({required String id});
+
+  Future<UndoResult> rerunWithNote({
+    required String opId,
+    required String note,
+  });
+
+  /// Where a wikilink points (`sara`, `people/sara`, `raw/2026/09/23/…`), if it exists.
+  Future<String?> resolveLink({required String target});
+
+  /// `edited_text` only with `Confirm`: the user's corrected wording of the claim.
+  Future<void> resolveReview({
+    required String cardId,
+    required ReviewAction action,
+    String? editedText,
+  });
+
+  /// Makes a failed capture's jobs runnable again (the Retry action on a failed capture).
+  Future<void> retryCapture({required String rawId});
+
+  Future<List<ReviewCardDto>> reviewCards();
+
+  /// Runs queued AI jobs (transcribe, describe, ingest) until the queue is empty or blocked.
+  Future<RunSummary> runJobs({
+    required List<ApiKey> apiKeys,
+    required bool online,
+  });
+
+  /// "Save to wiki": files the question and answer through the normal pipeline.
+  Future<String> saveAnswer({
+    required String question,
+    required String answer,
+    required AskScopeDto scopeDto,
+  });
+
+  /// Story mode: saves a draft under `drafts/`; returns its path.
+  Future<String> saveDraft({
+    required String story,
+    required String title,
+    required String text,
+  });
+
+  /// Adds or updates a server; returns its id.
+  Future<String> saveMcpServer({required McpServer server});
+
+  /// Saves an edit as one human commit; fails if the page changed since `base_hash`.
+  Future<SaveResult> savePage({
+    required String path,
+    required String baseHash,
+    required String text,
+  });
+
+  /// Adds or updates a provider; returns its id (new providers get one).
+  Future<String> saveProvider({required AiProvider provider});
+
+  /// Queues what is due now (reflections, and lint when enough was filed). Returns how many jobs.
+  Future<int> scheduleDue();
+
+  Future<List<SearchHit>> search({
+    required String query,
+    required List<String> vaults,
+    required int limit,
+  });
+
+  Future<void> setReflectPrefs({required ReflectPrefs prefs});
+
   Future<void> setRemote({required String url});
+
+  Future<void> setRole({
+    required ModelRole role,
+    required String providerId,
+    required String model,
+  });
+
+  /// Starts a voice conversation; listen with `VoiceHandle::events`.
+  Future<VoiceHandle> startVoice({
+    required VoiceOptions options,
+    required List<ApiKey> apiKeys,
+  });
 
   Future<RepoStatus> status();
 
   Future<SyncResult> sync_({required Auth auth});
+
+  Future<ReflectSignals> takeReflectSignals();
+
+  /// The Test button: one real minimal call for the role as configured, with its latency.
+  /// A failure is an outcome, not an error, so the app can show it next to the role.
+  Future<ProbeOutcome> testRole({
+    required ModelRole role,
+    required List<ApiKey> apiKeys,
+  });
+
+  /// Undo (and Exclude source): the capture stays in raw/ as excluded.
+  Future<UndoResult> undo({required String opId});
 
   Future<List<Vault>> vaults();
 }
@@ -122,6 +294,7 @@ class Capture {
   final List<String> images;
   final Stage stage;
   final String? problem;
+  final Filing? filing;
 
   const Capture({
     required this.id,
@@ -133,6 +306,7 @@ class Capture {
     required this.images,
     required this.stage,
     this.problem,
+    this.filing,
   });
 
   @override
@@ -145,7 +319,8 @@ class Capture {
       vaultHint.hashCode ^
       images.hashCode ^
       stage.hashCode ^
-      problem.hashCode;
+      problem.hashCode ^
+      filing.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -160,7 +335,48 @@ class Capture {
           vaultHint == other.vaultHint &&
           images == other.images &&
           stage == other.stage &&
-          problem == other.problem;
+          problem == other.problem &&
+          filing == other.filing;
+}
+
+/// What filing did for a capture: "Filed to Life · Health — 4 pages updated, 1 claim to review".
+class Filing {
+  final String opId;
+  final List<String> vaults;
+  final int pagesCreated;
+  final int pagesUpdated;
+  final int claimsToReview;
+  final int toReview;
+
+  const Filing({
+    required this.opId,
+    required this.vaults,
+    required this.pagesCreated,
+    required this.pagesUpdated,
+    required this.claimsToReview,
+    required this.toReview,
+  });
+
+  @override
+  int get hashCode =>
+      opId.hashCode ^
+      vaults.hashCode ^
+      pagesCreated.hashCode ^
+      pagesUpdated.hashCode ^
+      claimsToReview.hashCode ^
+      toReview.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Filing &&
+          runtimeType == other.runtimeType &&
+          opId == other.opId &&
+          vaults == other.vaults &&
+          pagesCreated == other.pagesCreated &&
+          pagesUpdated == other.pagesUpdated &&
+          claimsToReview == other.claimsToReview &&
+          toReview == other.toReview;
 }
 
 enum RawKind { voice, text, photo, voiceConversation, chatAnswer, import_ }
