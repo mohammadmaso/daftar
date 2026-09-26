@@ -94,7 +94,14 @@ class _VoiceScreenState extends ConsumerState<VoiceScreen>
         _outLevel = 0;
         voice.playbackFinished();
       });
-      await _awake.set(true);
+      await _awake.set(
+        true,
+        notice: (
+          title: l.voiceNoticeTitle,
+          body: l.voiceNoticeBody,
+          channel: l.voiceNoticeChannel,
+        ),
+      );
       final stream = await mic.start(sampleRate: 16000);
       _mic = stream.listen((bytes) {
         final samples = pcmSamples(bytes);

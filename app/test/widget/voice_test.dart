@@ -27,6 +27,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       expect(mic.running, isTrue);
       expect(awake.on, isTrue, reason: 'screen stays awake');
+      expect(awake.notice?.title, 'Talking', reason: 'screen-off notice');
       expect(find.text('Listening'), findsOneWidget);
 
       mic.controller.add(Uint8List(640));

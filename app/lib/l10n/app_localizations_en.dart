@@ -1217,4 +1217,14 @@ class L10nEn extends L10n {
     );
     return '$_temp0';
   }
+
+  @override
+  String get voiceNoticeTitle => 'Talking';
+
+  @override
+  String get voiceNoticeBody =>
+      'Listening. Open the app to end the conversation.';
+
+  @override
+  String get voiceNoticeChannel => 'Voice conversation';
 }

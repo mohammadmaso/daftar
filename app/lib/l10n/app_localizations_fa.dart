@@ -1208,4 +1208,14 @@ class L10nFa extends L10n {
     );
     return '$_temp0';
   }
+
+  @override
+  String get voiceNoticeTitle => 'در حال گفت‌وگو';
+
+  @override
+  String get voiceNoticeBody =>
+      'گوش می‌دهد. برای پایان گفت‌وگو برنامه را باز کنید.';
+
+  @override
+  String get voiceNoticeChannel => 'گفت‌وگوی صوتی';
 }

@@ -2076,6 +2076,24 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'{n, plural, =1{Saved what you shared} other{Saved {n} shared items}}'**
   String sharedSaved(int n);
+
+  /// No description provided for @voiceNoticeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Talking'**
+  String get voiceNoticeTitle;
+
+  /// No description provided for @voiceNoticeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening. Open the app to end the conversation.'**
+  String get voiceNoticeBody;
+
+  /// No description provided for @voiceNoticeChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice conversation'**
+  String get voiceNoticeChannel;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

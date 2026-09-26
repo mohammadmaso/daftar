@@ -329,5 +329,8 @@
   "paletteNoMatch": "چیزی پیدا نشد.",
   "paletteShortcutHint": "Ctrl+K این را از هر جا باز می‌کند",
   "paletteShortcutHintMac": "⌘K این را از هر جا باز می‌کند",
-  "sharedSaved": "{n, plural, other{{n} مورد هم‌رسانی‌شده ذخیره شد}}"
+  "sharedSaved": "{n, plural, other{{n} مورد هم‌رسانی‌شده ذخیره شد}}",
+  "voiceNoticeTitle": "در حال گفت‌وگو",
+  "voiceNoticeBody": "گوش می‌دهد. برای پایان گفت‌وگو برنامه را باز کنید.",
+  "voiceNoticeChannel": "گفت‌وگوی صوتی"
 }

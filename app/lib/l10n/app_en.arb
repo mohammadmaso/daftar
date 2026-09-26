@@ -595,5 +595,8 @@
         "format": "decimalPattern"
       }
     }
-  }
+  },
+  "voiceNoticeTitle": "Talking",
+  "voiceNoticeBody": "Listening. Open the app to end the conversation.",
+  "voiceNoticeChannel": "Voice conversation"
 }

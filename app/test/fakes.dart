@@ -783,8 +783,12 @@ class FakePlayer implements VoicePlayer {
 
 class FakeAwake implements ScreenAwake {
   bool on = false;
+  VoiceNotice? notice;
   @override
-  Future<void> set(bool v) async => on = v;
+  Future<void> set(bool v, {VoiceNotice? notice}) async {
+    on = v;
+    this.notice = v ? notice : null;
+  }
 }
 
 class FakeBrowser implements OAuthBrowser {

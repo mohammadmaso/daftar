@@ -34,6 +34,24 @@ class MainActivity : FlutterActivity() {
             }
         }
         collect(intent)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "daftar/voice").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "start" -> {
+                    VoiceService.start(
+                        this,
+                        call.argument<String>("title") ?: "",
+                        call.argument<String>("body") ?: "",
+                        call.argument<String>("channel") ?: "",
+                    )
+                    result.success(null)
+                }
+                "stop" -> {
+                    VoiceService.stop(this)
+                    result.success(null)
+                }
+                else -> result.notImplemented()
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {

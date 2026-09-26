@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:record/record.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -108,18 +111,39 @@ class QueuedVoicePlayer implements VoicePlayer {
   }
 }
 
-/// Keeps the screen on during a voice conversation (§8.4).
+/// What the ongoing notification says while a conversation runs with the screen off.
+typedef VoiceNotice = ({String title, String body, String channel});
+
+/// Keeps a voice conversation going (§8.4): the screen stays on, and on Android a microphone
+/// foreground service keeps listening if the screen is turned off anyway.
 abstract class ScreenAwake {
-  Future<void> set(bool on);
+  /// [notice] is required when turning on; it is shown on Android while the service runs.
+  Future<void> set(bool on, {VoiceNotice? notice});
 }
 
 class WakelockScreenAwake implements ScreenAwake {
+  static const _service = MethodChannel('daftar/voice');
+
   @override
-  Future<void> set(bool on) async {
+  Future<void> set(bool on, {VoiceNotice? notice}) async {
     try {
       await WakelockPlus.toggle(enable: on);
     } catch (_) {
       // Not available on this platform; voice mode still works.
+    }
+    if (kIsWeb || !Platform.isAndroid) return;
+    try {
+      if (on && notice != null) {
+        await _service.invokeMethod<void>('start', {
+          'title': notice.title,
+          'body': notice.body,
+          'channel': notice.channel,
+        });
+      } else if (!on) {
+        await _service.invokeMethod<void>('stop');
+      }
+    } catch (_) {
+      // Without the service the conversation still runs while the screen is on.
     }
   }
 }
