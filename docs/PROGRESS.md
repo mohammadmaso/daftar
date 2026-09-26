@@ -282,6 +282,26 @@ and the DMG script on macOS.
 **Tests:** core graph test (dedup, raw citations, orphans, vault filter); 6 widget and unit tests
 (entry points, find, tap to select and open, filters, deterministic layout, drag); 4 new goldens.
 
+## User-managed vaults (2026-09-26)
+
+**Works**
+* Core: `daftar_core::vaults` can add, rename, re-describe, archive, restore and remove a vault
+  (ADR-0026).
+  * Only an empty vault can be removed; a vault with pages is archived.
+  * Life and Stories can be renamed but not removed.
+  * The vault's `index.md` is kept in step and committed with the settings.
+  * Archived vaults are closed to new AI writes.
+* Agents: every prompt that reads SCHEMA.md now gets the current vault list, marked as
+  authoritative (`prompts::schema`). Router v2 routes by each vault's purpose, not by hardcoded
+  vault names.
+* CLI: `daftar vault <repo> list|add|edit|archive|restore|remove`.
+* App: Settings › Vaults shows every vault with its page count and purpose, and has a sheet to add
+  or edit a vault (English and Persian names, what belongs there), archive or restore it, and remove
+  it while it is empty.
+
+**Tests:** core vault lifecycle and built-in guards; schema carries the current vaults; 3 widget
+tests (add with validation, Life restrictions, archive vs remove).
+
 ## Status after M9
 
 * Rust: 119 tests (unit + scenario + eval + perf), clippy clean with `-D warnings`.

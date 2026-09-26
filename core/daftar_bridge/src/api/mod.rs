@@ -5,5 +5,6 @@ pub mod info;
 pub mod library;
 pub mod mcp;
 pub mod reflect;
+pub mod vaults;
 pub mod voice;
 pub mod wiki;

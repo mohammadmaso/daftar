@@ -41,6 +41,7 @@ pub mod time;
 pub mod tls;
 pub mod tools;
 pub mod validate;
+pub mod vaults;
 pub mod voice;
 pub mod wellbeing;
 pub mod wiki;

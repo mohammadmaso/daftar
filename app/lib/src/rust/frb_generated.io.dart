@@ -10,6 +10,7 @@ import 'api/info.dart';
 import 'api/library.dart';
 import 'api/mcp.dart';
 import 'api/reflect.dart';
+import 'api/vaults.dart';
 import 'api/voice.dart';
 import 'api/wiki.dart';
 import 'dart:async';
@@ -322,6 +323,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<Vault> dco_decode_list_vault(dynamic raw);
 
   @protected
+  List<VaultSettings> dco_decode_list_vault_settings(dynamic raw);
+
+  @protected
   List<WikiGraphNode> dco_decode_list_wiki_graph_node(dynamic raw);
 
   @protected
@@ -482,6 +486,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Vault dco_decode_vault(dynamic raw);
+
+  @protected
+  VaultSettings dco_decode_vault_settings(dynamic raw);
 
   @protected
   VoiceEventDto dco_decode_voice_event_dto(dynamic raw);
@@ -810,6 +817,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<Vault> sse_decode_list_vault(SseDeserializer deserializer);
 
   @protected
+  List<VaultSettings> sse_decode_list_vault_settings(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<WikiGraphNode> sse_decode_list_wiki_graph_node(
     SseDeserializer deserializer,
   );
@@ -984,6 +996,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Vault sse_decode_vault(SseDeserializer deserializer);
+
+  @protected
+  VaultSettings sse_decode_vault_settings(SseDeserializer deserializer);
 
   @protected
   VoiceEventDto sse_decode_voice_event_dto(SseDeserializer deserializer);
@@ -1409,6 +1424,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_vault(List<Vault> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_vault_settings(
+    List<VaultSettings> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_wiki_graph_node(
     List<WikiGraphNode> self,
     SseSerializer serializer,
@@ -1608,6 +1629,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_vault(Vault self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vault_settings(VaultSettings self, SseSerializer serializer);
 
   @protected
   void sse_encode_voice_event_dto(VoiceEventDto self, SseSerializer serializer);

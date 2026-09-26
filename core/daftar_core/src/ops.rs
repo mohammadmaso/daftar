@@ -10,6 +10,7 @@ use serde_json::{Value, json};
 
 use crate::agent::{self, AgentError, AgentSpec, Cancel};
 use crate::changeset::{self, CommitInfo};
+use crate::config::{FICTION_VAULT, JOURNAL_VAULT};
 use crate::ledger::{self, LedgerEntry, OpType, Usage};
 use crate::library::{Library, LocalDevice};
 use crate::providers::{ChatRequest, Message, Part, ProviderError, Role};
@@ -55,16 +56,7 @@ fn languages(_lib: &Library) -> String {
 }
 
 fn vault_lines(lib: &Library) -> crate::Result<String> {
-    let c = lib.config()?;
-    Ok(c.active_vaults()
-        .map(|v| {
-            format!(
-                "- `{}` ({} · {}): {}",
-                v.id, v.title.en, v.title.fa, v.purpose
-            )
-        })
-        .collect::<Vec<_>>()
-        .join("\n"))
+    Ok(lib.config()?.vaults_for_prompt())
 }
 
 fn index_summaries(lib: &Library) -> crate::Result<String> {
@@ -270,9 +262,10 @@ pub async fn route(
         .map(|v| (v.to_owned(), "forced"))
         .or_else(|| item.meta.vault_hint.clone().map(|v| (v, "hint")));
     // A fixed personal vault needs no model call; a fixed `stories` still needs the story slug.
+    // A pin to a vault archived since the capture falls back to the router.
+    let fixed = fixed.filter(|(v, _)| config.active_vault(v).is_some());
     if let Some((v, by)) = &fixed
-        && v != "stories"
-        && config.vault(v).is_some()
+        && v != FICTION_VAULT
     {
         return Ok((
             Route {
@@ -323,7 +316,7 @@ pub async fn route(
     let mut r: Route = serde_json::from_value(v)
         .map_err(|_| OpError::Permanent("The router's answer had an unexpected shape.".into()))?;
     r.targets
-        .retain(|t| config.vault(&t.vault).is_some_and(|v| !v.archived));
+        .retain(|t| config.active_vault(&t.vault).is_some());
     r.decided_by = "router".into();
     if let Some((v, by)) = fixed {
         // Pinned `stories`: keep the router's story slug, force fiction.
@@ -335,10 +328,10 @@ pub async fn route(
         r.is_fiction = true;
         r.decided_by = by.into();
     }
-    if r.is_fiction || r.targets.iter().any(|t| t.vault == "stories") {
+    if r.is_fiction || r.targets.iter().any(|t| t.vault == FICTION_VAULT) {
         r.is_fiction = true;
         r.targets = vec![Target {
-            vault: "stories".into(),
+            vault: FICTION_VAULT.into(),
             reason: r
                 .targets
                 .first()
@@ -361,8 +354,8 @@ pub async fn route(
     }
     if r.targets.is_empty() {
         r.targets.push(Target {
-            vault: "life".into(),
-            reason: "no vault fitted clearly; filed in Life".into(),
+            vault: JOURNAL_VAULT.into(),
+            reason: "no vault fitted clearly; filed in the journal vault".into(),
             confidence: 0.3,
         });
     }
@@ -471,7 +464,7 @@ pub async fn ingest(
         .map(|v| v.id.clone())
         .collect::<Vec<_>>()
         .join(", ");
-    let schema = std::fs::read_to_string(lib.path(crate::layout::SCHEMA_FILE)).unwrap_or_default();
+    let schema = prompts::schema(lib);
     let system = prompts::render(
         prompts::INGEST,
         &[

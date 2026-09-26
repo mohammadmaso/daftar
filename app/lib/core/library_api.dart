@@ -6,6 +6,7 @@ import '../src/rust/api/audit.dart' as au;
 import '../src/rust/api/library.dart' as rs;
 import '../src/rust/api/mcp.dart' as mc;
 import '../src/rust/api/reflect.dart' as rf;
+import '../src/rust/api/vaults.dart' as vs;
 import '../src/rust/api/voice.dart' as vo;
 import '../src/rust/api/wiki.dart' as wk;
 
@@ -76,6 +77,7 @@ export '../src/rust/api/mcp.dart'
         OAuthStart;
 export '../src/rust/api/reflect.dart'
     show LintSummary, ReflectPrefs, ReflectSignals;
+export '../src/rust/api/vaults.dart' show VaultSettings;
 export '../src/rust/api/voice.dart'
     show VoiceEventDto, VoiceEventKind, VoiceOptions, VoiceStateDto;
 export '../src/rust/api/wiki.dart'
@@ -103,6 +105,22 @@ abstract class LibraryApi {
   Future<rs.SyncResult> sync(rs.Auth auth);
   Future<void> setRemote(String url);
   Future<List<rs.Vault>> vaults();
+
+  // The user's vaults (§3.2): archived ones included; only an empty vault can be removed.
+  Future<List<vs.VaultSettings>> vaultSettings();
+  Future<String> addVault({
+    required String titleEn,
+    required String titleFa,
+    required String purpose,
+  });
+  Future<void> editVault(
+    String id, {
+    required String titleEn,
+    required String titleFa,
+    required String purpose,
+  });
+  Future<void> setVaultArchived(String id, bool archived);
+  Future<void> removeVault(String id);
 
   // AI providers and model roles (§9). Keys come from secure storage per call.
   Future<ai.AiSettings> aiSettings();
@@ -355,6 +373,36 @@ class RustLibraryApi implements LibraryApi {
 
   @override
   Future<List<rs.Vault>> vaults() => _h.vaults();
+
+  @override
+  Future<List<vs.VaultSettings>> vaultSettings() => _h.vaultSettings();
+
+  @override
+  Future<String> addVault({
+    required String titleEn,
+    required String titleFa,
+    required String purpose,
+  }) => _h.addVault(titleEn: titleEn, titleFa: titleFa, purpose: purpose);
+
+  @override
+  Future<void> editVault(
+    String id, {
+    required String titleEn,
+    required String titleFa,
+    required String purpose,
+  }) => _h.editVault(
+    id: id,
+    titleEn: titleEn,
+    titleFa: titleFa,
+    purpose: purpose,
+  );
+
+  @override
+  Future<void> setVaultArchived(String id, bool archived) =>
+      _h.setVaultArchived(id: id, archived: archived);
+
+  @override
+  Future<void> removeVault(String id) => _h.removeVault(id: id);
 
   @override
   Future<ai.AiSettings> aiSettings() => _h.aiSettings();

@@ -111,7 +111,7 @@ pub async fn ask(
 ) -> std::result::Result<Answer, OpError> {
     let (provider, rc) = rt.for_role(if voice { Role::Voice } else { Role::Chat })?;
     let config = lib.config()?;
-    let schema = std::fs::read_to_string(lib.path(crate::layout::SCHEMA_FILE)).unwrap_or_default();
+    let schema = prompts::schema(lib);
     let today = now.strftime("%Y-%m-%d").to_string();
     let tz = now
         .time_zone()
@@ -119,16 +119,7 @@ pub async fn ask(
         .unwrap_or("local time")
         .to_owned();
     let languages = "Persian (fa) and English (en)";
-    let vault_list = config
-        .active_vaults()
-        .map(|v| {
-            format!(
-                "- `{}` ({} · {}): {}",
-                v.id, v.title.en, v.title.fa, v.purpose
-            )
-        })
-        .collect::<Vec<_>>()
-        .join("\n");
+    let vault_list = config.vaults_for_prompt();
     let system = match scope {
         _ if voice => prompts::render(
             prompts::VOICE,
@@ -150,16 +141,6 @@ pub async fn ask(
             ],
         ),
         _ => {
-            let vaults = config
-                .active_vaults()
-                .map(|v| {
-                    format!(
-                        "- `{}` ({} · {}): {}",
-                        v.id, v.title.en, v.title.fa, v.purpose
-                    )
-                })
-                .collect::<Vec<_>>()
-                .join("\n");
             let scope_line = match scope {
                 AskScope::Vault(v) => format!("only the `{v}` vault"),
                 _ => "the whole wiki".to_owned(),
@@ -170,7 +151,7 @@ pub async fn ask(
                     ("today", &today),
                     ("timezone", &tz),
                     ("languages", languages),
-                    ("vaults", &vaults),
+                    ("vaults", &vault_list),
                     ("scope", &scope_line),
                     ("schema", &schema),
                 ],

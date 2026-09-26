@@ -1344,4 +1344,85 @@ class L10nFa extends L10n {
 
   @override
   String get coreMcpBadUrl => 'نشانی سرور یک نشانی وب نیست.';
+
+  @override
+  String coreVaultNotEmpty(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'این خزانه هنوز $nString صفحه دارد؛ به‌جای حذف، بایگانی‌اش کنید.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get coreVaultBuiltin =>
+      '«زندگی» و «داستان‌ها» را می‌توان تغییر نام داد، اما نمی‌توان حذف کرد.';
+
+  @override
+  String get vaultsTitle => 'خزانه‌ها';
+
+  @override
+  String get vaultsFooter =>
+      'خزانه‌ها بین دستگاه‌ها همگام می‌شوند. دستیار هر یادداشت را بر اساس آنچه برای هر خزانه نوشته‌اید بایگانی می‌کند.';
+
+  @override
+  String get addVault => 'افزودن خزانه';
+
+  @override
+  String get vaultNameEn => 'نام به انگلیسی';
+
+  @override
+  String get vaultNameFa => 'نام به فارسی';
+
+  @override
+  String get vaultPurpose => 'چه چیزی اینجا می‌آید';
+
+  @override
+  String get vaultPurposeHint =>
+      'دستیار بر اساس همین بایگانی می‌کند. مثلاً: سفرها، ویزا، فهرست وسایل.';
+
+  @override
+  String get vaultNameRequired => 'برای خزانه نامی بگذارید.';
+
+  @override
+  String get vaultPurposeRequired => 'بگویید چه چیزی در این خزانه می‌آید.';
+
+  @override
+  String get vaultArchive => 'بایگانی';
+
+  @override
+  String get vaultRestore => 'بازگرداندن';
+
+  @override
+  String get vaultArchived => 'بایگانی‌شده';
+
+  @override
+  String vaultPages(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString صفحه',
+      zero: 'خالی',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get vaultBuiltinNote =>
+      '«زندگی» دفتر روزانه را نگه می‌دارد و «داستان‌ها» داستان‌ها را؛ هر دو را می‌توان تغییر نام داد، اما نمی‌توان حذف کرد.';
+
+  @override
+  String get vaultArchiveNote =>
+      'بایگانی، خزانه را از برنامه و دستیار پنهان می‌کند. صفحه‌هایش در مخزن شما می‌مانند و می‌توانید آن را بازگردانید.';
 }

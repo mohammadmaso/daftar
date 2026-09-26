@@ -24,6 +24,11 @@ schema_version: 1
 
 ## 2. Vaults · خزانه‌ها
 
+These are the vaults a new library starts with. I add, rename and archive vaults in the app
+(Settings › Vaults); the list in `.daftar/config.json` is the current one, and a vault I add is
+filed by the purpose I give it. `life` and `stories` always exist.
+خزانه‌ها را در برنامه اضافه، بازنام‌گذاری یا بایگانی می‌کنم؛ فهرست جاری در `.daftar/config.json` است.
+
 | Vault | Purpose | Typical pages |
 |---|---|---|
 | `life` · زندگی | journal, people, places, goals, concerns, ideas | `journal/<yyyy>/<yyyy-mm-dd>.md`, `people/<name>.md`, `places/`, `goals/`, `concerns/`, `ideas/`, `profile.md`, `reviews/` |

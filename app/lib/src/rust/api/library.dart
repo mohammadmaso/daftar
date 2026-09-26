@@ -10,6 +10,7 @@ import 'audit.dart';
 import 'mcp.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'reflect.dart';
+import 'vaults.dart';
 import 'voice.dart';
 import 'wiki.dart';
 
@@ -56,6 +57,13 @@ abstract class LibraryHandle implements RustOpaqueInterface {
   /// Operations newest first; pass the last op id seen as `before` to page.
   Future<List<Operation>> activity({required int limit, String? before});
 
+  /// Returns the new vault's id.
+  Future<String> addVault({
+    required String titleEn,
+    required String titleFa,
+    required String purpose,
+  });
+
   Future<AiSettings> aiSettings();
 
   /// Streams `Delta`s, then exactly one `Done` or `Failed`.
@@ -88,6 +96,13 @@ abstract class LibraryHandle implements RustOpaqueInterface {
   });
 
   Future<bool> discard({required String id});
+
+  Future<void> editVault({
+    required String id,
+    required String titleEn,
+    required String titleFa,
+    required String purpose,
+  });
 
   /// Files an excluded capture again.
   Future<void> includeCapture({required String rawId});
@@ -151,6 +166,9 @@ abstract class LibraryHandle implements RustOpaqueInterface {
 
   /// Removes a provider and the roles that used it. The app deletes its key from secure storage.
   Future<void> removeProvider({required String id});
+
+  /// Removes an empty vault; a vault with pages must be archived instead.
+  Future<void> removeVault({required String id});
 
   Future<UndoResult> rerunWithNote({
     required String opId,
@@ -224,6 +242,8 @@ abstract class LibraryHandle implements RustOpaqueInterface {
     required String model,
   });
 
+  Future<void> setVaultArchived({required String id, required bool archived});
+
   /// Starts a voice conversation; listen with `VoiceHandle::events`.
   Future<VoiceHandle> startVoice({
     required VoiceOptions options,
@@ -245,6 +265,9 @@ abstract class LibraryHandle implements RustOpaqueInterface {
 
   /// Undo (and Exclude source): the capture stays in raw/ as excluded.
   Future<UndoResult> undo({required String opId});
+
+  /// Every vault, archived ones included, in the user's order.
+  Future<List<VaultSettings>> vaultSettings();
 
   Future<List<Vault>> vaults();
 

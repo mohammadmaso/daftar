@@ -173,6 +173,12 @@ enum Command {
         #[command(subcommand)]
         action: McpAction,
     },
+    /// Vaults: list, add, edit, archive, restore, remove (only an empty one).
+    Vault {
+        path: PathBuf,
+        #[command(subcommand)]
+        action: VaultAction,
+    },
     /// Queue the reflections that are due and run them.
     Reflect { path: PathBuf },
     /// Check the wiki. With --judge, the lint model reviews recently changed pages too.
@@ -196,6 +202,41 @@ enum Command {
         file: PathBuf,
         #[arg(long, default_value = "daftar")]
         comment: String,
+    },
+}
+
+#[derive(Subcommand)]
+enum VaultAction {
+    /// Every vault, archived ones included.
+    List,
+    /// Add a vault; prints its id. One of --en / --fa is enough.
+    Add {
+        #[arg(long, default_value = "")]
+        en: String,
+        #[arg(long, default_value = "")]
+        fa: String,
+        /// What belongs in the vault; the assistant files by it.
+        #[arg(long)]
+        purpose: String,
+    },
+    /// Rename a vault or change its purpose; its id (folder) stays.
+    Edit {
+        id: String,
+        #[arg(long)]
+        en: Option<String>,
+        #[arg(long)]
+        fa: Option<String>,
+        #[arg(long)]
+        purpose: Option<String>,
+    },
+    Archive {
+        id: String,
+    },
+    Restore {
+        id: String,
+    },
+    Remove {
+        id: String,
     },
 }
 
@@ -789,6 +830,59 @@ fn main() -> anyhow::Result<()> {
             if save {
                 let item = s.save_answer(&question, &a.text, &scope)?;
                 eprintln!("saved as {}; run `jobs` to file it", item.path);
+            }
+        }
+        Command::Vault { path, action } => {
+            use daftar_core::config::Bilingual;
+            use daftar_core::vaults;
+            let s = Session::open(path)?;
+            let lib = s.library();
+            match action {
+                VaultAction::List => {
+                    let list = vaults::list(lib)?;
+                    print(json, &list, |l| {
+                        l.iter()
+                            .map(|v| {
+                                format!(
+                                    "{}\t{} · {}{}\t{}",
+                                    v.id,
+                                    v.title.en,
+                                    v.title.fa,
+                                    if v.archived { " (archived)" } else { "" },
+                                    v.purpose
+                                )
+                            })
+                            .collect::<Vec<_>>()
+                            .join("\n")
+                    })?;
+                }
+                VaultAction::Add { en, fa, purpose } => {
+                    println!("{}", vaults::add(lib, Bilingual { en, fa }, &purpose)?);
+                }
+                VaultAction::Edit {
+                    id,
+                    en,
+                    fa,
+                    purpose,
+                } => {
+                    let v = lib
+                        .config()?
+                        .vault(&id)
+                        .cloned()
+                        .with_context(|| format!("no vault {id}"))?;
+                    vaults::edit(
+                        lib,
+                        &id,
+                        Bilingual {
+                            en: en.unwrap_or(v.title.en),
+                            fa: fa.unwrap_or(v.title.fa),
+                        },
+                        &purpose.unwrap_or(v.purpose),
+                    )?;
+                }
+                VaultAction::Archive { id } => vaults::set_archived(lib, &id, true)?,
+                VaultAction::Restore { id } => vaults::set_archived(lib, &id, false)?,
+                VaultAction::Remove { id } => vaults::remove(lib, &id)?,
             }
         }
         Command::Mcp { path, action } => {

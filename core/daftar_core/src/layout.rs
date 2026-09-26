@@ -10,7 +10,10 @@ pub const RAW_DIR: &str = "raw";
 pub const VAULTS_DIR: &str = "vaults";
 pub const LOG_DIR: &str = "log";
 
-pub const DEFAULT_VAULTS: [&str; 5] = ["life", "health", "mind", "work", "stories"];
+/// `vaults/<id>/index.md`: generated, and created or removed together with the vault itself.
+pub fn is_vault_index(path: &str) -> bool {
+    path.starts_with("vaults/") && path.ends_with("/index.md") && path.matches('/').count() == 2
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Date {
@@ -58,9 +61,7 @@ pub fn is_protected_from_ai(path: &str) -> bool {
         || path.starts_with("raw/")
         || path.starts_with(".daftar/")
         || path == ".gitattributes"
-        || (path.starts_with("vaults/")
-            && path.ends_with("/index.md")
-            && path.matches('/').count() == 2)
+        || is_vault_index(path)
 }
 
 #[cfg(test)]
