@@ -128,6 +128,30 @@ final class Palette {
   );
 }
 
+/// Categorical hues for graph nodes, one per vault in vault order. Muted to sit with the palette
+/// and decorative only: never used for text or status.
+abstract final class GraphHues {
+  static const light = [
+    Color(0xFF2F6F80),
+    Color(0xFFA06A1C),
+    Color(0xFF4A7D58),
+    Color(0xFF855A7C),
+    Color(0xFF52609A),
+    Color(0xFF77763A),
+    Color(0xFFA2583F),
+  ];
+
+  static const dark = [
+    Color(0xFF86B6C2),
+    Color(0xFFD9AE6A),
+    Color(0xFF8DBE9A),
+    Color(0xFFC39BB8),
+    Color(0xFFA3AEDC),
+    Color(0xFFB9B97E),
+    Color(0xFFD99A7E),
+  ];
+}
+
 enum Script { latin, persian }
 
 /// Type scale tuned per script. Persian runs ~1.12× larger with airier leading.

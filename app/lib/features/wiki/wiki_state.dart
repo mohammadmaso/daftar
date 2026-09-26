@@ -85,6 +85,18 @@ final graphProvider = FutureProvider.family<LocalGraph, (String, int)>((
   return lib!.localGraph(key.$1, depth: key.$2);
 });
 
+/// The whole wiki as a graph (the Graph view). Filters apply on the device, so switching them
+/// keeps the layout in place.
+final wikiGraphProvider = FutureProvider<WikiGraph>((ref) async {
+  ref.watch(revisionProvider);
+  final lib = await ref.watch(libraryProvider.future);
+  return lib!.wikiGraph();
+});
+
+String graphRoute({String? focus}) => focus == null
+    ? '/wiki/graph'
+    : '/wiki/graph?focus=${Uri.encodeQueryComponent(focus)}';
+
 final libraryRootPathProvider = FutureProvider<String?>((ref) async {
   final lib = await ref.watch(libraryProvider.future);
   return lib?.root();

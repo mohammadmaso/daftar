@@ -75,6 +75,10 @@ class PageScreen extends ConsumerWidget {
                             Navigator.of(sheet).pop();
                             context.push(pageRoute(to));
                           },
+                          onOpenGraph: () {
+                            Navigator.of(sheet).pop();
+                            context.push(graphRoute(focus: pg.path));
+                          },
                         ),
                       ),
                     ),

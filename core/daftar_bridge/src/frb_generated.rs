@@ -41,7 +41,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 2091493200;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 91811100;
 
 // Section: executor
 
@@ -2962,6 +2962,61 @@ fn wire__crate__api__library__LibraryHandle_vaults_impl(
         },
     )
 }
+fn wire__crate__api__library__LibraryHandle_wiki_graph_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "LibraryHandle_wiki_graph",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<LibraryHandle>,
+            >>::sse_decode(&mut deserializer);
+            let api_vault = <Option<String>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::library::LibraryHandle::wiki_graph(
+                            &*api_that_guard,
+                            api_vault,
+                        )?;
+                        std::result::Result::Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__voice__VoiceHandle_end_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -4449,6 +4504,18 @@ impl SseDecode for Vec<i16> {
     }
 }
 
+impl SseDecode for Vec<u32> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<u32>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<u8> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -4516,6 +4583,18 @@ impl SseDecode for Vec<crate::api::library::Vault> {
         let mut ans_ = Vec::with_capacity(len_ as usize);
         for idx_ in 0..len_ {
             ans_.push(<crate::api::library::Vault>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::wiki::WikiGraphNode> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::wiki::WikiGraphNode>::sse_decode(deserializer));
         }
         return ans_;
     }
@@ -5365,6 +5444,32 @@ impl SseDecode for crate::api::voice::VoiceStateDto {
     }
 }
 
+impl SseDecode for crate::api::wiki::WikiGraph {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_nodes = <Vec<crate::api::wiki::WikiGraphNode>>::sse_decode(deserializer);
+        let mut var_edgeFrom = <Vec<u32>>::sse_decode(deserializer);
+        let mut var_edgeTo = <Vec<u32>>::sse_decode(deserializer);
+        return crate::api::wiki::WikiGraph {
+            nodes: var_nodes,
+            edge_from: var_edgeFrom,
+            edge_to: var_edgeTo,
+        };
+    }
+}
+
+impl SseDecode for crate::api::wiki::WikiGraphNode {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_page = <crate::api::wiki::PageSummary>::sse_decode(deserializer);
+        let mut var_links = <u32>::sse_decode(deserializer);
+        return crate::api::wiki::WikiGraphNode {
+            page: var_page,
+            links: var_links,
+        };
+    }
+}
+
 impl SseDecode for crate::api::wiki::WikiPage {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -5680,23 +5785,29 @@ fn pde_ffi_dispatcher_primary_impl(
         52 => {
             wire__crate__api__library__LibraryHandle_vaults_impl(port, ptr, rust_vec_len, data_len)
         }
-        53 => wire__crate__api__voice__VoiceHandle_end_impl(port, ptr, rust_vec_len, data_len),
-        54 => wire__crate__api__voice__VoiceHandle_events_impl(port, ptr, rust_vec_len, data_len),
-        55 => wire__crate__api__voice__VoiceHandle_feed_impl(port, ptr, rust_vec_len, data_len),
-        56 => wire__crate__api__voice__VoiceHandle_playback_finished_impl(
+        53 => wire__crate__api__library__LibraryHandle_wiki_graph_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        57 => {
+        54 => wire__crate__api__voice__VoiceHandle_end_impl(port, ptr, rust_vec_len, data_len),
+        55 => wire__crate__api__voice__VoiceHandle_events_impl(port, ptr, rust_vec_len, data_len),
+        56 => wire__crate__api__voice__VoiceHandle_feed_impl(port, ptr, rust_vec_len, data_len),
+        57 => wire__crate__api__voice__VoiceHandle_playback_finished_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        58 => {
             wire__crate__api__voice__VoiceHandle_set_muted_impl(port, ptr, rust_vec_len, data_len)
         }
-        60 => wire__crate__api__library__clone_library_impl(port, ptr, rust_vec_len, data_len),
-        63 => wire__crate__api__library__generate_ssh_key_impl(port, ptr, rust_vec_len, data_len),
-        65 => wire__crate__api__info__init_app_impl(port, ptr, rust_vec_len, data_len),
-        66 => wire__crate__api__library__init_library_impl(port, ptr, rust_vec_len, data_len),
-        68 => wire__crate__api__ai__list_models_impl(port, ptr, rust_vec_len, data_len),
+        61 => wire__crate__api__library__clone_library_impl(port, ptr, rust_vec_len, data_len),
+        64 => wire__crate__api__library__generate_ssh_key_impl(port, ptr, rust_vec_len, data_len),
+        66 => wire__crate__api__info__init_app_impl(port, ptr, rust_vec_len, data_len),
+        67 => wire__crate__api__library__init_library_impl(port, ptr, rust_vec_len, data_len),
+        69 => wire__crate__api__ai__list_models_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -5709,13 +5820,13 @@ fn pde_ffi_dispatcher_sync_impl(
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        58 => wire__crate__api__mcp__answer_tool_approval_impl(ptr, rust_vec_len, data_len),
-        59 => wire__crate__api__ai__capability_warning_impl(ptr, rust_vec_len, data_len),
-        61 => wire__crate__api__info__core_info_impl(ptr, rust_vec_len, data_len),
-        62 => wire__crate__api__ai__default_base_url_impl(ptr, rust_vec_len, data_len),
-        64 => wire__crate__api__ask__helplines_impl(ptr, rust_vec_len, data_len),
-        67 => wire__crate__api__library__library_ready_impl(ptr, rust_vec_len, data_len),
-        69 => wire__crate__api__mcp__mcp_stdio_supported_impl(ptr, rust_vec_len, data_len),
+        59 => wire__crate__api__mcp__answer_tool_approval_impl(ptr, rust_vec_len, data_len),
+        60 => wire__crate__api__ai__capability_warning_impl(ptr, rust_vec_len, data_len),
+        62 => wire__crate__api__info__core_info_impl(ptr, rust_vec_len, data_len),
+        63 => wire__crate__api__ai__default_base_url_impl(ptr, rust_vec_len, data_len),
+        65 => wire__crate__api__ask__helplines_impl(ptr, rust_vec_len, data_len),
+        68 => wire__crate__api__library__library_ready_impl(ptr, rust_vec_len, data_len),
+        70 => wire__crate__api__mcp__mcp_stdio_supported_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -7222,6 +7333,46 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::voice::VoiceStateDto>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::wiki::WikiGraph {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.nodes.into_into_dart().into_dart(),
+            self.edge_from.into_into_dart().into_dart(),
+            self.edge_to.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::wiki::WikiGraph {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::wiki::WikiGraph>
+    for crate::api::wiki::WikiGraph
+{
+    fn into_into_dart(self) -> crate::api::wiki::WikiGraph {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::wiki::WikiGraphNode {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.page.into_into_dart().into_dart(),
+            self.links.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::wiki::WikiGraphNode
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::wiki::WikiGraphNode>
+    for crate::api::wiki::WikiGraphNode
+{
+    fn into_into_dart(self) -> crate::api::wiki::WikiGraphNode {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::wiki::WikiPage {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -7911,6 +8062,16 @@ impl SseEncode for Vec<i16> {
     }
 }
 
+impl SseEncode for Vec<u32> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <u32>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<u8> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -7967,6 +8128,16 @@ impl SseEncode for Vec<crate::api::library::Vault> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <crate::api::library::Vault>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::wiki::WikiGraphNode> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::wiki::WikiGraphNode>::sse_encode(item, serializer);
         }
     }
 }
@@ -8682,6 +8853,23 @@ impl SseEncode for crate::api::voice::VoiceStateDto {
             },
             serializer,
         );
+    }
+}
+
+impl SseEncode for crate::api::wiki::WikiGraph {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<crate::api::wiki::WikiGraphNode>>::sse_encode(self.nodes, serializer);
+        <Vec<u32>>::sse_encode(self.edge_from, serializer);
+        <Vec<u32>>::sse_encode(self.edge_to, serializer);
+    }
+}
+
+impl SseEncode for crate::api::wiki::WikiGraphNode {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <crate::api::wiki::PageSummary>::sse_encode(self.page, serializer);
+        <u32>::sse_encode(self.links, serializer);
     }
 }
 

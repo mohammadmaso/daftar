@@ -583,6 +583,49 @@ class L10nEn extends L10n {
   String get localGraph => 'Nearby pages';
 
   @override
+  String get graphTitle => 'Graph';
+
+  @override
+  String get openGraph => 'Open the graph';
+
+  @override
+  String get graphFind => 'Find a page';
+
+  @override
+  String get graphUnlinked => 'Unlinked pages';
+
+  @override
+  String get graphFit => 'Fit to screen';
+
+  @override
+  String get graphEmpty => 'Pages show up here as they are filed and linked.';
+
+  @override
+  String get graphOpenHint => 'Tap again to open';
+
+  @override
+  String linksCount(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString links',
+      one: '1 link',
+      zero: 'No links',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String graphSummary(String pages, String links) {
+    return '$pages · $links';
+  }
+
+  @override
   String get editPage => 'Edit';
 
   @override

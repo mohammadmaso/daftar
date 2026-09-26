@@ -582,6 +582,49 @@ class L10nFa extends L10n {
   String get localGraph => 'صفحه‌های نزدیک';
 
   @override
+  String get graphTitle => 'گراف';
+
+  @override
+  String get openGraph => 'باز کردن گراف';
+
+  @override
+  String get graphFind => 'پیدا کردن صفحه';
+
+  @override
+  String get graphUnlinked => 'صفحه‌های بی‌پیوند';
+
+  @override
+  String get graphFit => 'نمایش همه';
+
+  @override
+  String get graphEmpty =>
+      'صفحه‌ها همین‌که بایگانی و به هم پیوند داده شوند اینجا دیده می‌شوند.';
+
+  @override
+  String get graphOpenHint => 'برای باز کردن دوباره بزنید';
+
+  @override
+  String linksCount(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$nString پیوند',
+      zero: 'بدون پیوند',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String graphSummary(String pages, String links) {
+    return '$pages · $links';
+  }
+
+  @override
   String get editPage => 'ویرایش';
 
   @override

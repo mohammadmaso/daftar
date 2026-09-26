@@ -261,6 +261,27 @@ and the DMG script on macOS.
   (docs/packaging.md).
 * No run on a real device yet.
 
+## Graph view (2026-09-26)
+
+**Works**
+* Core: `wiki_graph` returns every page and one edge per linked pair, with link counts, in one
+  pass. CLI: `daftar graph <repo> [--vault v]` (with a page, it still prints the local graph).
+* App: the Graph screen (ADR-0025), with:
+  * a force layout (Barnes–Hut);
+  * pan, zoom and fit to screen;
+  * dragging nodes;
+  * tap to highlight neighbours, tap again to open;
+  * hover highlight on desktop;
+  * find a page by name;
+  * vault filter chips that double as the colour legend;
+  * a toggle for unlinked pages;
+  * labels that fade in with zoom.
+
+  It opens from the Wiki tab header, and from Nearby pages centred on the current page.
+
+**Tests:** core graph test (dedup, raw citations, orphans, vault filter); 6 widget and unit tests
+(entry points, find, tap to select and open, filters, deterministic layout, drag); 4 new goldens.
+
 ## Status after M9
 
 * Rust: 119 tests (unit + scenario + eval + perf), clippy clean with `-D warnings`.

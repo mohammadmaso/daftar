@@ -102,10 +102,13 @@ enum Command {
     },
     /// Show a page's properties and backlinks.
     Page { path: PathBuf, page: String },
-    /// Pages around PAGE within DEPTH links (1–2).
+    /// Pages around PAGE within DEPTH links (1–2); without PAGE, the whole wiki.
     Graph {
         path: PathBuf,
-        page: String,
+        page: Option<String>,
+        /// With no PAGE: only pages in this vault.
+        #[arg(long)]
+        vault: Option<String>,
         #[arg(long, default_value_t = 1)]
         depth: usize,
     },
@@ -559,7 +562,31 @@ fn main() -> anyhow::Result<()> {
                 out
             })?;
         }
-        Command::Graph { path, page, depth } => {
+        Command::Graph {
+            path,
+            page: None,
+            vault,
+            ..
+        } => {
+            let s = Session::open(path)?;
+            let g = s.wiki_graph(vault.as_deref())?;
+            print(json, &g, |g| {
+                g.nodes
+                    .iter()
+                    .map(|n| format!("{} ({})", n.page.path, n.links))
+                    .chain(g.edges.iter().map(|&(a, b)| {
+                        format!("{} — {}", g.nodes[a].page.path, g.nodes[b].page.path)
+                    }))
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            })?;
+        }
+        Command::Graph {
+            path,
+            page: Some(page),
+            depth,
+            ..
+        } => {
             let s = Session::open(path)?;
             let g = s.local_graph(&page, depth)?;
             print(json, &g, |g| {

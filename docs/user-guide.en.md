@@ -89,6 +89,12 @@ At the top, the sync line shows **Synced**, **n changes to sync**, **Syncing…*
   * *proposed*: the assistant inferred it and waits for you.
   * *superseded*: replaced by something newer.
 * **Linked from** lists pages that link here, and **Nearby pages** shows a small graph.
+* **Graph** (the button next to the Wiki title) shows every page and the links between them, as
+  in Obsidian. Pinch or scroll to zoom, drag to move around, and use the corners button to fit
+  everything on screen. Tap a page to light up its neighbours; tap it again, or press **Open**, to
+  read it. **Find a page** jumps to a page by name. The vault chips filter the graph and show each
+  vault's colour. **Unlinked pages** shows or hides pages that nothing links to. From a page, open
+  **Nearby pages** and then **Open the graph** to start centred on that page.
 * **Edit** opens the page as Markdown. Your own edits are saved as your commits, and the assistant
   never rewrites lines you wrote. If the page changed on another device while you were editing,
   you are told before anything is overwritten.

@@ -204,9 +204,24 @@ class _WikiHomeState extends ConsumerState<_WikiHome> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Semantics(
-                      header: true,
-                      child: Text(l.wikiTitle, style: context.type.display),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Semantics(
+                            header: true,
+                            child: Text(
+                              l.wikiTitle,
+                              style: context.type.display,
+                            ),
+                          ),
+                        ),
+                        DIconButton(
+                          icon: DIcons.graph,
+                          semanticLabel: l.openGraph,
+                          color: p.inkMuted,
+                          onPressed: () => context.push(graphRoute()),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: Space.x3),
                     DTextField(

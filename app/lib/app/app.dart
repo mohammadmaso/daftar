@@ -18,6 +18,7 @@ import '../features/settings/settings_screen.dart';
 import '../features/shell/home_shell.dart';
 import '../features/voice/voice_screen.dart';
 import '../features/wiki/editor_screen.dart';
+import '../features/wiki/graph_screen.dart';
 import '../features/wiki/page_screen.dart';
 import '../features/wiki/wiki_screen.dart';
 import '../l10n/app_localizations.dart';
@@ -65,6 +66,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: 'page',
                 builder: (context, state) =>
                     PageScreen(path: state.uri.queryParameters['path'] ?? ''),
+              ),
+              GoRoute(
+                path: 'graph',
+                builder: (context, state) =>
+                    GraphScreen(focus: state.uri.queryParameters['focus']),
               ),
               GoRoute(
                 path: 'edit',
