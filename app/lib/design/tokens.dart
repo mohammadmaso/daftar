@@ -128,6 +128,13 @@ final class Palette {
   );
 }
 
+/// Brand colours of the logo and app icon (packaging/icon/make_icon.py). Fixed in both themes so
+/// the in-app mark is the icon on the home screen.
+abstract final class Brand {
+  static const ink = Color(0xFF22505E);
+  static const paper = Color(0xFFF7F4EE);
+}
+
 /// Categorical hues for graph nodes, one per vault in vault order. Muted to sit with the palette
 /// and decorative only: never used for text or status.
 abstract final class GraphHues {
@@ -154,22 +161,59 @@ abstract final class GraphHues {
 
 enum Script { latin, persian }
 
+/// Reading faces the user can pick for Latin text (ADR-0027). [scale] evens out x-heights so a
+/// choice changes the voice of the text, not its size.
+enum LatinFont {
+  sans('Inter', 1.0),
+  serif('SourceSerif4', 1.1),
+  book('Literata', 1.06),
+  legible('AtkinsonNext', 1.08);
+
+  const LatinFont(this.family, this.scale);
+  final String family;
+  final double scale;
+}
+
+/// Reading faces for Persian text. [scale] replaces the Persian ×1.12 bump per face; [leading]
+/// tightens line height for faces drawn small on the body (Markazi).
+enum PersianFont {
+  vazirmatn('Vazirmatn', 1.12, 1.0),
+  plex('IBMPlexSansArabic', 1.16, 1.0),
+  naskh('NotoNaskhArabic', 1.12, 1.0),
+  markazi('MarkaziText', 1.4, 0.85);
+
+  const PersianFont(this.family, this.scale, this.leading);
+  final String family;
+  final double scale;
+  final double leading;
+}
+
 /// Type scale tuned per script. Persian runs ~1.12× larger with airier leading.
 final class TypeScale {
-  const TypeScale._(this.script);
+  const TypeScale(
+    this.script, {
+    this.latinFont = LatinFont.sans,
+    this.persianFont = PersianFont.vazirmatn,
+  });
 
   final Script script;
+  final LatinFont latinFont;
+  final PersianFont persianFont;
 
-  static const latin = TypeScale._(Script.latin);
-  static const persian = TypeScale._(Script.persian);
+  static const latin = TypeScale(Script.latin);
+  static const persian = TypeScale(Script.persian);
 
-  String get family => script == Script.persian ? 'Vazirmatn' : 'Inter';
-  List<String> get fallback =>
-      script == Script.persian ? const ['Inter'] : const ['Vazirmatn'];
+  bool get _fa => script == Script.persian;
 
-  double get _k => script == Script.persian ? 1.12 : 1.0;
-  double get _bodyLeading => script == Script.persian ? 1.8 : 1.55;
-  double get _headLeading => script == Script.persian ? 1.5 : 1.25;
+  String get family => _fa ? persianFont.family : latinFont.family;
+
+  /// Mixed-script text falls back to the chosen face of the other script.
+  List<String> get fallback => _fa ? [latinFont.family] : [persianFont.family];
+
+  double get _k => _fa ? persianFont.scale : latinFont.scale;
+  double get _lead => _fa ? persianFont.leading : 1.0;
+  double get _bodyLeading => (_fa ? 1.8 : 1.55) * _lead;
+  double get _headLeading => (_fa ? 1.5 : 1.25) * _lead;
 
   TextStyle _s(double size, FontWeight w, double height, {double ls = 0}) =>
       TextStyle(
@@ -178,7 +222,7 @@ final class TypeScale {
         fontSize: (size * _k).roundToDouble(),
         fontWeight: w,
         height: height,
-        letterSpacing: script == Script.persian ? 0 : ls,
+        letterSpacing: _fa ? 0 : ls,
       );
 
   TextStyle get display => _s(30, FontWeight.w600, _headLeading, ls: -0.4);
@@ -187,8 +231,8 @@ final class TypeScale {
   TextStyle get body => _s(16, FontWeight.w400, _bodyLeading);
   TextStyle get bodyStrong => _s(16, FontWeight.w500, _bodyLeading);
   TextStyle get small => _s(14, FontWeight.w400, _bodyLeading);
-  TextStyle get label => _s(14, FontWeight.w500, 1.3, ls: 0.1);
-  TextStyle get caption => _s(12, FontWeight.w500, 1.4, ls: 0.3);
+  TextStyle get label => _s(14, FontWeight.w500, 1.3 * _lead, ls: 0.1);
+  TextStyle get caption => _s(12, FontWeight.w500, 1.4 * _lead, ls: 0.3);
 
   static const mono = TextStyle(
     fontFamily: 'JetBrainsMono',
@@ -196,4 +240,14 @@ final class TypeScale {
     fontSize: 14,
     height: 1.55,
   );
+
+  @override
+  bool operator ==(Object other) =>
+      other is TypeScale &&
+      other.script == script &&
+      other.latinFont == latinFont &&
+      other.persianFont == persianFont;
+
+  @override
+  int get hashCode => Object.hash(script, latinFont, persianFont);
 }

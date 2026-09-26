@@ -13,4 +13,4 @@
 * Type: Inter (Latin) and Vazirmatn (Persian), Persian ×1.12 size and 1.8 body leading.
 * Every text/surface pair is checked for WCAG AA by `test/design/contrast_test.dart`.
 * App monogram: the first letter of the product name in an ink ring (placeholder for the app icon
-  delivered in M9).
+  delivered in M9). Superseded by the logo in ADR-0027.

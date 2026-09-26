@@ -44,6 +44,18 @@ Screens: `app/test/golden/goldens/settings_{light,dark}_{en,fa}_{phone,desktop}.
 | caption | 12 / 500 | 13 / 500 |
 | mono | JetBrains Mono 14 | |
 
+Latin and Persian each have a reading font chosen in Settings (ADR-0027): Inter, Source Serif 4,
+Literata or Atkinson Hyperlegible Next; Vazirmatn, IBM Plex Sans Arabic, Noto Naskh Arabic or
+Markazi Text. Sizes above are for the defaults. Other faces carry a size factor so they read at the
+same size.
+
+### Logo
+
+The mark is the app icon: a ruled notebook page with a bookmark on an ink tile (`Logo`), always in
+`#22505E` and `#F7F4EE`. The wordmark sets the name after the mark, 0.32 × the mark apart, at
+0.62 × its height, in the current reading font. SVGs: `packaging/icon/logo.svg`,
+`wordmark-en-sans.svg`, `wordmark-en-serif.svg`, `wordmark-fa.svg`.
+
 ## Rules
 
 * No sparkle/robot/brain imagery, gradients, glass, emoji, chat-bubble tails, or Material chrome.

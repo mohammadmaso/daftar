@@ -4,12 +4,18 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Loads the bundled fonts so goldens render real Inter/Vazirmatn glyphs instead of Ahem boxes.
+/// Loads the bundled fonts so goldens render real glyphs instead of Ahem boxes.
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   TestWidgetsFlutterBinding.ensureInitialized();
   const families = {
     'Inter': ['Regular', 'Medium', 'SemiBold', 'Bold'],
     'Vazirmatn': ['Regular', 'Medium', 'SemiBold', 'Bold'],
+    'SourceSerif4': ['Regular', 'Medium', 'SemiBold', 'Bold'],
+    'Literata': ['Regular', 'Medium', 'SemiBold', 'Bold'],
+    'AtkinsonNext': ['Regular', 'Medium', 'SemiBold', 'Bold'],
+    'IBMPlexSansArabic': ['Regular', 'Medium', 'SemiBold', 'Bold'],
+    'NotoNaskhArabic': ['Regular', 'Medium', 'SemiBold', 'Bold'],
+    'MarkaziText': ['Regular', 'Medium', 'SemiBold', 'Bold'],
     'JetBrainsMono': ['Regular', 'Medium'],
   };
   for (final MapEntry(key: family, value: weights) in families.entries) {

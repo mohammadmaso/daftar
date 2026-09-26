@@ -33,9 +33,14 @@ extension DaftarThemeX on BuildContext {
 
 /// Builds the Flutter [ThemeData] only so that stock widgets we still rely on (text selection,
 /// scroll physics, focus) pick up our tokens. All visible components are our own.
-ThemeData buildTheme(Brightness brightness, Script script) {
+ThemeData buildTheme(
+  Brightness brightness,
+  Script script, {
+  LatinFont latinFont = LatinFont.sans,
+  PersianFont persianFont = PersianFont.vazirmatn,
+}) {
   final p = brightness == Brightness.dark ? Palette.dark : Palette.light;
-  final t = script == Script.persian ? TypeScale.persian : TypeScale.latin;
+  final t = TypeScale(script, latinFont: latinFont, persianFont: persianFont);
   final scheme = ColorScheme(
     brightness: brightness,
     primary: p.accent,
