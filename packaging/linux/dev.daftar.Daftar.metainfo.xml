@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>dev.daftar.Daftar</id>
+  <name>Daftar</name>
+  <name xml:lang="fa">دفتر</name>
+  <summary>A private notebook that files what you say into your own wiki</summary>
+  <summary xml:lang="fa">دفتری خصوصی که گفته‌هایت را در ویکی خودت بایگانی می‌کند</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary</project_license>
+  <description>
+    <p>Speak, type or take a photo. Everything is saved at once in a private Git repository you
+    own, then filed into a bilingual wiki by the AI models you choose.</p>
+  </description>
+  <launchable type="desktop-id">dev.daftar.Daftar.desktop</launchable>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="0.1.0" date="2026-09-25" />
+  </releases>
+</component>

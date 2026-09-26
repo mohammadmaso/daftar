@@ -1,0 +1,202 @@
+name: Release
+
+# Builds every packaging target in the brief (§3): AppImage, .deb and Flatpak; APK and AAB; IPA;
+# DMG; MSIX. A version tag (v0.1.0) attaches them to a draft GitHub release; a manual run keeps
+# them as workflow artifacts. Signing uses the secrets listed in docs/packaging.md when they are
+# set, and otherwise produces unsigned (test) packages.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: 3.41.1
+  CARGO_TERM_COLOR: always
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: v
+        run: echo "version=$(grep '^version:' app/pubspec.yaml | cut -d' ' -f2 | cut -d+ -f1)" >> "$GITHUB_OUTPUT"
+      - if: startsWith(github.ref, 'refs/tags/')
+        run: gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --draft --generate-notes --title "$GITHUB_REF_NAME"
+
+  linux:
+    needs: draft
+    runs-on: ubuntu-latest
+    env: { VERSION: "${{ needs.draft.outputs.version }}" }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with: { flutter-version: "${{ env.FLUTTER_VERSION }}", cache: true }
+      - uses: dtolnay/rust-toolchain@v1
+        with: { toolchain: stable }
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: core }
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libgtk-3-dev clang cmake pkg-config libsecret-1-dev \
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev file flatpak flatpak-builder
+      - working-directory: app
+        run: flutter build linux --release
+      - run: |
+          curl -sSL -o appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool
+          packaging/linux/build_deb.sh app/build/linux/x64/release/bundle "$VERSION" dist
+          APPIMAGETOOL=$PWD/appimagetool packaging/linux/build_appimage.sh app/build/linux/x64/release/bundle "$VERSION" dist
+      - name: Flatpak
+        run: |
+          cp -a app/build/linux/x64/release/bundle packaging/linux/bundle
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          cd packaging/linux
+          flatpak-builder --user --install-deps-from=flathub --repo=repo --force-clean build dev.daftar.Daftar.yml
+          flatpak build-bundle repo "../../dist/Daftar-${VERSION}-x86_64.flatpak" dev.daftar.Daftar
+      - if: startsWith(github.ref, 'refs/tags/')
+        run: gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+      - uses: actions/upload-artifact@v7
+        with: { name: release-linux, path: dist/* }
+
+  android:
+    needs: draft
+    runs-on: ubuntu-latest
+    env:
+      VERSION: "${{ needs.draft.outputs.version }}"
+      KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with: { flutter-version: "${{ env.FLUTTER_VERSION }}", cache: true }
+      - uses: dtolnay/rust-toolchain@v1
+        with: { toolchain: stable }
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: core }
+      - uses: actions/setup-java@v6
+        with: { distribution: temurin, java-version: "17" }
+      - run: rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
+      - name: Upload key
+        if: env.KEYSTORE != ''
+        run: |
+          echo "$KEYSTORE" | base64 -d > app/android/upload.jks
+          cat > app/android/key.properties <<EOF
+          storeFile=../upload.jks
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          EOF
+      - working-directory: app
+        run: |
+          flutter build apk --release
+          flutter build appbundle --release
+      - run: |
+          mkdir -p dist
+          cp app/build/app/outputs/flutter-apk/app-release.apk "dist/Daftar-${VERSION}.apk"
+          cp app/build/app/outputs/bundle/release/app-release.aab "dist/Daftar-${VERSION}.aab"
+      - if: startsWith(github.ref, 'refs/tags/')
+        run: gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+      - uses: actions/upload-artifact@v7
+        with: { name: release-android, path: dist/* }
+
+  ios:
+    needs: draft
+    runs-on: macos-latest
+    env: { VERSION: "${{ needs.draft.outputs.version }}" }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with: { flutter-version: "${{ env.FLUTTER_VERSION }}", cache: true }
+      - uses: dtolnay/rust-toolchain@v1
+        with: { toolchain: stable }
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: core }
+      - run: rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios
+      # Unsigned: signing for TestFlight/App Store needs the team's certificates and profiles
+      # (docs/packaging.md). The IPA here is for inspection and re-signing.
+      - working-directory: app
+        run: flutter build ipa --release --no-codesign
+      - run: |
+          mkdir -p dist Payload
+          cp -R app/build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app Payload/
+          zip -qr "dist/Daftar-${VERSION}-unsigned.ipa" Payload
+      - if: startsWith(github.ref, 'refs/tags/')
+        run: gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+      - uses: actions/upload-artifact@v7
+        with: { name: release-ios, path: dist/* }
+
+  macos:
+    needs: draft
+    runs-on: macos-latest
+    env:
+      VERSION: "${{ needs.draft.outputs.version }}"
+      CERT: ${{ secrets.MACOS_CERTIFICATE_BASE64 }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with: { flutter-version: "${{ env.FLUTTER_VERSION }}", cache: true }
+      - uses: dtolnay/rust-toolchain@v1
+        with: { toolchain: stable }
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: core }
+      - run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
+      - working-directory: app
+        run: flutter build macos --release
+      - name: Signing identity
+        if: env.CERT != ''
+        run: |
+          KEYCHAIN=$RUNNER_TEMP/build.keychain
+          security create-keychain -p ci "$KEYCHAIN"
+          security set-keychain-settings "$KEYCHAIN"
+          security unlock-keychain -p ci "$KEYCHAIN"
+          echo "$CERT" | base64 -d > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "${{ secrets.MACOS_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k ci "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" login.keychain
+          echo "MACOS_SIGN_IDENTITY=${{ secrets.MACOS_SIGN_IDENTITY }}" >> "$GITHUB_ENV"
+          echo "NOTARY_APPLE_ID=${{ secrets.NOTARY_APPLE_ID }}" >> "$GITHUB_ENV"
+          echo "NOTARY_TEAM_ID=${{ secrets.NOTARY_TEAM_ID }}" >> "$GITHUB_ENV"
+          echo "NOTARY_PASSWORD=${{ secrets.NOTARY_PASSWORD }}" >> "$GITHUB_ENV"
+      - run: packaging/macos/build_dmg.sh app/build/macos/Build/Products/Release/Daftar.app "$VERSION" dist
+      - if: startsWith(github.ref, 'refs/tags/')
+        run: gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+      - uses: actions/upload-artifact@v7
+        with: { name: release-macos, path: dist/* }
+
+  windows:
+    needs: draft
+    runs-on: windows-latest
+    env:
+      VERSION: "${{ needs.draft.outputs.version }}"
+      PFX: ${{ secrets.WINDOWS_PFX_BASE64 }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with: { flutter-version: "${{ env.FLUTTER_VERSION }}", cache: true }
+      - uses: dtolnay/rust-toolchain@v1
+        with: { toolchain: stable }
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: core }
+      - working-directory: app
+        run: flutter build windows --release
+      - shell: pwsh
+        run: |
+          $opts = @{ Release = "app\build\windows\x64\runner\Release"; Version = $env:VERSION; Out = "dist" }
+          if ($env:PFX) {
+            [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\cert.pfx", [Convert]::FromBase64String($env:PFX))
+            $opts.Pfx = "$env:RUNNER_TEMP\cert.pfx"
+            $opts.PfxPassword = "${{ secrets.WINDOWS_PFX_PASSWORD }}"
+            $opts.Publisher = "${{ secrets.WINDOWS_PUBLISHER }}"
+          }
+          ./packaging/windows/build_msix.ps1 @opts
+      - if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+      - uses: actions/upload-artifact@v7
+        with: { name: release-windows, path: dist/* }

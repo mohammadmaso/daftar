@@ -1,0 +1,30 @@
+# Flatpak manifest. CI builds the Flutter bundle first and places it in ./bundle next to this file
+# (see .github/workflows/release.yml); the manifest only installs it.
+app-id: dev.daftar.Daftar
+runtime: org.gnome.Platform
+runtime-version: "48"
+sdk: org.gnome.Sdk
+command: daftar
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --device=dri
+  # Secrets go to the desktop keyring (§12).
+  - --talk-name=org.freedesktop.secrets
+  - --talk-name=org.freedesktop.Notifications
+modules:
+  - name: daftar
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/lib/daftar /app/bin
+      - cp -a bundle/. /app/lib/daftar/
+      - ln -s /app/lib/daftar/daftar /app/bin/daftar
+      - install -Dm644 dev.daftar.Daftar.desktop /app/share/applications/dev.daftar.Daftar.desktop
+      - install -Dm644 dev.daftar.Daftar.metainfo.xml /app/share/metainfo/dev.daftar.Daftar.metainfo.xml
+      - install -Dm644 dev.daftar.Daftar.png /app/share/icons/hicolor/512x512/apps/dev.daftar.Daftar.png
+    sources:
+      - type: dir
+        path: .
