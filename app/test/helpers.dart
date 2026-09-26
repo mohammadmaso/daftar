@@ -3,6 +3,7 @@ import 'package:daftar/app/appearance.dart';
 import 'package:daftar/app/core.dart';
 import 'package:daftar/core/app_shortcuts.dart';
 import 'package:daftar/core/credentials.dart';
+import 'package:daftar/core/file_import.dart';
 import 'package:daftar/core/global_hotkey.dart';
 import 'package:daftar/core/incoming_shares.dart';
 import 'package:daftar/core/job_runner.dart';
@@ -49,6 +50,8 @@ Future<ProviderContainer> pumpApp(
   FakeAppShortcuts? shortcuts,
   FakeShares? shares,
   FakeHotkey? hotkey,
+  FakeFileImports? imports,
+  FakeFilePlayer? filePlayer,
   String? location,
 }) async {
   SharedPreferences.setMockInitialValues(prefs);
@@ -84,6 +87,8 @@ Future<ProviderContainer> pumpApp(
       ),
       voiceRecorderProvider.overrideWithValue(recorder ?? FakeRecorder()),
       clockProvider.overrideWithValue(() => fixedNow),
+      fileImportsProvider.overrideWithValue(imports ?? FakeFileImports()),
+      filePlayerProvider.overrideWithValue(filePlayer ?? FakeFilePlayer()),
     ],
   );
   addTearDown(container.dispose);

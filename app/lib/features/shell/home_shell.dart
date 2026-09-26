@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/identity.dart';
 import '../../core/app_shortcuts.dart';
+import '../../core/file_import.dart';
 import '../../core/global_hotkey.dart';
 import '../../core/incoming_shares.dart';
 import '../../core/job_runner.dart';
@@ -148,6 +149,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       key(LogicalKeyboardKey.keyN): () => _capture(CaptureRequest.note),
       key(LogicalKeyboardKey.keyN, shift: true): () =>
           _capture(CaptureRequest.record),
+      key(LogicalKeyboardKey.keyO): () =>
+          pickAndImport(context, ProviderScope.containerOf(context)),
     };
   }
 

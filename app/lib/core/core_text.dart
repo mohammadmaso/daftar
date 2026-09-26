@@ -99,6 +99,25 @@ final List<_Rule> _rules = [
     (l, _) => l.coreVaultBuiltin,
   ),
   (RegExp(r'^A vault needs a name\.$'), (l, _) => l.vaultNameRequired),
+  // File import (core/daftar_core/src/extract.rs, session.rs).
+  (
+    RegExp(r'^This file is too large to import'),
+    (l, _) => l.coreImportTooLarge,
+  ),
+  (
+    RegExp(r'^This recording is too large to transcribe'),
+    (l, _) => l.coreAudioTooLarge,
+  ),
+  (
+    RegExp(r"^This audio format can't be transcribed"),
+    (l, _) => l.coreAudioFormat,
+  ),
+  (RegExp(r'^This PDF has no text in it'), (l, _) => l.corePdfNoText),
+  (RegExp(r'^This file has no text in it\.$'), (l, _) => l.coreFileNoText),
+  (RegExp(r"^This file isn't text"), (l, _) => l.coreFileNotText),
+  (RegExp(r'^This file is damaged'), (l, _) => l.coreFileDamaged),
+  (RegExp(r'^This PDF is password-protected\.$'), (l, _) => l.corePdfLocked),
+  (RegExp(r"^This PDF can't be read\.$"), (l, _) => l.corePdfUnreadable),
   (
     RegExp(r'^Say what belongs in the vault;'),
     (l, _) => l.vaultPurposeRequired,

@@ -27,9 +27,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('add a vault with a name and what belongs in it', (
-    tester,
-  ) async {
+  testWidgets('add a vault with a name and what belongs in it', (tester) async {
     final lib = await open(tester);
     await tapRow(tester, 'Add vault');
     await press(tester, 'Save');
@@ -46,11 +44,10 @@ void main() {
     );
     await press(tester, 'Save');
     final v = lib.vaultList.last;
-    expect((v.id, v.titleFa, v.purpose), (
-      'travel',
-      'سفر',
-      'Trips, visas, packing lists.',
-    ));
+    expect(
+      (v.id, v.titleFa, v.purpose),
+      ('travel', 'سفر', 'Trips, visas, packing lists.'),
+    );
     expect((await lib.vaults()).map((v) => v.id), contains('travel'));
     await scrollTo(tester, find.text('Travel'));
     expect(find.text('Empty · Trips, visas, packing lists.'), findsOneWidget);

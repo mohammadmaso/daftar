@@ -74,6 +74,16 @@ class CaptureItem extends StatelessWidget {
                   ),
                   const SizedBox(height: Space.x2),
                 ],
+                if (capture.fileName case final name?) ...[
+                  Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textDirection: directionOf(name),
+                    style: context.type.label.copyWith(color: p.ink),
+                  ),
+                  const SizedBox(height: Space.x1),
+                ],
                 Text(
                   text,
                   maxLines: 6,
@@ -98,6 +108,7 @@ class CaptureItem extends StatelessWidget {
     RawKind.voice || RawKind.voiceConversation => DIcons.mic,
     RawKind.photo => DIcons.camera,
     RawKind.chatAnswer => DIcons.ask,
+    RawKind.import_ => DIcons.attach,
     _ => DIcons.today,
   };
 }

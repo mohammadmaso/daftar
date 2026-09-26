@@ -1436,4 +1436,143 @@ class L10nEn extends L10n {
   @override
   String get vaultArchiveNote =>
       'Archiving hides the vault from the app and the assistant. Its pages stay in your repository, and you can restore it.';
+
+  @override
+  String get captureImport => 'Import a file';
+
+  @override
+  String importReading(String name) {
+    return 'Reading $name…';
+  }
+
+  @override
+  String get importFileIt => 'File it';
+
+  @override
+  String get importTranscribe => 'Transcribe and file';
+
+  @override
+  String get importEdit => 'Edit text';
+
+  @override
+  String get importDoneEditing => 'Done editing';
+
+  @override
+  String get importPlay => 'Play';
+
+  @override
+  String get importStopPlaying => 'Stop';
+
+  @override
+  String get importKindText => 'Text';
+
+  @override
+  String get importKindMarkdown => 'Markdown';
+
+  @override
+  String get importKindHtml => 'Web page';
+
+  @override
+  String get importKindRtf => 'Rich text';
+
+  @override
+  String get importKindDocx => 'Word document';
+
+  @override
+  String get importKindOdt => 'OpenDocument text';
+
+  @override
+  String get importKindPptx => 'Slides';
+
+  @override
+  String get importKindEpub => 'E-book';
+
+  @override
+  String get importKindPdf => 'PDF';
+
+  @override
+  String get importKindAudio => 'Recording';
+
+  @override
+  String importPages(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n pages',
+      one: '1 page',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importSlides(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n slides',
+      one: '1 slide',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importChars(String n) {
+    return '$n characters';
+  }
+
+  @override
+  String importSizeMb(String mb) {
+    return '$mb MB';
+  }
+
+  @override
+  String importTruncated(String limit, String total) {
+    return 'A long document: only the first $limit of $total characters will be filed.';
+  }
+
+  @override
+  String importEncoding(String encoding) {
+    return 'Read as $encoding.';
+  }
+
+  @override
+  String get importAudioNote =>
+      'It will be turned into text by your speech model, then filed like a voice note. The recording stays on this device.';
+
+  @override
+  String importSaved(String name) {
+    return 'Imported $name';
+  }
+
+  @override
+  String get coreImportTooLarge =>
+      'This file is too large to import (over 50 MB).';
+
+  @override
+  String get coreAudioTooLarge =>
+      'This recording is too large to turn into text (over 25 MB).';
+
+  @override
+  String get coreAudioFormat =>
+      'This audio format can\'t be turned into text; use MP3, M4A, WAV, OGG, FLAC or WebM.';
+
+  @override
+  String get corePdfNoText =>
+      'This PDF has no text in it; scanned pages can be added as photos.';
+
+  @override
+  String get coreFileNoText => 'This file has no text in it.';
+
+  @override
+  String get coreFileNotText =>
+      'This file isn\'t text, so it can\'t be imported.';
+
+  @override
+  String get coreFileDamaged => 'This file is damaged and can\'t be read.';
+
+  @override
+  String get corePdfLocked => 'This PDF is password-protected.';
+
+  @override
+  String get corePdfUnreadable => 'This PDF can\'t be read.';
 }

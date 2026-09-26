@@ -10,6 +10,7 @@ import '../design/theme.dart';
 import '../design/tokens.dart';
 import '../features/activity/activity_screen.dart';
 import '../features/ask/ask_screen.dart';
+import '../features/capture/import_screen.dart';
 import '../features/capture/today_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/review/review_screen.dart';
@@ -46,6 +47,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/setup', builder: (_, _) => const OnboardingScreen()),
       // Voice mode is full-screen (§8.4), outside the tab shell.
       GoRoute(path: '/voice', builder: (_, _) => const VoiceScreen()),
+      // A picked file's preview, before it is filed.
+      GoRoute(
+        path: '/import',
+        builder: (_, state) =>
+            ImportScreen(path: state.uri.queryParameters['path'] ?? ''),
+      ),
       ShellRoute(
         builder: (context, state, child) =>
             HomeShell(location: state.matchedLocation, child: child),

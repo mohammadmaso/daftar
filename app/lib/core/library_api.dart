@@ -100,6 +100,12 @@ abstract class LibraryApi {
   Future<String> captureText(String text, {String? vault});
   Future<String> capturePhoto(Uint8List bytes, {String? note, String? vault});
   Future<String> captureVoice(String audioPath, {String? vault});
+
+  /// Files the previewed text of an imported document.
+  Future<String> captureImport(String text, String fileName, {String? vault});
+
+  /// Files a picked recording: transcribed on this device, then filed like a voice note.
+  Future<String> captureAudioFile(String path, {String? vault});
   Future<bool> discard(String id);
   Future<rs.RepoStatus> status();
   Future<rs.SyncResult> sync(rs.Auth auth);
@@ -358,6 +364,14 @@ class RustLibraryApi implements LibraryApi {
   @override
   Future<String> captureVoice(String audioPath, {String? vault}) =>
       _h.captureVoice(audioPath: audioPath, vaultHint: vault);
+
+  @override
+  Future<String> captureImport(String text, String fileName, {String? vault}) =>
+      _h.captureImport(text: text, fileName: fileName, vaultHint: vault);
+
+  @override
+  Future<String> captureAudioFile(String path, {String? vault}) =>
+      _h.captureAudioFile(path: path, vaultHint: vault);
 
   @override
   Future<bool> discard(String id) => _h.discard(id: id);

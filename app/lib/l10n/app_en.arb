@@ -750,5 +750,99 @@
     }
   },
   "vaultBuiltinNote": "Life holds the journal and Stories holds fiction; both can be renamed but not removed.",
-  "vaultArchiveNote": "Archiving hides the vault from the app and the assistant. Its pages stay in your repository, and you can restore it."
+  "vaultArchiveNote": "Archiving hides the vault from the app and the assistant. Its pages stay in your repository, and you can restore it.",
+  "captureImport": "Import a file",
+  "importReading": "Reading {name}…",
+  "@importReading": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "importFileIt": "File it",
+  "importTranscribe": "Transcribe and file",
+  "importEdit": "Edit text",
+  "importDoneEditing": "Done editing",
+  "importPlay": "Play",
+  "importStopPlaying": "Stop",
+  "importKindText": "Text",
+  "importKindMarkdown": "Markdown",
+  "importKindHtml": "Web page",
+  "importKindRtf": "Rich text",
+  "importKindDocx": "Word document",
+  "importKindOdt": "OpenDocument text",
+  "importKindPptx": "Slides",
+  "importKindEpub": "E-book",
+  "importKindPdf": "PDF",
+  "importKindAudio": "Recording",
+  "importPages": "{n, plural, =1{1 page} other{{n} pages}}",
+  "@importPages": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "importSlides": "{n, plural, =1{1 slide} other{{n} slides}}",
+  "@importSlides": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "importChars": "{n} characters",
+  "@importChars": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "importSizeMb": "{mb} MB",
+  "@importSizeMb": {
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "importTruncated": "A long document: only the first {limit} of {total} characters will be filed.",
+  "@importTruncated": {
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "importEncoding": "Read as {encoding}.",
+  "@importEncoding": {
+    "placeholders": {
+      "encoding": {
+        "type": "String"
+      }
+    }
+  },
+  "importAudioNote": "It will be turned into text by your speech model, then filed like a voice note. The recording stays on this device.",
+  "importSaved": "Imported {name}",
+  "@importSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "coreImportTooLarge": "This file is too large to import (over 50 MB).",
+  "coreAudioTooLarge": "This recording is too large to turn into text (over 25 MB).",
+  "coreAudioFormat": "This audio format can't be turned into text; use MP3, M4A, WAV, OGG, FLAC or WebM.",
+  "corePdfNoText": "This PDF has no text in it; scanned pages can be added as photos.",
+  "coreFileNoText": "This file has no text in it.",
+  "coreFileNotText": "This file isn't text, so it can't be imported.",
+  "coreFileDamaged": "This file is damaged and can't be read.",
+  "corePdfLocked": "This PDF is password-protected.",
+  "corePdfUnreadable": "This PDF can't be read."
 }

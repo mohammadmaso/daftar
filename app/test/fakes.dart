@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:daftar/core/app_shortcuts.dart';
+import 'package:daftar/core/file_import.dart';
 import 'package:daftar/core/global_hotkey.dart';
 import 'package:daftar/core/incoming_shares.dart';
 import 'package:daftar/core/library_api.dart';
@@ -58,6 +59,25 @@ class FakeLibrary implements LibraryApi {
   @override
   Future<String> captureVoice(String audioPath, {String? vault}) async =>
       _add(RawKind.voice, '', vault).id;
+
+  final imports = <(String, String, String?)>[];
+  final audioFiles = <String>[];
+
+  @override
+  Future<String> captureImport(
+    String text,
+    String fileName, {
+    String? vault,
+  }) async {
+    imports.add((text, fileName, vault));
+    return _add(RawKind.import_, text, vault).id;
+  }
+
+  @override
+  Future<String> captureAudioFile(String path, {String? vault}) async {
+    audioFiles.add(path);
+    return _add(RawKind.voice, '', vault).id;
+  }
 
   @override
   Future<bool> discard(String id) async => true;
@@ -983,4 +1003,43 @@ class FakeHotkey implements GlobalHotkey {
   void press() => _record.add(null);
   @override
   Stream<void> get record => _record.stream;
+}
+
+/// Picks [next] (null = cancelled) and returns [previews] by path; a missing path throws [error].
+class FakeFileImports implements FileImports {
+  String? next;
+  final previews = <String, ImportPreview>{};
+  Object error = Exception(
+    'This PDF has no text in it; scanned pages can be added as photos.',
+  );
+
+  @override
+  Future<String?> pick() async => next;
+
+  @override
+  Future<ImportPreview> read(String path) async =>
+      previews[path] ?? (throw error);
+
+  @override
+  int get charLimit => 60000;
+}
+
+class FakeFilePlayer implements FilePlayer {
+  final played = <String>[];
+  final _playing = StreamController<bool>.broadcast();
+
+  @override
+  Future<void> play(String path) async {
+    played.add(path);
+    _playing.add(true);
+  }
+
+  @override
+  Future<void> stop() async => _playing.add(false);
+
+  @override
+  Stream<bool> get playing => _playing.stream;
+
+  @override
+  Future<void> dispose() async {}
 }
