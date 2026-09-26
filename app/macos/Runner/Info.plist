@@ -32,7 +32,7 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
-	<!-- Open With: documents and recordings are previewed for import (ADR-0027). -->
+	<!-- Open With: documents and recordings are previewed for import (ADR-0028). -->
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>

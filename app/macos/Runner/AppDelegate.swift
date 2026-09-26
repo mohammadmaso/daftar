@@ -3,7 +3,7 @@ import FlutterMacOS
 
 @main
 class AppDelegate: FlutterAppDelegate {
-  // The app stays in the menu bar with its window closed, so ⌥⇧⌘N keeps working (ADR-0027).
+  // The app stays in the menu bar with its window closed, so ⌥⇧⌘N keeps working (ADR-0028).
   override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
     return false
   }

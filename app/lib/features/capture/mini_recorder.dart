@@ -13,7 +13,7 @@ import '../../design/design.dart';
 import '../../l10n/app_localizations.dart';
 import 'capture_bar.dart';
 
-/// The compact recorder (ADR-0027): what the window shows while it is a small floating panel
+/// The compact recorder (ADR-0028): what the window shows while it is a small floating panel
 /// after the system-wide shortcut. Recording starts at once; Save (Enter, or the shortcut again)
 /// files the voice note and opens the app on Today; Cancel (Esc) discards it and puts the window
 /// back as it was.

@@ -48,7 +48,7 @@ class SettingsScreen extends ConsumerWidget {
       title: l.settingsTitle,
       onBack: embedded || !context.canPop() ? null : () => context.pop(),
       backLabel: l.back,
-      trailing: Monogram(name: AppIdentity.name(locale)),
+      trailing: const Logo(),
       children: [
         // §8.6 order: providers, models, repository, appearance, about.
         const AiSettingsSections(),
@@ -102,6 +102,40 @@ class SettingsScreen extends ConsumerWidget {
           ],
         ),
         const ShortcutSection(),
+        DSection(
+          footer: l.fontFooter,
+          children: [
+            _Stacked(
+              label: l.fontEnglish,
+              child: DFaceChoice<LatinFont>(
+                value: appearance.latinFont,
+                onChanged: notifier.setLatinFont,
+                sample: 'Aa',
+                faces: [
+                  for (final f in LatinFont.values)
+                    DFace(f, _latinFontName(l, f), f.family, scale: f.scale),
+                ],
+              ),
+            ),
+            _Stacked(
+              label: l.fontPersian,
+              child: DFaceChoice<PersianFont>(
+                value: appearance.persianFont,
+                onChanged: notifier.setPersianFont,
+                sample: 'آب',
+                faces: [
+                  for (final f in PersianFont.values)
+                    DFace(
+                      f,
+                      _persianFontName(l, f),
+                      f.family,
+                      scale: f.scale / PersianFont.vazirmatn.scale,
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
         DSection(
           title: l.about,
           footer: l.privacyNote(AppIdentity.name(locale)),
@@ -261,6 +295,20 @@ class _RepositorySection extends ConsumerWidget {
     form.dispose();
   }
 }
+
+String _latinFontName(L10n l, LatinFont f) => switch (f) {
+  LatinFont.sans => l.fontSans,
+  LatinFont.serif => l.fontSerif,
+  LatinFont.book => l.fontBook,
+  LatinFont.legible => l.fontLegible,
+};
+
+String _persianFontName(L10n l, PersianFont f) => switch (f) {
+  PersianFont.vazirmatn => l.fontVazirmatn,
+  PersianFont.plex => l.fontPlex,
+  PersianFont.naskh => l.fontNaskh,
+  PersianFont.markazi => l.fontMarkazi,
+};
 
 class _Stacked extends StatelessWidget {
   const _Stacked({required this.label, required this.child});

@@ -3,7 +3,7 @@ import Cocoa
 import FlutterMacOS
 
 /// The main window, plus desktop integration over the `daftar/hotkey` channel (ADR-0024,
-/// ADR-0027): the ⌥⇧⌘N shortcut, the menu-bar item, and the compact recorder the window turns
+/// ADR-0028): the ⌥⇧⌘N shortcut, the menu-bar item, and the compact recorder the window turns
 /// into while a shortcut recording runs.
 ///
 /// Native → Dart: "record", "import" (a path, or nil to pick one).

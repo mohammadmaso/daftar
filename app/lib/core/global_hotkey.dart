@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Desktop integration (§8.2, ADR-0024, ADR-0027) over the `daftar/hotkey` channel:
+/// Desktop integration (§8.2, ADR-0024, ADR-0028) over the `daftar/hotkey` channel:
 ///
 /// * the system-wide record shortcut: ⌥⇧⌘N on macOS, Ctrl+Alt+Shift+N on Windows and Linux (an
 ///   X11 grab, or the desktop portal on Wayland), plus `daftar --record` on Linux;

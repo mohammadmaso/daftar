@@ -4,7 +4,7 @@
 #include <flutter_linux/flutter_linux.h>
 #include <gtk/gtk.h>
 
-// Desktop integration for Linux (ADR-0027), over the `daftar/hotkey` channel:
+// Desktop integration for Linux (ADR-0028), over the `daftar/hotkey` channel:
 //
 // * a tray icon (StatusNotifierItem through libayatana-appindicator, loaded at
 //   run time so the app still starts where it is missing) with Record, Import,

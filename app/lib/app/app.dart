@@ -201,7 +201,12 @@ class DaftarApp extends ConsumerWidget {
                 ? SystemUiOverlayStyle.light
                 : SystemUiOverlayStyle.dark,
             child: AnimatedTheme(
-              data: buildTheme(brightness, script),
+              data: buildTheme(
+                brightness,
+                script,
+                latinFont: appearance.latinFont,
+                persianFont: appearance.persianFont,
+              ),
               duration: MediaQuery.maybeDisableAnimationsOf(context) ?? false
                   ? Duration.zero
                   : Motion.slow,

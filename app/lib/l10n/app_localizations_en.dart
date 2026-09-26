@@ -45,6 +45,40 @@ class L10nEn extends L10n {
   String get textSizeFooter => 'Applies on top of your system text size.';
 
   @override
+  String get fontEnglish => 'English font';
+
+  @override
+  String get fontPersian => 'Persian font';
+
+  @override
+  String get fontFooter =>
+      'Each language keeps its own font, in the app and in your pages.';
+
+  @override
+  String get fontSans => 'Sans';
+
+  @override
+  String get fontSerif => 'Serif';
+
+  @override
+  String get fontBook => 'Book';
+
+  @override
+  String get fontLegible => 'Legible';
+
+  @override
+  String get fontVazirmatn => 'Vazir';
+
+  @override
+  String get fontPlex => 'Plex';
+
+  @override
+  String get fontNaskh => 'Naskh';
+
+  @override
+  String get fontMarkazi => 'Markazi';
+
+  @override
   String get about => 'About';
 
   @override
@@ -85,6 +119,9 @@ class L10nEn extends L10n {
 
   @override
   String get galleryStatus => 'Claim status';
+
+  @override
+  String get galleryBrand => 'Logo';
 
   @override
   String get galleryType => 'Type';
@@ -386,6 +423,14 @@ class L10nEn extends L10n {
 
   @override
   String get apiKeyMissing => 'No key on this device';
+
+  @override
+  String get apiKeyKeptApple =>
+      'In iCloud Keychain on your Apple devices; leave empty to keep it';
+
+  @override
+  String get apiKeyMissingApple =>
+      'No key yet; once saved, your other Apple devices get it too';
 
   @override
   String get checkConnection => 'Check';

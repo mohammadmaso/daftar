@@ -1,4 +1,4 @@
-# ADR-0027: File import, and the desktop tray, shortcut and compact recorder
+# ADR-0028: File import, and the desktop tray, shortcut and compact recorder
 
 * Status: accepted
 * Date: 2026-09-26
