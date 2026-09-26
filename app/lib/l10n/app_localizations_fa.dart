@@ -1561,4 +1561,56 @@ class L10nFa extends L10n {
 
   @override
   String get corePdfUnreadable => 'این پی‌دی‌اف خوانده نمی‌شود.';
+
+  @override
+  String get miniRecording => 'در حال ضبط یادداشت صوتی';
+
+  @override
+  String get miniHint => 'Enter ذخیره می‌کند · Esc کنار می‌گذارد';
+
+  @override
+  String get trayImport => 'افزودن فایل…';
+
+  @override
+  String trayOpen(String app) {
+    return 'باز کردن $app';
+  }
+
+  @override
+  String get trayQuit => 'خروج';
+
+  @override
+  String get shortcutTitle => 'ضبط از هر جا';
+
+  @override
+  String get shortcutOn => 'روشن: در هر برنامه‌ای کار می‌کند';
+
+  @override
+  String get shortcutOnDesktop => 'روشن: در میان‌برهای صفحه‌کلید میزکار';
+
+  @override
+  String get shortcutTaken => 'برنامهٔ دیگری از این کلیدها استفاده می‌کند';
+
+  @override
+  String get shortcutUnavailable =>
+      'این میزکار اجازهٔ افزودن میان‌بر به برنامه‌ها نمی‌دهد';
+
+  @override
+  String get shortcutAddGnome => 'افزودن به میان‌برهای صفحه‌کلید گنوم';
+
+  @override
+  String shortcutAdded(String keys) {
+    return 'حالا $keys از هر جا ضبط می‌کند';
+  }
+
+  @override
+  String get shortcutAddFailed => 'میان‌بر افزوده نشد.';
+
+  @override
+  String get shortcutFooter =>
+      'ضبط‌کنندهٔ کوچکی روی هر کاری که می‌کنید باز می‌شود. برای ذخیره، دوباره همان کلیدها یا Enter را بزنید.';
+
+  @override
+  String get shortcutFooterLinux =>
+      'ضبط‌کنندهٔ کوچکی روی هر کاری که می‌کنید باز می‌شود. برای ذخیره، دوباره همان کلیدها یا Enter را بزنید. در هر میزکاری می‌توانید «daftar --record» را هم در تنظیمات صفحه‌کلید آن اجرا کنید.';
 }

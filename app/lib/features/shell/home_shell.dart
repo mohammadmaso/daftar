@@ -38,6 +38,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   late final JobRunner _jobs;
   StreamSubscription<void>? _shares;
   StreamSubscription<void>? _hotkey;
+  StreamSubscription<String?>? _desktopImport;
 
   @override
   void initState() {
@@ -57,8 +58,15 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         _jobs.pause();
       },
     );
-    _hotkey = ref.read(globalHotkeyProvider).record.listen((_) {
-      if (mounted) _capture(CaptureRequest.record);
+    final desktop = ref.read(globalHotkeyProvider);
+    _hotkey = desktop.record.listen((_) => _recordFromShortcut());
+    _desktopImport = desktop.import.listen((path) {
+      if (!mounted) return;
+      if (path == null) {
+        pickAndImport(context, ProviderScope.containerOf(context));
+      } else {
+        openImport(context, path);
+      }
     });
     _shares = ref.read(incomingSharesProvider).arrived.listen((_) {
       _fileShares();
@@ -69,6 +77,19 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       _jobs.resume();
       _fileShares();
     });
+  }
+
+  /// The system-wide shortcut: the compact recorder where the platform has one, otherwise
+  /// hands-free recording in the capture bar. While the compact recorder is up it handles the
+  /// shortcut itself (pressing it again saves).
+  Future<void> _recordFromShortcut() async {
+    if (!mounted || widget.location == '/mini') return;
+    final desktop = ref.read(globalHotkeyProvider);
+    if (await desktop.enterMiniRecorder()) {
+      if (mounted) context.go('/mini');
+    } else if (mounted) {
+      _capture(CaptureRequest.record);
+    }
   }
 
   /// Whatever was shared into the app becomes raw captures, filed like any other (§8.1).
@@ -106,6 +127,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     _jobs.pause();
     _shares?.cancel();
     _hotkey?.cancel();
+    _desktopImport?.cancel();
     _life.dispose();
     super.dispose();
   }
@@ -120,6 +142,12 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       AppShortcut.note: l.paletteNewNote,
       AppShortcut.ask: l.askTitle,
     }, _onShortcut);
+    ref.read(globalHotkeyProvider).setLabels({
+      'record': l.recordVoiceNote,
+      'import': l.trayImport,
+      'open': l.trayOpen(AppIdentity.name(Localizations.localeOf(context))),
+      'quit': l.trayQuit,
+    });
   }
 
   void _onShortcut(AppShortcut s) {
@@ -161,6 +189,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   );
 
   Widget _layout(BuildContext context) {
+    if (widget.location == '/mini') return widget.child;
     final wide = MediaQuery.sizeOf(context).width >= kWideLayout;
     final l = L10n.of(context);
     final p = context.palette;

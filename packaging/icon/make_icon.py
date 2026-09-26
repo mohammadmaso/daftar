@@ -35,6 +35,21 @@ def draw(size=S, rounded=False, inset=0.0):
     return img.resize((size, size), Image.LANCZOS)
 
 
+CRITICAL = (0x9C, 0x3A, 0x2E, 255)
+
+
+def with_record_dot(img):
+    """The tray icon while recording: the app icon with a red dot in its corner."""
+    n = img.size[0]
+    out = img.copy()
+    d = ImageDraw.Draw(out)
+    r = n * 0.15
+    cx = cy = n - r - n * 0.06
+    d.ellipse([cx - r - n * 0.04, cy - r - n * 0.04, cx + r + n * 0.04, cy + r + n * 0.04], fill=PAPER)
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=CRITICAL)
+    return out
+
+
 def save(img, path, size):
     path.parent.mkdir(parents=True, exist_ok=True)
     img.resize((size, size), Image.LANCZOS).save(path)
@@ -62,6 +77,9 @@ def main():
     rounded.save(ROOT / "app/windows/runner/resources/app_icon.ico",
                  sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
     save(rounded, ROOT / "packaging/linux/dev.daftar.Daftar.png", 512)
+    # Linux tray (StatusNotifierItem) icons: idle and recording.
+    save(rounded, ROOT / "app/linux/runner/resources/tray.png", 64)
+    save(with_record_dot(rounded), ROOT / "app/linux/runner/resources/tray-recording.png", 64)
     # MSIX logos.
     for name, px in {"Square44x44Logo": 44, "Square150x150Logo": 150, "StoreLogo": 50}.items():
         save(rounded, ROOT / f"packaging/windows/Assets/{name}.png", px)

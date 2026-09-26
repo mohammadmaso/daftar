@@ -11,6 +11,7 @@ import '../design/tokens.dart';
 import '../features/activity/activity_screen.dart';
 import '../features/ask/ask_screen.dart';
 import '../features/capture/import_screen.dart';
+import '../features/capture/mini_recorder.dart';
 import '../features/capture/today_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/review/review_screen.dart';
@@ -57,6 +58,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) =>
             HomeShell(location: state.matchedLocation, child: child),
         routes: [
+          // The compact recorder: inside the shell so sync and filing keep running.
+          GoRoute(path: '/mini', builder: (_, _) => const MiniRecorderScreen()),
           GoRoute(
             path: '/',
             builder: (context, _) => TodayScreen(

@@ -1575,4 +1575,57 @@ class L10nEn extends L10n {
 
   @override
   String get corePdfUnreadable => 'This PDF can\'t be read.';
+
+  @override
+  String get miniRecording => 'Recording a voice note';
+
+  @override
+  String get miniHint => 'Enter saves · Esc discards';
+
+  @override
+  String get trayImport => 'Import a file…';
+
+  @override
+  String trayOpen(String app) {
+    return 'Open $app';
+  }
+
+  @override
+  String get trayQuit => 'Quit';
+
+  @override
+  String get shortcutTitle => 'Record from anywhere';
+
+  @override
+  String get shortcutOn => 'On: works in any app';
+
+  @override
+  String get shortcutOnDesktop =>
+      'On: set in your desktop\'s keyboard shortcuts';
+
+  @override
+  String get shortcutTaken => 'Another app already uses these keys';
+
+  @override
+  String get shortcutUnavailable =>
+      'This desktop doesn\'t let apps add a shortcut';
+
+  @override
+  String get shortcutAddGnome => 'Add it to GNOME keyboard shortcuts';
+
+  @override
+  String shortcutAdded(String keys) {
+    return '$keys now records from anywhere';
+  }
+
+  @override
+  String get shortcutAddFailed => 'Couldn\'t add the shortcut.';
+
+  @override
+  String get shortcutFooter =>
+      'Opens a small recorder over whatever you\'re doing. Press the keys again or Enter to save.';
+
+  @override
+  String get shortcutFooterLinux =>
+      'Opens a small recorder over whatever you\'re doing. Press the keys again or Enter to save. Any desktop can also run “daftar --record” from its own keyboard settings.';
 }

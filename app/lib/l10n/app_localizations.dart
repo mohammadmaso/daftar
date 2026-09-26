@@ -2574,6 +2574,96 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'This PDF can\'t be read.'**
   String get corePdfUnreadable;
+
+  /// No description provided for @miniRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording a voice note'**
+  String get miniRecording;
+
+  /// No description provided for @miniHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter saves · Esc discards'**
+  String get miniHint;
+
+  /// No description provided for @trayImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a file…'**
+  String get trayImport;
+
+  /// No description provided for @trayOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {app}'**
+  String trayOpen(String app);
+
+  /// No description provided for @trayQuit.
+  ///
+  /// In en, this message translates to:
+  /// **'Quit'**
+  String get trayQuit;
+
+  /// No description provided for @shortcutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record from anywhere'**
+  String get shortcutTitle;
+
+  /// No description provided for @shortcutOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On: works in any app'**
+  String get shortcutOn;
+
+  /// No description provided for @shortcutOnDesktop.
+  ///
+  /// In en, this message translates to:
+  /// **'On: set in your desktop\'s keyboard shortcuts'**
+  String get shortcutOnDesktop;
+
+  /// No description provided for @shortcutTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Another app already uses these keys'**
+  String get shortcutTaken;
+
+  /// No description provided for @shortcutUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This desktop doesn\'t let apps add a shortcut'**
+  String get shortcutUnavailable;
+
+  /// No description provided for @shortcutAddGnome.
+  ///
+  /// In en, this message translates to:
+  /// **'Add it to GNOME keyboard shortcuts'**
+  String get shortcutAddGnome;
+
+  /// No description provided for @shortcutAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{keys} now records from anywhere'**
+  String shortcutAdded(String keys);
+
+  /// No description provided for @shortcutAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t add the shortcut.'**
+  String get shortcutAddFailed;
+
+  /// No description provided for @shortcutFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens a small recorder over whatever you\'re doing. Press the keys again or Enter to save.'**
+  String get shortcutFooter;
+
+  /// No description provided for @shortcutFooterLinux.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens a small recorder over whatever you\'re doing. Press the keys again or Enter to save. Any desktop can also run “daftar --record” from its own keyboard settings.'**
+  String get shortcutFooterLinux;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

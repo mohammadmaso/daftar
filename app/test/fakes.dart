@@ -999,10 +999,66 @@ class FakeShares implements IncomingShares {
 }
 
 class FakeHotkey implements GlobalHotkey {
+  FakeHotkey({this.hasMini = false});
+
+  /// Whether this "platform" has the compact recorder (Linux, macOS).
+  final bool hasMini;
+  bool mini = false;
+  final left = <bool>[];
+  final recording = <bool>[];
+  Map<String, String> labels = const {};
+
+  /// Called when the "window" shrinks (true) or comes back (false), so a test can resize.
+  void Function(bool mini)? onWindow;
+
   final _record = StreamController<void>.broadcast();
+  final _import = StreamController<String?>.broadcast();
   void press() => _record.add(null);
+  void trayImport([String? path]) => _import.add(path);
+
   @override
   Stream<void> get record => _record.stream;
+
+  @override
+  Stream<String?> get import => _import.stream;
+
+  @override
+  Future<bool> enterMiniRecorder() async {
+    mini = hasMini;
+    if (mini) onWindow?.call(true);
+    return mini;
+  }
+
+  @override
+  Future<void> leaveMiniRecorder({required bool open}) async {
+    mini = false;
+    left.add(open);
+    onWindow?.call(false);
+  }
+
+  @override
+  Future<void> setRecording(bool on) async => recording.add(on);
+
+  @override
+  Future<void> setLabels(Map<String, String> labels) async =>
+      this.labels = labels;
+
+  ShortcutStatus? status;
+  final installed = <String>[];
+
+  @override
+  Future<ShortcutStatus?> shortcutStatus() async => status;
+
+  @override
+  Future<bool> installShortcut(String name) async {
+    installed.add(name);
+    status = ShortcutStatus(
+      keys: status?.keys ?? 'Ctrl+Alt+Shift+N',
+      state: ShortcutState.active,
+      viaDesktopSettings: true,
+    );
+    return true;
+  }
 }
 
 /// Picks [next] (null = cancelled) and returns [previews] by path; a missing path throws [error].

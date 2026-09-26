@@ -844,5 +844,34 @@
   "coreFileNotText": "This file isn't text, so it can't be imported.",
   "coreFileDamaged": "This file is damaged and can't be read.",
   "corePdfLocked": "This PDF is password-protected.",
-  "corePdfUnreadable": "This PDF can't be read."
+  "corePdfUnreadable": "This PDF can't be read.",
+  "miniRecording": "Recording a voice note",
+  "miniHint": "Enter saves · Esc discards",
+  "trayImport": "Import a file…",
+  "trayOpen": "Open {app}",
+  "@trayOpen": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "trayQuit": "Quit",
+  "shortcutTitle": "Record from anywhere",
+  "shortcutOn": "On: works in any app",
+  "shortcutOnDesktop": "On: set in your desktop's keyboard shortcuts",
+  "shortcutTaken": "Another app already uses these keys",
+  "shortcutUnavailable": "This desktop doesn't let apps add a shortcut",
+  "shortcutAddGnome": "Add it to GNOME keyboard shortcuts",
+  "shortcutAdded": "{keys} now records from anywhere",
+  "@shortcutAdded": {
+    "placeholders": {
+      "keys": {
+        "type": "String"
+      }
+    }
+  },
+  "shortcutAddFailed": "Couldn't add the shortcut.",
+  "shortcutFooter": "Opens a small recorder over whatever you're doing. Press the keys again or Enter to save.",
+  "shortcutFooterLinux": "Opens a small recorder over whatever you're doing. Press the keys again or Enter to save. Any desktop can also run “daftar --record” from its own keyboard settings."
 }

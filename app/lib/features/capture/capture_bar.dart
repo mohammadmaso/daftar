@@ -422,7 +422,7 @@ class _RecordingPanel extends StatelessWidget {
                   textDirection: TextDirection.ltr,
                   child: SizedBox(
                     height: 32,
-                    child: CustomPaint(painter: _WavePainter(levels, p.accent)),
+                    child: CustomPaint(painter: WavePainter(levels, p.accent)),
                   ),
                 ),
               ),
@@ -467,8 +467,9 @@ class _RecordingPanel extends StatelessWidget {
   }
 }
 
-class _WavePainter extends CustomPainter {
-  _WavePainter(this.levels, this.color);
+/// Recent input levels as centred bars, newest at the end. Media: never mirrored.
+class WavePainter extends CustomPainter {
+  WavePainter(this.levels, this.color);
   final List<double> levels;
   final Color color;
 
@@ -494,7 +495,7 @@ class _WavePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_WavePainter old) => true;
+  bool shouldRepaint(WavePainter old) => true;
 }
 
 class _TextSheet extends StatefulWidget {

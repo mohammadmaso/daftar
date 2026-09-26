@@ -18,6 +18,7 @@ import '../onboarding/onboarding_screen.dart';
 import 'ai_settings.dart';
 import 'mcp_settings.dart';
 import 'reflect_settings.dart';
+import 'shortcut_settings.dart';
 import 'vault_settings.dart';
 
 final repoStatusProvider = FutureProvider<RepoStatus?>((ref) async {
@@ -100,6 +101,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ],
         ),
+        const ShortcutSection(),
         DSection(
           title: l.about,
           footer: l.privacyNote(AppIdentity.name(locale)),
