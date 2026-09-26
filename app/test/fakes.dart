@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:daftar/core/app_shortcuts.dart';
+import 'package:daftar/core/global_hotkey.dart';
 import 'package:daftar/core/incoming_shares.dart';
 import 'package:daftar/core/library_api.dart';
 import 'package:daftar/core/notifications.dart';
@@ -862,4 +863,11 @@ class FakeShares implements IncomingShares {
     pending.clear();
     return items;
   }
+}
+
+class FakeHotkey implements GlobalHotkey {
+  final _record = StreamController<void>.broadcast();
+  void press() => _record.add(null);
+  @override
+  Stream<void> get record => _record.stream;
 }

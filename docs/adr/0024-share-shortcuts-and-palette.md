@@ -35,10 +35,13 @@ Extension.
 **Keyboard:** Ctrl/Cmd+K opens the palette, Ctrl/Cmd+N opens a new note, and Ctrl/Cmd+Shift+N
 records. These work while the app has focus.
 
-**Global (system-wide) hotkey: not added.** The usual package, `hotkey_manager`, had its last release
-in May 2024, so it fails the maintenance rule. The in-app shortcuts cover a focused window. A
-system-wide hotkey is left to the OS: GNOME/KDE custom shortcuts, macOS Shortcuts or a Windows
-shortcut key can launch the app with `--record`, which the desktop builds could accept later.
+**Global (system-wide) hotkey:** native code, no plugin. The usual package, `hotkey_manager`,
+had its last release in May 2024, so it fails the maintenance rule. The shortcut adds Alt/Option to
+the in-app record shortcut: ⌥⇧⌘N on macOS (Carbon `RegisterEventHotKey`, which needs no
+accessibility permission) and Ctrl+Alt+Shift+N on Windows (`RegisterHotKey` in the runner). It
+brings the window forward and starts a voice note over the `daftar/hotkey` channel. Linux has no
+portable global shortcut under Wayland, so users bind one in their desktop settings to open the
+app.
 
 **Background work, Android:** `workmanager` 0.10.10 (September 2026, maintained; the brief names
 it). An hourly periodic task, only when online, runs one pass: queue due reflections, sync, file

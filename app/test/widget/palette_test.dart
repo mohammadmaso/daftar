@@ -32,6 +32,7 @@ void main() {
   quickActionTests();
   shareTests();
   widgetTests();
+  hotkeyTests();
 
   testWidgets('Ctrl+K finds a page and opens it', (tester) async {
     final lib = FakeLibrary()
@@ -183,6 +184,27 @@ void widgetTests() {
     final recorder = FakeRecorder();
     final shares = FakeShares()..pending.add(const SharedItem.record());
     await pumpApp(tester, recorder: recorder, shares: shares);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(recorder.recording, isTrue);
+  });
+}
+
+void hotkeyTests() {
+  testWidgets('the global shortcut starts recording from anywhere', (
+    tester,
+  ) async {
+    final hotkey = FakeHotkey();
+    final recorder = FakeRecorder();
+    await pumpApp(
+      tester,
+      size: desktop,
+      hotkey: hotkey,
+      recorder: recorder,
+      location: '/settings',
+    );
+    hotkey.press();
+    await tester.pump();
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(recorder.recording, isTrue);
   });

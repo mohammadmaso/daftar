@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/identity.dart';
 import '../../core/app_shortcuts.dart';
+import '../../core/global_hotkey.dart';
 import '../../core/incoming_shares.dart';
 import '../../core/job_runner.dart';
 import '../../core/library_state.dart';
@@ -35,6 +36,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   late final SyncController _sync;
   late final JobRunner _jobs;
   StreamSubscription<void>? _shares;
+  StreamSubscription<void>? _hotkey;
 
   @override
   void initState() {
@@ -54,6 +56,9 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         _jobs.pause();
       },
     );
+    _hotkey = ref.read(globalHotkeyProvider).record.listen((_) {
+      if (mounted) _capture(CaptureRequest.record);
+    });
     _shares = ref.read(incomingSharesProvider).arrived.listen((_) {
       _fileShares();
     });
@@ -99,6 +104,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     _sync.stopPeriodic();
     _jobs.pause();
     _shares?.cancel();
+    _hotkey?.cancel();
     _life.dispose();
     super.dispose();
   }
