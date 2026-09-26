@@ -162,6 +162,8 @@
   "apiKey": "API key",
   "apiKeyKept": "Saved on this device; leave empty to keep it",
   "apiKeyMissing": "No key on this device",
+  "apiKeyKeptApple": "In iCloud Keychain on your Apple devices; leave empty to keep it",
+  "apiKeyMissingApple": "No key yet; once saved, your other Apple devices get it too",
   "checkConnection": "Check",
   "modelsFound": "{n, plural, =0{Connected; no model list} =1{Connected · 1 model} other{Connected · {n} models}}",
   "@modelsFound": {

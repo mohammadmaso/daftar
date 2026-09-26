@@ -269,7 +269,12 @@ class _ProviderSheetState extends ConsumerState<ProviderSheet> {
               controller: _key,
               obscure: true,
               forceLtr: true,
-              hint: widget.hasKey ? l.apiKeyKept : l.apiKeyMissing,
+              hint: switch ((widget.hasKey, secretsFollowAppleId)) {
+                (true, true) => l.apiKeyKeptApple,
+                (true, false) => l.apiKeyKept,
+                (false, true) => l.apiKeyMissingApple,
+                (false, false) => l.apiKeyMissing,
+              },
             ),
           ),
           Row(

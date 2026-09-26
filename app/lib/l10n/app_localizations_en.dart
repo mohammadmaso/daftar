@@ -388,6 +388,14 @@ class L10nEn extends L10n {
   String get apiKeyMissing => 'No key on this device';
 
   @override
+  String get apiKeyKeptApple =>
+      'In iCloud Keychain on your Apple devices; leave empty to keep it';
+
+  @override
+  String get apiKeyMissingApple =>
+      'No key yet; once saved, your other Apple devices get it too';
+
+  @override
   String get checkConnection => 'Check';
 
   @override

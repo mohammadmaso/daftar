@@ -302,6 +302,23 @@ and the DMG script on macOS.
 **Tests:** core vault lifecycle and built-in guards; schema carries the current vaults; 3 widget
 tests (add with validation, Life restrictions, archive vs remove).
 
+## Keys across Apple devices (2026-09-26)
+
+**Works**
+* On iPhone, iPad and Mac, AI provider keys and MCP credentials are iCloud Keychain items, so a
+  second Apple device on the same Apple ID has them without pasting again (ADR-0027). Existing keys
+  move over when they are next read. Repository credentials stay on each device.
+* Credentials use `first_unlock` accessibility, so the iOS background pass works while the phone is
+  locked.
+* The Keychain Sharing entitlement is now on the iOS and macOS targets. `flutter_secure_storage` needs
+  it for the data protection keychain on macOS.
+* The API key field says where the key is kept.
+
+**Tests:** migration into the shared store, repository credentials staying local, and no migration
+step off Apple platforms.
+
+**Not verified on devices:** needs two signed builds on one Apple ID.
+
 ## Status after M9
 
 * Rust: 119 tests (unit + scenario + eval + perf), clippy clean with `-D warnings`.
