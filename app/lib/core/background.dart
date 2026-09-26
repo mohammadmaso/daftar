@@ -23,7 +23,8 @@ abstract final class Background {
   static const task = 'dev.daftar.daftar.background';
   static const every = Duration(hours: 1);
 
-  static bool get supported => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+  static bool get supported =>
+      !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
   static Future<void> register() async {
     if (!supported) return;

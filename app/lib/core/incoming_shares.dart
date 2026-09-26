@@ -18,8 +18,8 @@ class SharedItem {
   final bool record;
 }
 
-/// The share sheet's inbox (§8.1). Android delivers through `MainActivity`; iOS needs a Share
-/// Extension target (docs/packaging.md), and desktops have no share sheet.
+/// The share sheet's inbox (§8.1). Android delivers through `MainActivity`; iOS through the Share
+/// Extension and `DaftarInbox.swift` (an App Group folder). Desktops have no share sheet.
 abstract class IncomingShares {
   /// Fires when something new was shared while the app was running.
   Stream<void> get arrived;
@@ -38,7 +38,8 @@ class PlatformIncomingShares implements IncomingShares {
   }
 
   static const _channel = MethodChannel('daftar/share');
-  static bool get _supported => !kIsWeb && Platform.isAndroid;
+  static bool get _supported =>
+      !kIsWeb && (Platform.isAndroid || Platform.isIOS);
   final _arrived = StreamController<void>.broadcast();
 
   @override

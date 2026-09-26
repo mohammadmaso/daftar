@@ -23,7 +23,7 @@ Version: ${VERSION}
 Section: utils
 Priority: optional
 Architecture: amd64
-Depends: libgtk-3-0, libsecret-1-0, libgstreamer1.0-0, libgstreamer-plugins-base1.0-0, gstreamer1.0-plugins-good
+Depends: libgtk-3-0, libsecret-1-0, libgstreamer1.0-0, libgstreamer-plugins-base1.0-0, gstreamer1.0-plugins-good, libwebkit2gtk-4.1-0
 Maintainer: ${MAINTAINER:-Daftar maintainers <maintainers@example.invalid>}
 Description: Private notebook that files what you say into your own wiki
  Voice, text and photo captures are saved to a Git repository you own and
