@@ -97,7 +97,7 @@ fn kind_label(k: RawKind) -> &'static str {
         RawKind::Photo => "photo",
         RawKind::VoiceConversation => "voice conversation",
         RawKind::ChatAnswer => "saved answer",
-        RawKind::Import => "import",
+        RawKind::Import => "imported document",
     }
 }
 
@@ -294,11 +294,22 @@ pub async fn route(
             ("index_summaries", &index_summaries(lib)?),
         ],
     );
+    // A long imported document is routed by its opening; the ingest agent reads all of it.
+    const ROUTER_CHARS: usize = 8_000;
+    let body = match item.body.char_indices().nth(ROUTER_CHARS) {
+        Some((i, _)) => format!("{}\n[…]", &item.body[..i]),
+        None => item.body.clone(),
+    };
+    let from = item
+        .meta
+        .source
+        .as_deref()
+        .map(|f| format!(", from the file {f}"))
+        .unwrap_or_default();
     let user = format!(
-        "ROUTER task. Capture ({}, {}):\n<capture>\n{}\n</capture>",
+        "ROUTER task. Capture ({}, {}{from}):\n<capture>\n{body}\n</capture>",
         kind_label(item.meta.kind),
         item.meta.captured_at,
-        item.body
     );
     let req = ChatRequest {
         model: rc.model.clone(),
@@ -498,6 +509,9 @@ pub async fn ingest(
     }
     if !item.meta.assets.is_empty() {
         user.push_str(&format!("assets: {}\n", item.meta.assets.join(", ")));
+    }
+    if let Some(f) = &item.meta.source {
+        user.push_str(&format!("imported from the file: {f}\n"));
     }
     if let Some(n) = &opts.note {
         user.push_str(&format!("correction from the user (follow it): {n}\n"));

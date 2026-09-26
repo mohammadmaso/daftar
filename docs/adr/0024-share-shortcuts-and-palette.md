@@ -1,5 +1,8 @@
 # ADR-0024: Share, quick actions, shortcuts, palette and background work (M9)
 
+> The Linux shortcut, the tray and menu-bar icon, and the compact recorder are in ADR-0028, which
+> supersedes the "Linux has no global shortcut" part below.
+
 * Status: accepted
 * Date: 2026-09-25
 

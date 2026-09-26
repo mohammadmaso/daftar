@@ -96,6 +96,8 @@ pub struct CaptureView {
     pub device: String,
     pub text: String,
     pub vault_hint: Option<String>,
+    /// The imported file's name, for imports and picked recordings.
+    pub file_name: Option<String>,
     /// Absolute paths of image assets, for thumbnails.
     pub images: Vec<String>,
     pub stage: CaptureStage,
@@ -178,7 +180,7 @@ impl Session {
             NewCapture {
                 text: text.to_owned(),
                 vault_hint,
-                assets: vec![],
+                ..Default::default()
             },
         )?;
         self.queue()
@@ -196,7 +198,7 @@ impl Session {
             NewCapture {
                 text: text.to_owned(),
                 vault_hint: None,
-                assets: vec![],
+                ..Default::default()
             },
         )?;
         self.queue()
@@ -222,6 +224,7 @@ impl Session {
                 text: String::new(),
                 vault_hint,
                 assets: vec![asset],
+                ..Default::default()
             },
         )?;
         let q = self.queue();
@@ -253,6 +256,76 @@ impl Session {
             },
         )?;
         if let Err(e) = assets::store_audio(&self.lib, item.id(), audio) {
+            let _ = std::fs::remove_file(self.lib.path(&item.path));
+            return Err(e);
+        }
+        let q = self.queue();
+        q.enqueue(JobKind::Transcribe, Some(item.id()), json!({}), true)?;
+        q.enqueue(JobKind::Ingest, Some(item.id()), json!({}), true)?;
+        Ok(item)
+    }
+
+    /// Files text extracted from an imported document (see [`crate::extract`]) as an `import`
+    /// capture. The original file stays where it was; only the text enters the repo.
+    pub fn capture_import(
+        &self,
+        text: &str,
+        file_name: &str,
+        vault_hint: Option<String>,
+        now: &Zoned,
+    ) -> Result<RawItem> {
+        let item = raw::create(
+            &self.lib,
+            &self.device,
+            now,
+            RawKind::Import,
+            NewCapture {
+                text: text.to_owned(),
+                vault_hint,
+                source: Some(file_name.to_owned()),
+                ..Default::default()
+            },
+        )?;
+        self.queue()
+            .enqueue(JobKind::Ingest, Some(item.id()), json!({}), true)?;
+        Ok(item)
+    }
+
+    /// An existing recording (a picked audio file): kept on this device, transcribed and filed
+    /// like a voice note, with the file's name recorded.
+    pub fn capture_audio_file(
+        &self,
+        audio: &Path,
+        vault_hint: Option<String>,
+        now: &Zoned,
+    ) -> Result<RawItem> {
+        let name = audio
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_else(|| "recording".into());
+        if crate::extract::classify(&name) != crate::extract::FileClass::Audio {
+            return Err(crate::Error::invalid(
+                "This audio format can't be transcribed; use MP3, M4A, WAV, OGG, FLAC or WebM.",
+            ));
+        }
+        if std::fs::metadata(audio)?.len() > crate::extract::MAX_AUDIO_BYTES {
+            return Err(crate::Error::invalid(
+                "This recording is too large to transcribe (over 25 MB).",
+            ));
+        }
+        let item = raw::create(
+            &self.lib,
+            &self.device,
+            now,
+            RawKind::Voice,
+            NewCapture {
+                vault_hint,
+                source: Some(name.clone()),
+                ..Default::default()
+            },
+        )?;
+        let ext = crate::extract::audio_store_ext(&name);
+        if let Err(e) = assets::store_audio_as(&self.lib, item.id(), audio, &ext) {
             let _ = std::fs::remove_file(self.lib.path(&item.path));
             return Err(e);
         }
@@ -347,6 +420,7 @@ impl Session {
                 device: item.meta.device.clone(),
                 text: item.body.clone(),
                 vault_hint: item.meta.vault_hint.clone(),
+                file_name: item.meta.source.clone(),
                 images: item
                     .meta
                     .assets

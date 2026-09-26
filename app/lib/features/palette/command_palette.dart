@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/bidi.dart';
+import '../../core/file_import.dart';
 import '../../core/job_runner.dart';
 import '../../core/library_api.dart';
 import '../../core/library_state.dart';
@@ -110,6 +111,7 @@ class _CommandPaletteState extends ConsumerState<CommandPalette> {
         l.paletteTakePhoto,
         (c, app) => capture(c, app, CaptureRequest.photo),
       ),
+      PaletteEntry(DIcons.attach, l.captureImport, pickAndImport),
       PaletteEntry(DIcons.speaker, l.talkMode, (c, _) => c.push('/voice')),
       for (final (icon, name, path) in places)
         PaletteEntry(icon, l.paletteGoTo(name), (c, _) => c.go(path)),

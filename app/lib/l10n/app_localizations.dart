@@ -2448,6 +2448,306 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'Archiving hides the vault from the app and the assistant. Its pages stay in your repository, and you can restore it.'**
   String get vaultArchiveNote;
+
+  /// No description provided for @captureImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a file'**
+  String get captureImport;
+
+  /// No description provided for @importReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading {name}…'**
+  String importReading(String name);
+
+  /// No description provided for @importFileIt.
+  ///
+  /// In en, this message translates to:
+  /// **'File it'**
+  String get importFileIt;
+
+  /// No description provided for @importTranscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribe and file'**
+  String get importTranscribe;
+
+  /// No description provided for @importEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit text'**
+  String get importEdit;
+
+  /// No description provided for @importDoneEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Done editing'**
+  String get importDoneEditing;
+
+  /// No description provided for @importPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get importPlay;
+
+  /// No description provided for @importStopPlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get importStopPlaying;
+
+  /// No description provided for @importKindText.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get importKindText;
+
+  /// No description provided for @importKindMarkdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Markdown'**
+  String get importKindMarkdown;
+
+  /// No description provided for @importKindHtml.
+  ///
+  /// In en, this message translates to:
+  /// **'Web page'**
+  String get importKindHtml;
+
+  /// No description provided for @importKindRtf.
+  ///
+  /// In en, this message translates to:
+  /// **'Rich text'**
+  String get importKindRtf;
+
+  /// No description provided for @importKindDocx.
+  ///
+  /// In en, this message translates to:
+  /// **'Word document'**
+  String get importKindDocx;
+
+  /// No description provided for @importKindOdt.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenDocument text'**
+  String get importKindOdt;
+
+  /// No description provided for @importKindPptx.
+  ///
+  /// In en, this message translates to:
+  /// **'Slides'**
+  String get importKindPptx;
+
+  /// No description provided for @importKindEpub.
+  ///
+  /// In en, this message translates to:
+  /// **'E-book'**
+  String get importKindEpub;
+
+  /// No description provided for @importKindPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF'**
+  String get importKindPdf;
+
+  /// No description provided for @importKindAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get importKindAudio;
+
+  /// No description provided for @importPages.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 page} other{{n} pages}}'**
+  String importPages(int n);
+
+  /// No description provided for @importSlides.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 slide} other{{n} slides}}'**
+  String importSlides(int n);
+
+  /// No description provided for @importChars.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} characters'**
+  String importChars(String n);
+
+  /// No description provided for @importSizeMb.
+  ///
+  /// In en, this message translates to:
+  /// **'{mb} MB'**
+  String importSizeMb(String mb);
+
+  /// No description provided for @importTruncated.
+  ///
+  /// In en, this message translates to:
+  /// **'A long document: only the first {limit} of {total} characters will be filed.'**
+  String importTruncated(String limit, String total);
+
+  /// No description provided for @importEncoding.
+  ///
+  /// In en, this message translates to:
+  /// **'Read as {encoding}.'**
+  String importEncoding(String encoding);
+
+  /// No description provided for @importAudioNote.
+  ///
+  /// In en, this message translates to:
+  /// **'It will be turned into text by your speech model, then filed like a voice note. The recording stays on this device.'**
+  String get importAudioNote;
+
+  /// No description provided for @importSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {name}'**
+  String importSaved(String name);
+
+  /// No description provided for @coreImportTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'This file is too large to import (over 50 MB).'**
+  String get coreImportTooLarge;
+
+  /// No description provided for @coreAudioTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'This recording is too large to turn into text (over 25 MB).'**
+  String get coreAudioTooLarge;
+
+  /// No description provided for @coreAudioFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'This audio format can\'t be turned into text; use MP3, M4A, WAV, OGG, FLAC or WebM.'**
+  String get coreAudioFormat;
+
+  /// No description provided for @corePdfNoText.
+  ///
+  /// In en, this message translates to:
+  /// **'This PDF has no text in it; scanned pages can be added as photos.'**
+  String get corePdfNoText;
+
+  /// No description provided for @coreFileNoText.
+  ///
+  /// In en, this message translates to:
+  /// **'This file has no text in it.'**
+  String get coreFileNoText;
+
+  /// No description provided for @coreFileNotText.
+  ///
+  /// In en, this message translates to:
+  /// **'This file isn\'t text, so it can\'t be imported.'**
+  String get coreFileNotText;
+
+  /// No description provided for @coreFileDamaged.
+  ///
+  /// In en, this message translates to:
+  /// **'This file is damaged and can\'t be read.'**
+  String get coreFileDamaged;
+
+  /// No description provided for @corePdfLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'This PDF is password-protected.'**
+  String get corePdfLocked;
+
+  /// No description provided for @corePdfUnreadable.
+  ///
+  /// In en, this message translates to:
+  /// **'This PDF can\'t be read.'**
+  String get corePdfUnreadable;
+
+  /// No description provided for @miniRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording a voice note'**
+  String get miniRecording;
+
+  /// No description provided for @miniHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter saves · Esc discards'**
+  String get miniHint;
+
+  /// No description provided for @trayImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a file…'**
+  String get trayImport;
+
+  /// No description provided for @trayOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {app}'**
+  String trayOpen(String app);
+
+  /// No description provided for @trayQuit.
+  ///
+  /// In en, this message translates to:
+  /// **'Quit'**
+  String get trayQuit;
+
+  /// No description provided for @shortcutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record from anywhere'**
+  String get shortcutTitle;
+
+  /// No description provided for @shortcutOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On: works in any app'**
+  String get shortcutOn;
+
+  /// No description provided for @shortcutOnDesktop.
+  ///
+  /// In en, this message translates to:
+  /// **'On: set in your desktop\'s keyboard shortcuts'**
+  String get shortcutOnDesktop;
+
+  /// No description provided for @shortcutTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Another app already uses these keys'**
+  String get shortcutTaken;
+
+  /// No description provided for @shortcutUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This desktop doesn\'t let apps add a shortcut'**
+  String get shortcutUnavailable;
+
+  /// No description provided for @shortcutAddGnome.
+  ///
+  /// In en, this message translates to:
+  /// **'Add it to GNOME keyboard shortcuts'**
+  String get shortcutAddGnome;
+
+  /// No description provided for @shortcutAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{keys} now records from anywhere'**
+  String shortcutAdded(String keys);
+
+  /// No description provided for @shortcutAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t add the shortcut.'**
+  String get shortcutAddFailed;
+
+  /// No description provided for @shortcutFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens a small recorder over whatever you\'re doing. Press the keys again or Enter to save.'**
+  String get shortcutFooter;
+
+  /// No description provided for @shortcutFooterLinux.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens a small recorder over whatever you\'re doing. Press the keys again or Enter to save. Any desktop can also run “daftar --record” from its own keyboard settings.'**
+  String get shortcutFooterLinux;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

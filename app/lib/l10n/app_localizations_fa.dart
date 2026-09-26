@@ -1470,4 +1470,192 @@ class L10nFa extends L10n {
   @override
   String get vaultArchiveNote =>
       'بایگانی، خزانه را از برنامه و دستیار پنهان می‌کند. صفحه‌هایش در مخزن شما می‌مانند و می‌توانید آن را بازگردانید.';
+
+  @override
+  String get captureImport => 'افزودن فایل';
+
+  @override
+  String importReading(String name) {
+    return 'در حال خواندن $name…';
+  }
+
+  @override
+  String get importFileIt => 'بایگانی کن';
+
+  @override
+  String get importTranscribe => 'تبدیل به متن و بایگانی';
+
+  @override
+  String get importEdit => 'ویرایش متن';
+
+  @override
+  String get importDoneEditing => 'پایان ویرایش';
+
+  @override
+  String get importPlay => 'پخش';
+
+  @override
+  String get importStopPlaying => 'توقف';
+
+  @override
+  String get importKindText => 'متن';
+
+  @override
+  String get importKindMarkdown => 'مارک‌داون';
+
+  @override
+  String get importKindHtml => 'صفحه‌ی وب';
+
+  @override
+  String get importKindRtf => 'متن قالب‌دار';
+
+  @override
+  String get importKindDocx => 'سند ورد';
+
+  @override
+  String get importKindOdt => 'سند اوپن‌داکیومنت';
+
+  @override
+  String get importKindPptx => 'اسلایدها';
+
+  @override
+  String get importKindEpub => 'کتاب الکترونیکی';
+
+  @override
+  String get importKindPdf => 'پی‌دی‌اف';
+
+  @override
+  String get importKindAudio => 'صدای ضبط‌شده';
+
+  @override
+  String importPages(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n صفحه',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importSlides(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n اسلاید',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importChars(String n) {
+    return '$n نویسه';
+  }
+
+  @override
+  String importSizeMb(String mb) {
+    return '$mb مگابایت';
+  }
+
+  @override
+  String importTruncated(String limit, String total) {
+    return 'سند بلند است: فقط $limit نویسه‌ی نخست از $total نویسه بایگانی می‌شود.';
+  }
+
+  @override
+  String importEncoding(String encoding) {
+    return 'با رمزگذاری $encoding خوانده شد.';
+  }
+
+  @override
+  String get importAudioNote =>
+      'مدل گفتار شما آن را به متن تبدیل می‌کند و مثل یادداشت صوتی بایگانی می‌شود. فایل صوتی روی همین دستگاه می‌ماند.';
+
+  @override
+  String importSaved(String name) {
+    return '$name افزوده شد';
+  }
+
+  @override
+  String get coreImportTooLarge =>
+      'این فایل برای افزودن بیش از حد بزرگ است (بیش از ۵۰ مگابایت).';
+
+  @override
+  String get coreAudioTooLarge =>
+      'این فایل صوتی برای تبدیل به متن بیش از حد بزرگ است (بیش از ۲۵ مگابایت).';
+
+  @override
+  String get coreAudioFormat =>
+      'این قالب صوتی به متن تبدیل نمی‌شود؛ از MP3، M4A، WAV، OGG، FLAC یا WebM استفاده کنید.';
+
+  @override
+  String get corePdfNoText =>
+      'این پی‌دی‌اف متنی ندارد؛ صفحه‌های اسکن‌شده را می‌توانید به‌صورت عکس اضافه کنید.';
+
+  @override
+  String get coreFileNoText => 'این فایل متنی ندارد.';
+
+  @override
+  String get coreFileNotText => 'این فایل متنی نیست و افزوده نمی‌شود.';
+
+  @override
+  String get coreFileDamaged => 'این فایل آسیب دیده و خوانده نمی‌شود.';
+
+  @override
+  String get corePdfLocked => 'این پی‌دی‌اف رمز دارد.';
+
+  @override
+  String get corePdfUnreadable => 'این پی‌دی‌اف خوانده نمی‌شود.';
+
+  @override
+  String get miniRecording => 'در حال ضبط یادداشت صوتی';
+
+  @override
+  String get miniHint => 'Enter ذخیره می‌کند · Esc کنار می‌گذارد';
+
+  @override
+  String get trayImport => 'افزودن فایل…';
+
+  @override
+  String trayOpen(String app) {
+    return 'باز کردن $app';
+  }
+
+  @override
+  String get trayQuit => 'خروج';
+
+  @override
+  String get shortcutTitle => 'ضبط از هر جا';
+
+  @override
+  String get shortcutOn => 'روشن: در هر برنامه‌ای کار می‌کند';
+
+  @override
+  String get shortcutOnDesktop => 'روشن: در میان‌برهای صفحه‌کلید میزکار';
+
+  @override
+  String get shortcutTaken => 'برنامه‌ی دیگری از این کلیدها استفاده می‌کند';
+
+  @override
+  String get shortcutUnavailable =>
+      'این میزکار اجازه‌ی افزودن میان‌بر به برنامه‌ها نمی‌دهد';
+
+  @override
+  String get shortcutAddGnome => 'افزودن به میان‌برهای صفحه‌کلید گنوم';
+
+  @override
+  String shortcutAdded(String keys) {
+    return 'حالا $keys از هر جا ضبط می‌کند';
+  }
+
+  @override
+  String get shortcutAddFailed => 'میان‌بر افزوده نشد.';
+
+  @override
+  String get shortcutFooter =>
+      'ضبط‌کننده‌ی کوچکی روی هر کاری که می‌کنید باز می‌شود. برای ذخیره، دوباره همان کلیدها یا Enter را بزنید.';
+
+  @override
+  String get shortcutFooterLinux =>
+      'ضبط‌کننده‌ی کوچکی روی هر کاری که می‌کنید باز می‌شود. برای ذخیره، دوباره همان کلیدها یا Enter را بزنید. در هر میزکاری می‌توانید «daftar --record» را هم در تنظیمات صفحه‌کلید آن اجرا کنید.';
 }

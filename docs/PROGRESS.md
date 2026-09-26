@@ -318,6 +318,7 @@ tests (add with validation, Life restrictions, archive vs remove).
 step off Apple platforms.
 
 **Not verified on devices:** needs two signed builds on one Apple ID.
+
 ## Logo and reading fonts (2026-09-26)
 
 * The app now shows the icon's mark (`Logo`) instead of the letter monogram, on Today and in
@@ -331,6 +332,65 @@ step off Apple platforms.
 
 **Tests:** font choices apply live and persist; gallery golden shows the logo and all three
 lockups.
+
+## File import and the desktop recorder (2026-09-26)
+
+**Works**
+* Core: `daftar_core::extract` reads the following into text (ADR-0028):
+  * plain text in any encoding, including legacy Windows-1256 Persian;
+  * Markdown, HTML and RTF;
+  * DOCX, ODT, PPTX and EPUB;
+  * PDF with a text layer. Persian PDFs stored in visual order are put back in reading order.
+* Imports are filed as `import` captures that record the file's name in `source:`. Only the text
+  enters the repo, cut at 60,000 characters. Picked recordings go through transcription like voice
+  notes (MP3, M4A, WAV, OGG/Opus, FLAC, WebM; up to 25 MB). CLI: `daftar import <repo> <file>
+  [--preview]`.
+* App:
+  * The paperclip in the capture bar, "Import a file" in the palette and Ctrl/Cmd+O open a
+    preview. It shows the text read from the file (editable) with its type, pages, length, any cut
+    and the detected encoding.
+  * Recordings can be played before filing.
+  * Today shows the file's name on an import.
+  * Android: sharing a document or recording into the app opens the preview.
+* Linux:
+  * The app is single-instance: `daftar --record`, `daftar --import FILE` and "Open with" reach
+    the running copy.
+  * A tray icon (StatusNotifierItem) has Record, Import, Open and Quit. Closing the window hides
+    it there.
+  * Ctrl+Alt+Shift+N records from anywhere: through an X11 grab, or through the GlobalShortcuts
+    portal on Wayland. On GNOME without the portal, Settings adds it to GNOME's keyboard
+    shortcuts.
+  * The desktop entry has a Record action and MIME types.
+* macOS: a menu-bar item with the same menu. Closing the window keeps the app in the menu bar.
+  Files opened with the app are previewed.
+* The compact recorder (Linux, macOS):
+  * The shortcut turns the window into a 420×150 always-on-top recorder that starts at once.
+  * Enter or the shortcut again saves and opens Today; Esc discards and restores the window.
+* Settings › Record from anywhere shows whether the shortcut works here.
+
+**Tests:**
+* Rust: 11 extraction tests, including a real PDF fixture, Persian RTF, Windows-1256 text and
+  visual-order Persian; an import scenario (document filed with its name; recordings stored and
+  queued for transcription; unsupported audio refused).
+* Flutter: the import preview (document, edit, recording, unreadable, shortcut and palette, a
+  shared file); the compact recorder (records at once, Enter saves, the shortcut again saves, Esc
+  discards, no microphone); tray labels and imports; the GNOME shortcut setting.
+
+**Verified locally (Linux, GNOME 46 on Wayland):**
+* The app registers a single D-Bus name and a tray item with the StatusNotifierWatcher.
+* A second `daftar --record` or `daftar FILE` is forwarded and exits in about 40 ms.
+* Under XWayland, `--record` shrinks the window to exactly 420×150, always on top and hidden from
+  the taskbar. `--record` again saves the voice note (listed by `daftar today`) and restores the
+  window to its size.
+* Extraction was checked on real DOCX, ODT and PDF files, including Persian.
+
+**Not verified locally:**
+* The macOS runner (CI build only).
+* The GlobalShortcuts portal path, because this GNOME has no portal.
+* Writing the GNOME keybinding (not pressed against a real desktop's settings).
+
+**Not yet:** the iOS Share Extension accepts only text and images, so documents come in through
+the picker on iOS. Drag and drop onto the desktop window.
 
 ## Status after M9
 

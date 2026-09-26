@@ -15,6 +15,8 @@ finish-args:
   # Secrets go to the desktop keyring (§12).
   - --talk-name=org.freedesktop.secrets
   - --talk-name=org.freedesktop.Notifications
+  # The tray icon (StatusNotifierItem); the record shortcut uses the GlobalShortcuts portal.
+  - --talk-name=org.kde.StatusNotifierWatcher
 modules:
   - name: daftar
     buildsystem: simple

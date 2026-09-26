@@ -5,11 +5,14 @@
 #include <gdk/gdkx.h>
 #endif
 
+#include "desktop_shell.h"
 #include "flutter/generated_plugin_registrant.h"
 
 struct _MyApplication {
   GtkApplication parent_instance;
   char** dart_entrypoint_arguments;
+  GtkWindow* window;
+  DesktopShell* shell;
 };
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
@@ -19,9 +22,19 @@ static void first_frame_cb(MyApplication* self, FlView* view) {
   gtk_widget_show(gtk_widget_get_toplevel(GTK_WIDGET(view)));
 }
 
-// Implements GApplication::activate.
-static void my_application_activate(GApplication* application) {
-  MyApplication* self = MY_APPLICATION(application);
+// With a tray icon, closing the window hides it so the record shortcut keeps
+// working; Quit is in the tray menu.
+static gboolean on_delete(GtkWidget* widget, GdkEvent*, gpointer data) {
+  MyApplication* self = MY_APPLICATION(data);
+  if (self->shell != nullptr && desktop_shell_has_tray(self->shell)) {
+    gtk_widget_hide(widget);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static void create_window(MyApplication* self) {
+  GApplication* application = G_APPLICATION(self);
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
@@ -76,27 +89,72 @@ static void my_application_activate(GApplication* application) {
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
+
+  self->window = window;
+  self->shell = desktop_shell_new(GTK_APPLICATION(application), window, view);
+  g_signal_connect(window, "delete-event", G_CALLBACK(on_delete), self);
 }
 
-// Implements GApplication::local_command_line.
-static gboolean my_application_local_command_line(GApplication* application,
-                                                  gchar*** arguments,
-                                                  int* exit_status) {
+// Implements GApplication::activate: a second launch brings the window back.
+static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
-  // Strip out the first argument as it is the binary name.
-  self->dart_entrypoint_arguments = g_strdupv(*arguments + 1);
-
-  g_autoptr(GError) error = nullptr;
-  if (!g_application_register(application, nullptr, &error)) {
-    g_warning("Failed to register: %s", error->message);
-    *exit_status = 1;
-    return TRUE;
+  if (self->window == nullptr) {
+    create_window(self);
+  } else {
+    desktop_shell_present(self->shell);
   }
+}
 
-  g_application_activate(application);
-  *exit_status = 0;
-
-  return TRUE;
+// Implements GApplication::command_line. The app is single-instance, so this
+// runs in the first instance for every launch:
+//   daftar --record        start a voice note in the compact recorder
+//   daftar --import FILE   preview FILE for import
+//   daftar FILE…           the same, from "Open with" in a file manager
+// Other arguments go to Dart on the first launch.
+static int my_application_command_line(GApplication* application,
+                                       GApplicationCommandLine* cmdline) {
+  MyApplication* self = MY_APPLICATION(application);
+  gint argc = 0;
+  g_auto(GStrv) argv = g_application_command_line_get_arguments(cmdline, &argc);
+  gboolean record = FALSE;
+  g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func(g_free);
+  g_autoptr(GPtrArray) rest = g_ptr_array_new_with_free_func(g_free);
+  for (gint i = 1; i < argc; ++i) {
+    if (g_strcmp0(argv[i], "--record") == 0) {
+      record = TRUE;
+      continue;
+    }
+    const gchar* candidate = argv[i];
+    gboolean forced = FALSE;
+    if (g_strcmp0(argv[i], "--import") == 0 && i + 1 < argc) {
+      candidate = argv[++i];
+      forced = TRUE;
+    }
+    g_autoptr(GFile) file =
+        g_application_command_line_create_file_for_arg(cmdline, candidate);
+    gchar* path = g_file_get_path(file);
+    if (path != nullptr && (forced || (candidate[0] != '-' &&
+                                       g_file_test(path, G_FILE_TEST_IS_REGULAR)))) {
+      g_ptr_array_add(files, path);
+    } else {
+      g_free(path);
+      g_ptr_array_add(rest, g_strdup(argv[i]));
+    }
+  }
+  if (self->window == nullptr) {
+    g_ptr_array_add(rest, nullptr);
+    self->dart_entrypoint_arguments =
+        g_strdupv(reinterpret_cast<gchar**>(rest->pdata));
+    create_window(self);
+  } else if (!record && files->len == 0) {
+    desktop_shell_present(self->shell);
+  }
+  if (record) desktop_shell_record(self->shell);
+  for (guint i = 0; i < files->len; ++i) {
+    desktop_shell_import(self->shell,
+                         static_cast<const gchar*>(g_ptr_array_index(files, i)));
+  }
+  return 0;
 }
 
 // Implements GApplication::startup.
@@ -110,9 +168,9 @@ static void my_application_startup(GApplication* application) {
 
 // Implements GApplication::shutdown.
 static void my_application_shutdown(GApplication* application) {
-  // MyApplication* self = MY_APPLICATION(object);
-
-  // Perform any actions required at application shutdown.
+  MyApplication* self = MY_APPLICATION(application);
+  desktop_shell_free(self->shell);
+  self->shell = nullptr;
 
   G_APPLICATION_CLASS(my_application_parent_class)->shutdown(application);
 }
@@ -126,8 +184,7 @@ static void my_application_dispose(GObject* object) {
 
 static void my_application_class_init(MyApplicationClass* klass) {
   G_APPLICATION_CLASS(klass)->activate = my_application_activate;
-  G_APPLICATION_CLASS(klass)->local_command_line =
-      my_application_local_command_line;
+  G_APPLICATION_CLASS(klass)->command_line = my_application_command_line;
   G_APPLICATION_CLASS(klass)->startup = my_application_startup;
   G_APPLICATION_CLASS(klass)->shutdown = my_application_shutdown;
   G_OBJECT_CLASS(klass)->dispose = my_application_dispose;
@@ -144,5 +201,6 @@ MyApplication* my_application_new() {
 
   return MY_APPLICATION(g_object_new(my_application_get_type(),
                                      "application-id", APPLICATION_ID, "flags",
-                                     G_APPLICATION_NON_UNIQUE, nullptr));
+                                     G_APPLICATION_HANDLES_COMMAND_LINE,
+                                     nullptr));
 }

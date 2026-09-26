@@ -256,7 +256,7 @@ pub fn answer_capture(
                 AskScope::Story(_) => Some("stories".into()),
                 AskScope::All => None,
             },
-            assets: vec![],
+            ..Default::default()
         },
     )
 }

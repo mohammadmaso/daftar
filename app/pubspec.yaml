@@ -10,6 +10,7 @@ dependencies:
   audioplayers: ^6.7.1
   daftar_bridge:
     path: rust_builder
+  file_picker: ^13.1.0
   flutter:
     sdk: flutter
   flutter_local_notifications: ^22.3.1

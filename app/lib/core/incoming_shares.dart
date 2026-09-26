@@ -5,16 +5,33 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// One thing shared into the app from another app: text or an image.
+/// One thing shared into the app from another app: text, an image, or a file to import.
 @immutable
 class SharedItem {
-  const SharedItem.text(String this.text) : image = null, record = false;
-  const SharedItem.image(Uint8List this.image) : text = null, record = false;
+  const SharedItem.text(String this.text)
+    : image = null,
+      file = null,
+      record = false;
+  const SharedItem.image(Uint8List this.image)
+    : text = null,
+      file = null,
+      record = false;
+
+  /// A document or recording, copied to a local path; it opens in the import preview.
+  const SharedItem.file(String this.file)
+    : text = null,
+      image = null,
+      record = false;
 
   /// Not a share: the home-screen widget asking to start recording.
-  const SharedItem.record() : text = null, image = null, record = true;
+  const SharedItem.record()
+    : text = null,
+      image = null,
+      file = null,
+      record = true;
   final String? text;
   final Uint8List? image;
+  final String? file;
   final bool record;
 }
 
@@ -55,6 +72,8 @@ class PlatformIncomingShares implements IncomingShares {
           SharedItem.text(t)
         else if (m['image'] case final Uint8List b)
           SharedItem.image(b)
+        else if (m['file'] case final String f)
+          SharedItem.file(f)
         else if (m['record'] == true)
           const SharedItem.record(),
     ];

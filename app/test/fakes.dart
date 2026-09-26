@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:daftar/core/app_shortcuts.dart';
+import 'package:daftar/core/file_import.dart';
 import 'package:daftar/core/global_hotkey.dart';
 import 'package:daftar/core/incoming_shares.dart';
 import 'package:daftar/core/library_api.dart';
@@ -58,6 +59,25 @@ class FakeLibrary implements LibraryApi {
   @override
   Future<String> captureVoice(String audioPath, {String? vault}) async =>
       _add(RawKind.voice, '', vault).id;
+
+  final imports = <(String, String, String?)>[];
+  final audioFiles = <String>[];
+
+  @override
+  Future<String> captureImport(
+    String text,
+    String fileName, {
+    String? vault,
+  }) async {
+    imports.add((text, fileName, vault));
+    return _add(RawKind.import_, text, vault).id;
+  }
+
+  @override
+  Future<String> captureAudioFile(String path, {String? vault}) async {
+    audioFiles.add(path);
+    return _add(RawKind.voice, '', vault).id;
+  }
 
   @override
   Future<bool> discard(String id) async => true;
@@ -979,8 +999,103 @@ class FakeShares implements IncomingShares {
 }
 
 class FakeHotkey implements GlobalHotkey {
+  FakeHotkey({this.hasMini = false});
+
+  /// Whether this "platform" has the compact recorder (Linux, macOS).
+  final bool hasMini;
+  bool mini = false;
+  final left = <bool>[];
+  final recording = <bool>[];
+  Map<String, String> labels = const {};
+
+  /// Called when the "window" shrinks (true) or comes back (false), so a test can resize.
+  void Function(bool mini)? onWindow;
+
   final _record = StreamController<void>.broadcast();
+  final _import = StreamController<String?>.broadcast();
   void press() => _record.add(null);
+  void trayImport([String? path]) => _import.add(path);
+
   @override
   Stream<void> get record => _record.stream;
+
+  @override
+  Stream<String?> get import => _import.stream;
+
+  @override
+  Future<bool> enterMiniRecorder() async {
+    mini = hasMini;
+    if (mini) onWindow?.call(true);
+    return mini;
+  }
+
+  @override
+  Future<void> leaveMiniRecorder({required bool open}) async {
+    mini = false;
+    left.add(open);
+    onWindow?.call(false);
+  }
+
+  @override
+  Future<void> setRecording(bool on) async => recording.add(on);
+
+  @override
+  Future<void> setLabels(Map<String, String> labels) async =>
+      this.labels = labels;
+
+  ShortcutStatus? status;
+  final installed = <String>[];
+
+  @override
+  Future<ShortcutStatus?> shortcutStatus() async => status;
+
+  @override
+  Future<bool> installShortcut(String name) async {
+    installed.add(name);
+    status = ShortcutStatus(
+      keys: status?.keys ?? 'Ctrl+Alt+Shift+N',
+      state: ShortcutState.active,
+      viaDesktopSettings: true,
+    );
+    return true;
+  }
+}
+
+/// Picks [next] (null = cancelled) and returns [previews] by path; a missing path throws [error].
+class FakeFileImports implements FileImports {
+  String? next;
+  final previews = <String, ImportPreview>{};
+  Object error = Exception(
+    'This PDF has no text in it; scanned pages can be added as photos.',
+  );
+
+  @override
+  Future<String?> pick() async => next;
+
+  @override
+  Future<ImportPreview> read(String path) async =>
+      previews[path] ?? (throw error);
+
+  @override
+  int get charLimit => 60000;
+}
+
+class FakeFilePlayer implements FilePlayer {
+  final played = <String>[];
+  final _playing = StreamController<bool>.broadcast();
+
+  @override
+  Future<void> play(String path) async {
+    played.add(path);
+    _playing.add(true);
+  }
+
+  @override
+  Future<void> stop() async => _playing.add(false);
+
+  @override
+  Stream<bool> get playing => _playing.stream;
+
+  @override
+  Future<void> dispose() async {}
 }

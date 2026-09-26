@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/bidi.dart';
+import '../../core/file_import.dart';
 import '../../core/job_runner.dart';
 import '../../core/library_state.dart';
 import '../../core/recorder.dart';
@@ -226,7 +227,7 @@ class _CaptureBarState extends ConsumerState<CaptureBar> {
   Future<void> _pickVault() async {
     final picked = await showDSheet<({String? id})>(
       context,
-      builder: (_) => const _VaultSheet(),
+      builder: (_) => const VaultPickerSheet(),
     );
     if (picked != null) ref.read(pinnedVaultProvider.notifier).set(picked.id);
   }
@@ -312,11 +313,25 @@ class _CaptureBarState extends ConsumerState<CaptureBar> {
                   alignment: AlignmentDirectional.centerEnd,
                   child: recording
                       ? const SizedBox.shrink()
-                      : DIconButton(
-                          icon: DIcons.camera,
-                          onPressed: _takePhoto,
-                          semanticLabel: l.captureCamera,
-                          color: p.inkMuted,
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            DIconButton(
+                              icon: DIcons.attach,
+                              onPressed: () => pickAndImport(
+                                context,
+                                ProviderScope.containerOf(context),
+                              ),
+                              semanticLabel: l.captureImport,
+                              color: p.inkMuted,
+                            ),
+                            DIconButton(
+                              icon: DIcons.camera,
+                              onPressed: _takePhoto,
+                              semanticLabel: l.captureCamera,
+                              color: p.inkMuted,
+                            ),
+                          ],
                         ),
                 ),
               ),
@@ -407,7 +422,7 @@ class _RecordingPanel extends StatelessWidget {
                   textDirection: TextDirection.ltr,
                   child: SizedBox(
                     height: 32,
-                    child: CustomPaint(painter: _WavePainter(levels, p.accent)),
+                    child: CustomPaint(painter: WavePainter(levels, p.accent)),
                   ),
                 ),
               ),
@@ -452,8 +467,9 @@ class _RecordingPanel extends StatelessWidget {
   }
 }
 
-class _WavePainter extends CustomPainter {
-  _WavePainter(this.levels, this.color);
+/// Recent input levels as centred bars, newest at the end. Media: never mirrored.
+class WavePainter extends CustomPainter {
+  WavePainter(this.levels, this.color);
   final List<double> levels;
   final Color color;
 
@@ -479,7 +495,7 @@ class _WavePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_WavePainter old) => true;
+  bool shouldRepaint(WavePainter old) => true;
 }
 
 class _TextSheet extends StatefulWidget {
@@ -549,8 +565,8 @@ class _TextSheetState extends State<_TextSheet> {
   }
 }
 
-class _VaultSheet extends ConsumerWidget {
-  const _VaultSheet();
+class VaultPickerSheet extends ConsumerWidget {
+  const VaultPickerSheet({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

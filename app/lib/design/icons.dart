@@ -31,7 +31,8 @@ enum DIcons {
   speaker(_speaker),
   stop(_stop),
   image(_image),
-  send(_send, directional: true);
+  send(_send, directional: true),
+  attach(_attach);
 
   const DIcons(this._paint, {this.directional = false});
 
@@ -417,4 +418,20 @@ void _send(Canvas c, Paint p) {
     p,
   );
   c.drawLine(const Offset(11.5, 13), const Offset(20, 4.5), p);
+}
+
+// A paperclip: two nested loops open at the top end.
+void _attach(Canvas c, Paint p) {
+  c.drawPath(
+    Path()
+      ..moveTo(15.5, 7.5)
+      ..lineTo(15.5, 16)
+      ..arcToPoint(const Offset(8.5, 16), radius: const Radius.circular(3.5))
+      ..lineTo(8.5, 6.5)
+      ..arcToPoint(const Offset(13, 6.5), radius: const Radius.circular(2.25))
+      ..lineTo(13, 15.5)
+      ..arcToPoint(const Offset(11, 15.5), radius: const Radius.circular(1))
+      ..lineTo(11, 8),
+    p,
+  );
 }

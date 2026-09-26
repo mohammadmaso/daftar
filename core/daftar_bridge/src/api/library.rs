@@ -78,6 +78,8 @@ pub struct Capture {
     pub device: String,
     pub text: String,
     pub vault_hint: Option<String>,
+    /// The imported file's name, for imports and picked recordings.
+    pub file_name: Option<String>,
     pub images: Vec<String>,
     pub stage: Stage,
     pub problem: Option<String>,
@@ -126,6 +128,14 @@ pub struct SshKeyPair {
 
 fn err(e: impl std::fmt::Display) -> anyhow::Error {
     anyhow::anyhow!(e.to_string())
+}
+
+/// Input problems as the plain sentence the core wrote (so the app can translate it).
+fn plain(e: daftar_core::Error) -> anyhow::Error {
+    match e {
+        daftar_core::Error::Invalid(m) => anyhow::anyhow!(m),
+        other => err(other),
+    }
 }
 
 fn now() -> jiff::Zoned {
@@ -266,6 +276,35 @@ impl LibraryHandle {
             .id)
     }
 
+    /// Files the (previewed, possibly edited) text of an imported document.
+    pub fn capture_import(
+        &self,
+        text: String,
+        file_name: String,
+        vault_hint: Option<String>,
+    ) -> anyhow::Result<String> {
+        Ok(self
+            .session
+            .capture_import(&text, &file_name, vault_hint, &now())
+            .map_err(plain)?
+            .meta
+            .id)
+    }
+
+    /// Files a picked audio file: transcribed on this device, then filed like a voice note.
+    pub fn capture_audio_file(
+        &self,
+        path: String,
+        vault_hint: Option<String>,
+    ) -> anyhow::Result<String> {
+        Ok(self
+            .session
+            .capture_audio_file(&PathBuf::from(path), vault_hint, &now())
+            .map_err(plain)?
+            .meta
+            .id)
+    }
+
     pub fn discard(&self, id: String) -> anyhow::Result<bool> {
         self.session.discard_unsynced(&id).map_err(err)
     }
@@ -285,6 +324,7 @@ impl LibraryHandle {
                 device: c.device,
                 text: c.text,
                 vault_hint: c.vault_hint,
+                file_name: c.file_name,
                 images: c.images,
                 stage: match c.stage {
                     CaptureStage::Saved => Stage::Saved,
