@@ -191,12 +191,9 @@ class _Welcome extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Spacer(flex: 3),
-          Text(
-            name,
-            style: context.type.display.copyWith(
-              fontSize: context.type.display.fontSize! * 1.4,
-              color: p.accent,
-            ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Wordmark(name: name, size: 56),
           ),
           const SizedBox(height: Space.x3),
           Text(l.welcomeLine, style: context.type.title),

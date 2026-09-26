@@ -280,3 +280,104 @@ class DStatusPill extends StatelessWidget {
     );
   }
 }
+
+class DFace<T> {
+  const DFace(this.value, this.label, this.family, {this.scale = 1});
+  final T value;
+  final String label;
+
+  /// Font family the sample is set in.
+  final String family;
+
+  /// Evens out faces drawn small or large on their body.
+  final double scale;
+}
+
+/// Picks a typeface: a row of specimen tiles, each showing [sample] in its own face.
+class DFaceChoice<T> extends StatelessWidget {
+  const DFaceChoice({
+    super.key,
+    required this.faces,
+    required this.value,
+    required this.onChanged,
+    required this.sample,
+  });
+
+  final List<DFace<T>> faces;
+  final T value;
+  final ValueChanged<T> onChanged;
+  final String sample;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final (i, f) in faces.indexed) ...[
+          if (i > 0) const SizedBox(width: Space.x2),
+          Expanded(
+            child: Pressable(
+              onPressed: () {
+                if (f.value != value) {
+                  HapticFeedback.selectionClick();
+                  onChanged(f.value);
+                }
+              },
+              selected: f.value == value,
+              semanticLabel: f.label,
+              radius: Radii.medium,
+              child: AnimatedContainer(
+                duration: motion(context, Motion.quick),
+                curve: Motion.ease,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Space.x1,
+                  vertical: Space.x3,
+                ),
+                decoration: BoxDecoration(
+                  color: f.value == value ? p.accentSoft : p.raised,
+                  borderRadius: BorderRadius.circular(Radii.medium),
+                  border: Border.all(
+                    color: f.value == value ? p.accent : p.hairline,
+                    width: f.value == value ? 1.5 : Stroke.hairline,
+                  ),
+                ),
+                child: ExcludeSemantics(
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 40,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            sample,
+                            textScaler: TextScaler.noScaling,
+                            style: TextStyle(
+                              fontFamily: f.family,
+                              fontSize: 28 * f.scale,
+                              height: 1.3,
+                              color: f.value == value ? p.accent : p.ink,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: Space.x1),
+                      Text(
+                        f.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.type.caption.copyWith(
+                          color: f.value == value ? p.ink : p.inkMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}

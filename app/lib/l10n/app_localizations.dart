@@ -169,6 +169,72 @@ abstract class L10n {
   /// **'Applies on top of your system text size.'**
   String get textSizeFooter;
 
+  /// No description provided for @fontEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English font'**
+  String get fontEnglish;
+
+  /// No description provided for @fontPersian.
+  ///
+  /// In en, this message translates to:
+  /// **'Persian font'**
+  String get fontPersian;
+
+  /// No description provided for @fontFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Each language keeps its own font, in the app and in your pages.'**
+  String get fontFooter;
+
+  /// No description provided for @fontSans.
+  ///
+  /// In en, this message translates to:
+  /// **'Sans'**
+  String get fontSans;
+
+  /// No description provided for @fontSerif.
+  ///
+  /// In en, this message translates to:
+  /// **'Serif'**
+  String get fontSerif;
+
+  /// No description provided for @fontBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Book'**
+  String get fontBook;
+
+  /// No description provided for @fontLegible.
+  ///
+  /// In en, this message translates to:
+  /// **'Legible'**
+  String get fontLegible;
+
+  /// No description provided for @fontVazirmatn.
+  ///
+  /// In en, this message translates to:
+  /// **'Vazir'**
+  String get fontVazirmatn;
+
+  /// No description provided for @fontPlex.
+  ///
+  /// In en, this message translates to:
+  /// **'Plex'**
+  String get fontPlex;
+
+  /// No description provided for @fontNaskh.
+  ///
+  /// In en, this message translates to:
+  /// **'Naskh'**
+  String get fontNaskh;
+
+  /// No description provided for @fontMarkazi.
+  ///
+  /// In en, this message translates to:
+  /// **'Markazi'**
+  String get fontMarkazi;
+
   /// No description provided for @about.
   ///
   /// In en, this message translates to:
@@ -240,6 +306,12 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'Claim status'**
   String get galleryStatus;
+
+  /// No description provided for @galleryBrand.
+  ///
+  /// In en, this message translates to:
+  /// **'Logo'**
+  String get galleryBrand;
 
   /// No description provided for @galleryType.
   ///

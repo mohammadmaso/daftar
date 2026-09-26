@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../app/identity.dart';
 import '../../core/dates.dart';
 import '../../core/job_runner.dart';
 import '../../core/library_state.dart';
@@ -80,10 +79,10 @@ class TodayScreen extends ConsumerWidget {
                         Pressable(
                           onPressed: () => context.push('/settings'),
                           semanticLabel: l.settingsTitle,
-                          radius: Radii.pill,
-                          child: Padding(
-                            padding: const EdgeInsets.all(Space.x1),
-                            child: Monogram(name: AppIdentity.name(locale)),
+                          radius: Radii.large,
+                          child: const Padding(
+                            padding: EdgeInsets.all(Space.x1),
+                            child: Logo(),
                           ),
                         ),
                     ],
