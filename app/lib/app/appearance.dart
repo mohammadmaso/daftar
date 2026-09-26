@@ -25,20 +25,32 @@ class Appearance {
     this.language = LanguagePref.system,
     this.theme = ThemePref.system,
     this.textSize = TextSizePref.normal,
+    this.latinFont = LatinFont.sans,
+    this.persianFont = PersianFont.vazirmatn,
   });
 
   final LanguagePref language;
   final ThemePref theme;
   final TextSizePref textSize;
 
+  /// Reading face for English and other Latin text.
+  final LatinFont latinFont;
+
+  /// Reading face for Persian text.
+  final PersianFont persianFont;
+
   Appearance copyWith({
     LanguagePref? language,
     ThemePref? theme,
     TextSizePref? textSize,
+    LatinFont? latinFont,
+    PersianFont? persianFont,
   }) => Appearance(
     language: language ?? this.language,
     theme: theme ?? this.theme,
     textSize: textSize ?? this.textSize,
+    latinFont: latinFont ?? this.latinFont,
+    persianFont: persianFont ?? this.persianFont,
   );
 
   /// Null means "follow the system locale".
@@ -68,6 +80,8 @@ class AppearanceNotifier extends Notifier<Appearance> {
   static const _kLanguage = 'appearance.language';
   static const _kTheme = 'appearance.theme';
   static const _kTextSize = 'appearance.textSize';
+  static const _kLatinFont = 'appearance.latinFont';
+  static const _kPersianFont = 'appearance.persianFont';
 
   SharedPreferences get _prefs => ref.read(sharedPreferencesProvider);
 
@@ -82,6 +96,12 @@ class AppearanceNotifier extends Notifier<Appearance> {
       language: pick(LanguagePref.values, _kLanguage, LanguagePref.system),
       theme: pick(ThemePref.values, _kTheme, ThemePref.system),
       textSize: pick(TextSizePref.values, _kTextSize, TextSizePref.normal),
+      latinFont: pick(LatinFont.values, _kLatinFont, LatinFont.sans),
+      persianFont: pick(
+        PersianFont.values,
+        _kPersianFont,
+        PersianFont.vazirmatn,
+      ),
     );
   }
 
@@ -98,5 +118,15 @@ class AppearanceNotifier extends Notifier<Appearance> {
   void setTextSize(TextSizePref v) {
     state = state.copyWith(textSize: v);
     _prefs.setString(_kTextSize, v.name);
+  }
+
+  void setLatinFont(LatinFont v) {
+    state = state.copyWith(latinFont: v);
+    _prefs.setString(_kLatinFont, v.name);
+  }
+
+  void setPersianFont(PersianFont v) {
+    state = state.copyWith(persianFont: v);
+    _prefs.setString(_kPersianFont, v.name);
   }
 }

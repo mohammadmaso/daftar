@@ -93,6 +93,30 @@ void main() {
     expect(_palette(tester), same(Palette.dark));
   });
 
+  testWidgets('font choices apply live and persist', (tester) async {
+    await pumpApp(tester, location: '/settings');
+    await scrollTo(tester, find.text('Serif'));
+    await tester.tap(find.text('Serif'));
+    await tester.pumpAndSettle();
+    TypeScale type() => tester.element(find.byType(SettingsScreen)).type;
+    expect(type().family, 'SourceSerif4');
+    expect(type().fallback, ['Vazirmatn']);
+
+    await scrollTo(tester, find.text('Naskh'));
+    await tester.tap(find.text('Naskh'));
+    await tester.pumpAndSettle();
+    expect(type().fallback, ['NotoNaskhArabic']);
+
+    final sp = await SharedPreferences.getInstance();
+    expect(sp.getString('appearance.latinFont'), LatinFont.serif.name);
+    expect(sp.getString('appearance.persianFont'), PersianFont.naskh.name);
+
+    final saved = {for (final k in sp.getKeys()) k: sp.get(k)!};
+    await tester.pumpWidget(const SizedBox());
+    await pumpApp(tester, prefs: saved, location: '/settings');
+    expect(type().family, 'SourceSerif4');
+  });
+
   for (final lang in ['en', 'fa']) {
     testWidgets('200% text lays out without overflow ($lang)', (tester) async {
       tester.platformDispatcher.textScaleFactorTestValue = 2.0;

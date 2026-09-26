@@ -45,6 +45,40 @@ class L10nFa extends L10n {
   String get textSizeFooter => 'روی اندازه‌ی متن سیستم اعمال می‌شود.';
 
   @override
+  String get fontEnglish => 'قلم انگلیسی';
+
+  @override
+  String get fontPersian => 'قلم فارسی';
+
+  @override
+  String get fontFooter =>
+      'هر زبان قلم خودش را دارد، در برنامه و در صفحه‌هایتان.';
+
+  @override
+  String get fontSans => 'سن‌سریف';
+
+  @override
+  String get fontSerif => 'سریف';
+
+  @override
+  String get fontBook => 'کتابی';
+
+  @override
+  String get fontLegible => 'خوانا';
+
+  @override
+  String get fontVazirmatn => 'وزیرمتن';
+
+  @override
+  String get fontPlex => 'پلکس';
+
+  @override
+  String get fontNaskh => 'نسخ';
+
+  @override
+  String get fontMarkazi => 'مرکزی';
+
+  @override
   String get about => 'درباره';
 
   @override
@@ -85,6 +119,9 @@ class L10nFa extends L10n {
 
   @override
   String get galleryStatus => 'وضعیت ادعا';
+
+  @override
+  String get galleryBrand => 'نشان';
 
   @override
   String get galleryType => 'حروف';

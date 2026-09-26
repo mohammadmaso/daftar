@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/identity.dart';
 import '../../design/design.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -28,6 +29,28 @@ class _GalleryScreenState extends State<GalleryScreen> {
       onBack: () => context.canPop() ? context.pop() : context.go('/'),
       backLabel: l.back,
       children: [
+        DSection(
+          title: l.galleryBrand,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(Space.x4),
+              child: Wrap(
+                spacing: Space.x6,
+                runSpacing: Space.x4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Logo(size: 56),
+                  Wordmark(name: AppIdentity.nameEn, latinFont: LatinFont.sans),
+                  Wordmark(
+                    name: AppIdentity.nameEn,
+                    latinFont: LatinFont.serif,
+                  ),
+                  Wordmark(name: AppIdentity.nameFa),
+                ],
+              ),
+            ),
+          ],
+        ),
         DSection(
           title: l.galleryType,
           children: [
